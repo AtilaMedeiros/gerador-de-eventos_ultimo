@@ -50,6 +50,8 @@ export default function DashboardHome() {
   // 2. Mock & Derived Data
   const totalAthletes = activeEvent?.registrations || 0
   const totalSchools = Math.round(totalAthletes / 12) + 5 // Mock realistic school count based on athletes
+  const publicSchools = Math.round(totalSchools * 0.65)
+  const privateSchools = totalSchools - publicSchools
 
   // Mock Activity Feed
   const activities = useMemo(
@@ -173,7 +175,7 @@ export default function DashboardHome() {
       </div>
 
       {/* Top Metrics Row */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card className="border-none shadow-md bg-gradient-to-br from-blue-600 to-blue-700 text-white relative overflow-hidden group">
           <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-colors" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
@@ -206,6 +208,42 @@ export default function DashboardHome() {
             </div>
             <p className="text-xs text-emerald-200 mt-1 flex items-center">
               <ArrowRight className="h-3 w-3 mr-1" /> Instituições registradas
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-md bg-gradient-to-br from-cyan-600 to-cyan-700 text-white relative overflow-hidden group">
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-colors" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-cyan-100">
+              Escolas Públicas
+            </CardTitle>
+            <School className="h-5 w-5 text-cyan-200" />
+          </CardHeader>
+          <CardContent className="relative z-10">
+            <div className="text-4xl font-bold">
+              {publicSchools.toLocaleString()}
+            </div>
+            <p className="text-xs text-cyan-200 mt-1 flex items-center">
+              <ArrowRight className="h-3 w-3 mr-1" /> Rede Pública
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-md bg-gradient-to-br from-violet-600 to-violet-700 text-white relative overflow-hidden group">
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-colors" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-violet-100">
+              Escolas Particulares
+            </CardTitle>
+            <School className="h-5 w-5 text-violet-200" />
+          </CardHeader>
+          <CardContent className="relative z-10">
+            <div className="text-4xl font-bold">
+              {privateSchools.toLocaleString()}
+            </div>
+            <p className="text-xs text-violet-200 mt-1 flex items-center">
+              <ArrowRight className="h-3 w-3 mr-1" /> Rede Privada
             </p>
           </CardContent>
         </Card>
