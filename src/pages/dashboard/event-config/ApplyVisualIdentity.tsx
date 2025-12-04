@@ -21,18 +21,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, Palette, Check, ArrowLeft, Save, Layout } from 'lucide-react'
+import { Search, Palette, Check, ArrowLeft, Save, Layout, Eye, Rocket } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { EventPreview } from '@/components/EventPreview'
 
-export default function ApplyVisualIdentity() {
+export default function ApplyVisualIdentity({
+  eventId: propEventId,
+  isWizard = false,
+  onFinish,
+  onBack,
+}: {
+  eventId?: string
+  isWizard?: boolean
+  onFinish?: () => void
+  onBack?: () => void
+}) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const { eventId: paramEventId } = useParams()
 
-  const urlEventId = paramEventId || searchParams.get('eventId')
+  const urlEventId = propEventId || paramEventId || searchParams.get('eventId')
 
   const { events, updateEvent, getEventById } = useEvent()
   const { themes } = useTheme()
@@ -41,6 +53,7 @@ export default function ApplyVisualIdentity() {
     urlEventId || '',
   )
   const [selectedThemeId, setSelectedThemeId] = useState<string>('')
+  const [showPreview, setShowPreview] = useState(false)
 
   // Sync URL param with state
   useEffect(() => {
@@ -74,8 +87,23 @@ export default function ApplyVisualIdentity() {
       return
     }
 
-    updateEvent(selectedEventId, { themeId: selectedThemeId })
-    toast.success('Tema aplicado ao evento com sucesso!')
+    updateEvent(selectedEventId, { themeId: selectedThemeId, status: 'published' })
+    toast.success('Evento publicado com sucesso!')
+
+    if (isWizard && onFinish) {
+      onFinish()
+    }
+  }
+
+  const handleDraft = () => {
+    if (!selectedEventId) return
+    updateEvent(selectedEventId, { themeId: selectedThemeId, status: 'draft' })
+    toast.success('Rascunho salvo com sucesso!')
+  }
+
+  const handlePreview = () => {
+    if (!selectedEventId) return
+    setShowPreview(true)
   }
 
   const selectedEvent = events.find((e) => e.id === selectedEventId)
@@ -127,48 +155,52 @@ export default function ApplyVisualIdentity() {
     <div className="max-w-[1400px] mx-auto h-[calc(100vh-5rem)] flex flex-col">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
-        <div>
-          {!paramEventId && (
+        {!isWizard && (
+          <div>
+            {!paramEventId && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mb-2 -ml-2 text-muted-foreground"
+                onClick={() =>
+                  navigate('/area-do-produtor/cadastro-basico/evento')
+                }
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" /> Voltar para Eventos
+              </Button>
+            )}
+            <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+              Identidade Visual:{' '}
+              <span className="text-primary">{selectedEvent?.name}</span>
+            </h2>
+            <p className="text-muted-foreground">
+              Escolha um tema para personalizar a página pública do evento.
+            </p>
+          </div>
+        )}
+        {!isWizard && (
+          <div className="flex items-center gap-2 ml-auto">
+            {!paramEventId && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSelectedEventId('')
+                  setSearchParams({})
+                  setSelectedThemeId('')
+                }}
+              >
+                Trocar Evento
+              </Button>
+            )}
             <Button
-              variant="ghost"
-              size="sm"
-              className="mb-2 -ml-2 text-muted-foreground"
-              onClick={() =>
-                navigate('/area-do-produtor/cadastro-basico/evento')
-              }
+              onClick={handleSave}
+              disabled={!selectedThemeId}
+              className="gap-2"
             >
-              <ArrowLeft className="h-4 w-4 mr-1" /> Voltar para Eventos
+              <Save className="h-4 w-4" /> Salvar Alterações
             </Button>
-          )}
-          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            Identidade Visual:{' '}
-            <span className="text-primary">{selectedEvent?.name}</span>
-          </h2>
-          <p className="text-muted-foreground">
-            Escolha um tema para personalizar a página pública do evento.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {!paramEventId && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSelectedEventId('')
-                setSearchParams({})
-                setSelectedThemeId('')
-              }}
-            >
-              Trocar Evento
-            </Button>
-          )}
-          <Button
-            onClick={handleSave}
-            disabled={!selectedThemeId}
-            className="gap-2"
-          >
-            <Save className="h-4 w-4" /> Salvar Alterações
-          </Button>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Content Grid */}
@@ -270,6 +302,72 @@ export default function ApplyVisualIdentity() {
           </div>
         </div>
       </div>
+
+      {isWizard && (
+        <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t p-4 z-40 shadow-lg md:pl-72">
+          <div className="container max-w-5xl mx-auto flex flex-col-reverse md:flex-row items-center justify-end gap-4">
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full md:w-auto"
+              onClick={onBack}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+            </Button>
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 md:flex-none"
+                onClick={handleDraft}
+              >
+                <Save className="mr-2 h-4 w-4" /> Rascunho
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                className="flex-1 md:flex-none"
+                onClick={handlePreview}
+              >
+                <Eye className="mr-2 h-4 w-4" /> Preview
+              </Button>
+              <Button
+                onClick={handleSave}
+                className="flex-1 md:flex-none min-w-[160px]"
+              >
+                <Check className="mr-2 h-4 w-4" /> Concluir Evento
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] p-0 bg-transparent border-none shadow-none">
+          {selectedEvent && (
+            <EventPreview
+              data={{
+                name: selectedEvent.name,
+                textoInstitucional: selectedEvent.description,
+                nomeProdutor: selectedEvent.producerName,
+                descricaoProdutor: selectedEvent.producerDescription,
+                dataInicio: selectedEvent.startDate,
+                horaInicio: selectedEvent.startTime,
+                dataFim: selectedEvent.endDate,
+                horaFim: selectedEvent.endTime,
+                inscricaoColetivaFim: selectedEvent.registrationCollectiveEnd,
+                inscricaoIndividualFim: selectedEvent.registrationIndividualEnd,
+                // Add other fields as needed, mapping from selectedEvent
+              }}
+              onClose={() => setShowPreview(false)}
+              onPublish={() => {
+                setShowPreview(false)
+                handleSave()
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

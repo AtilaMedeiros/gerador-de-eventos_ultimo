@@ -16,6 +16,7 @@ import Login from './pages/Login'
 import DashboardHome from './pages/dashboard/DashboardHome'
 import EventsList from './pages/dashboard/basic-registration/EventsList'
 import EventForm from './pages/dashboard/basic-registration/EventForm'
+import EventWizard from './pages/dashboard/basic-registration/EventWizard'
 import ModalitiesList from './pages/dashboard/basic-registration/ModalitiesList'
 import ModalityForm from './pages/dashboard/basic-registration/ModalityForm'
 import VisualIdentityList from './pages/dashboard/basic-registration/VisualIdentityList'
@@ -36,6 +37,7 @@ import AccessDenied from './pages/AccessDenied'
 import EventPanelLayout from './components/EventPanelLayout'
 import EventPanelDashboard from './pages/dashboard/event-panel/EventPanelDashboard'
 import EventSchools from './pages/dashboard/event-panel/EventSchools'
+import EventAthletes from './pages/dashboard/event-panel/EventAthletes'
 import EventReports from './pages/dashboard/event-panel/EventReports'
 
 // Participant Pages
@@ -136,7 +138,7 @@ const App = () => (
                       {/* Cadastro Básico */}
                       <Route path="cadastro-basico">
                         <Route path="evento" element={<EventsList />} />
-                        <Route path="evento/novo" element={<EventForm />} />
+                        <Route path="evento/novo" element={<EventWizard />} />
                         <Route path="evento/:id" element={<EventForm />} />
 
                         <Route
@@ -202,6 +204,7 @@ const App = () => (
                       />
                       <Route path="relatorios" element={<EventReports />} />
                       <Route path="escolas" element={<EventSchools />} />
+                      <Route path="atletas" element={<EventAthletes />} />
                       <Route
                         path="modalidades"
                         element={<AssociateModalities />}

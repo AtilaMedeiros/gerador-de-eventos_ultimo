@@ -9,10 +9,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Plus, Bell, Search, Menu } from 'lucide-react'
+import { Bell, Menu } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { toast } from 'sonner'
-import { Input } from '@/components/ui/input'
+
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 
 export function DashboardHeader() {
@@ -44,15 +43,7 @@ export function DashboardHeader() {
     return 'Área do Produtor'
   }
 
-  const handleCreateEvent = () => {
-    if (hasPermission('criar_evento')) {
-      navigate('/area-do-produtor/cadastro-basico/evento/novo')
-    } else {
-      toast.error('Acesso Negado', {
-        description: 'Você não tem permissão para criar novos eventos.',
-      })
-    }
-  }
+
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-md px-6 shadow-sm">
@@ -102,26 +93,7 @@ export function DashboardHeader() {
       </div>
 
       <div className="flex items-center gap-3 ml-auto">
-        {/* Search Bar - Desktop */}
-        <div className="hidden lg:flex items-center relative mr-2">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Busca rápida..."
-            className="w-64 h-9 pl-9 bg-secondary/30 border-transparent focus:bg-background focus:border-input transition-all"
-          />
-        </div>
 
-        {/* Quick Actions */}
-        <div className="hidden md:flex items-center gap-2 border-r pr-4 mr-2">
-          <Button
-            size="sm"
-            className="bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:shadow-primary/30 transition-all"
-            onClick={handleCreateEvent}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Evento
-          </Button>
-        </div>
 
         {/* Notifications */}
         <Button

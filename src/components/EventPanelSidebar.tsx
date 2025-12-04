@@ -9,6 +9,7 @@ import {
   Megaphone,
   ArrowLeft,
   Settings,
+  Users,
 } from 'lucide-react'
 import { useEvent } from '@/contexts/EventContext'
 
@@ -123,16 +124,22 @@ export function EventPanelSidebar() {
           />
         </div>
 
-        {/* Escolas */}
+        {/* Participantes */}
         <div className="space-y-1">
           <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Escolas
+            Participantes
           </p>
           <NavItem
             to={`/area-do-produtor/evento/${eventId}/escolas`}
             icon={School}
-            label="Escolas Inscritas"
+            label="Escolas"
             active={isActive(`/area-do-produtor/evento/${eventId}/escolas`)}
+          />
+          <NavItem
+            to={`/area-do-produtor/evento/${eventId}/atletas`}
+            icon={Users}
+            label="Atletas"
+            active={isActive(`/area-do-produtor/evento/${eventId}/atletas`)}
           />
         </div>
 

@@ -86,7 +86,7 @@ const INITIAL_EVENTS: Event[] = [
 
 interface EventContextType {
   events: Event[]
-  addEvent: (event: Omit<Event, 'id'>) => void
+  addEvent: (event: Omit<Event, 'id'>) => Event
   updateEvent: (id: string, event: Partial<Event>) => void
   deleteEvent: (id: string) => void
   getEventById: (id: string) => Event | undefined
@@ -155,6 +155,7 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
     }
     setEvents((prev) => [newEvent, ...prev])
     toast.success('Evento criado com sucesso!')
+    return newEvent
   }
 
   const updateEvent = (id: string, eventData: Partial<Event>) => {

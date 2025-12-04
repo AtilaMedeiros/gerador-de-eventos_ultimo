@@ -50,14 +50,24 @@ const generateSlug = (text: string) => {
     .replace(/(^-|-$)+/g, '')
 }
 
-export default function EventForm() {
+export default function EventForm({
+  eventId,
+  isWizard = false,
+  onNext,
+}: {
+  eventId?: string
+  isWizard?: boolean
+  onNext?: (id: string) => void
+}) {
   const navigate = useNavigate()
-  const { id } = useParams()
+  const { id: paramId } = useParams()
   const { user, hasPermission } = useAuth()
   const { addEvent, updateEvent, getEventById } = useEvent()
 
-  const isEditing = id && id !== 'novo'
-  const isCreating = id === 'novo'
+  // Prioritize prop eventId, then paramId
+  const id = eventId || paramId
+  const isEditing = !!id && id !== 'novo'
+  const isCreating = !id || id === 'novo'
 
   const [activeAccordion, setActiveAccordion] = useState('item-1')
   const [showPreview, setShowPreview] = useState(false)
@@ -203,10 +213,22 @@ export default function EventForm() {
       registrationIndividualStart: data.inscricaoIndividualInicio,
       registrationIndividualEnd: data.inscricaoIndividualFim,
     }
-    if (isEditing && id) updateEvent(id, eventData)
-    else addEvent(eventData)
+    if (isEditing && id) {
+      updateEvent(id, eventData)
+      if (isWizard && onNext) {
+        onNext(id)
+      } else {
+        navigate('/area-do-produtor/cadastro-basico/evento')
+      }
+    } else {
+      const newEvent = addEvent(eventData)
+      if (isWizard && onNext) {
+        onNext(newEvent.id)
+      } else {
+        navigate('/area-do-produtor/cadastro-basico/evento')
+      }
+    }
     setIsSubmitting(false)
-    navigate('/area-do-produtor/cadastro-basico/evento')
   }
 
   const onInvalid = (errors: any) => {
@@ -224,22 +246,24 @@ export default function EventForm() {
   return (
     <div className="max-w-5xl mx-auto pb-28 relative animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-        <div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 px-2 -ml-2 text-muted-foreground mb-2"
-            onClick={() => navigate('/area-do-produtor/cadastro-basico/evento')}
-          >
-            <ArrowLeft className="h-3 w-3 mr-1" /> Voltar
-          </Button>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">
-            {isEditing ? 'Editar Evento' : 'Criar Novo Evento'}
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            Configure datas, inscrições e detalhes do evento.
-          </p>
-        </div>
+        {!isWizard && (
+          <div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 -ml-2 text-muted-foreground mb-2"
+              onClick={() => navigate('/area-do-produtor/cadastro-basico/evento')}
+            >
+              <ArrowLeft className="h-3 w-3 mr-1" /> Voltar
+            </Button>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">
+              {isEditing ? 'Editar Evento' : 'Criar Novo Evento'}
+            </h2>
+            <p className="text-muted-foreground mt-1">
+              Configure datas, inscrições e detalhes do evento.
+            </p>
+          </div>
+        )}
         <div className="bg-card border p-4 rounded-xl shadow-subtle flex items-center gap-4 min-w-[200px]">
           <div className="relative h-12 w-12 flex items-center justify-center">
             <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
@@ -485,8 +509,16 @@ export default function EventForm() {
                   className="flex-1 md:flex-none min-w-[160px]"
                   disabled={isSubmitting}
                 >
-                  <Rocket className="mr-2 h-4 w-4" />
-                  {isSubmitting ? 'Processando...' : 'Publicar'}
+                  {isWizard ? (
+                    <>
+                      Próximo <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
+                    </>
+                  ) : (
+                    <>
+                      <Rocket className="mr-2 h-4 w-4" />
+                      {isSubmitting ? 'Processando...' : 'Publicar'}
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
