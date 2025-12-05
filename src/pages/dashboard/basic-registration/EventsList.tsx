@@ -16,6 +16,8 @@ import {
   Clock,
   ChevronDown,
   Trophy,
+  Users,
+  User,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -141,8 +143,23 @@ export default function EventsList() {
       )
         return false
     }
-    if (search && !event.name.toLowerCase().includes(search.toLowerCase())) {
-      return false
+
+    if (search) {
+      const searchLower = search.toLowerCase()
+      const statusTerm = event.status === 'published' ? 'publicado' : 'rascunho'
+      const eventDateRange = formatDateRange(event.startDate, event.endDate).toLowerCase()
+      const collectiveRange = formatDateRange(event.registrationCollectiveStart, event.registrationCollectiveEnd).toLowerCase()
+      const individualRange = formatDateRange(event.registrationIndividualStart, event.registrationIndividualEnd).toLowerCase()
+
+      return (
+        event.name.toLowerCase().includes(searchLower) ||
+        (event.location && event.location.toLowerCase().includes(searchLower)) ||
+        (event.producerName && event.producerName.toLowerCase().includes(searchLower)) ||
+        statusTerm.includes(searchLower) ||
+        eventDateRange.includes(searchLower) ||
+        collectiveRange.includes(searchLower) ||
+        individualRange.includes(searchLower)
+      )
     }
     return true
   })
@@ -150,14 +167,14 @@ export default function EventsList() {
   return (
     <div className="space-y-8 animate-fade-in pb-20">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <Trophy className="h-8 w-8 text-primary" />
             Meus Eventos
           </h2>
           <p className="text-muted-foreground mt-1 text-lg">
-            Gerencie suas competições com excelência e estilo.
+            Gerencie seus eventos com excelência e estilo.
           </p>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
@@ -177,47 +194,38 @@ export default function EventsList() {
         </div>
       </div>
 
-      {/* Filters Bar */}
-      <div className="bg-card p-1.5 rounded-xl border shadow-sm flex flex-col sm:flex-row items-center gap-2">
-        <div className="relative flex-1 w-full group">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-            <Search className="h-4 w-4" />
-          </div>
-          <Input
-            placeholder="Buscar evento por nome, local ou categoria..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 border-none bg-transparent shadow-none focus-visible:ring-0 h-10"
-          />
+      {/* Search Bar */}
+      <div className="flex items-center gap-3 w-full relative group">
+        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
+          <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
         </div>
-        <div className="h-6 w-[1px] bg-border hidden sm:block" />
-        <div className="flex items-center gap-2 w-full sm:w-auto px-2 pb-2 sm:pb-0">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowActiveOnly(!showActiveOnly)}
-            className={cn(
-              'gap-2 text-xs font-medium rounded-lg transition-all',
-              showActiveOnly
-                ? 'bg-primary/10 text-primary hover:bg-primary/20'
-                : 'text-muted-foreground hover:bg-muted',
-            )}
-          >
-            {showActiveOnly ? 'Ativos' : 'Todos'}
-            <Filter className="h-3 w-3" />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="text-xs rounded-lg">
-                Ordenar <ChevronDown className="ml-1 h-3 w-3" />
+        <Input
+          placeholder="Buscar evento por nome, local ou inscrição..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-10 pr-12 h-12 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left"
+        />
+        <div className="absolute inset-y-0 right-2 flex items-center z-10">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowActiveOnly(!showActiveOnly)}
+                className={cn(
+                  "h-8 w-8 rounded-md transition-colors",
+                  showActiveOnly
+                    ? "bg-primary/10 text-primary hover:bg-primary/20"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <Filter className="h-4 w-4" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Mais recentes</DropdownMenuItem>
-              <DropdownMenuItem>Mais antigos</DropdownMenuItem>
-              <DropdownMenuItem>Nome (A-Z)</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </TooltipTrigger>
+            <TooltipContent>
+              {showActiveOnly ? 'Exibindo apenas ativos' : 'Exibindo todos'}
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
@@ -245,9 +253,9 @@ export default function EventsList() {
           </div>
         ) : (
           filteredEvents.map((event) => (
-            <Card
+            <div
               key={event.id}
-              className="group relative overflow-hidden border border-border/60 hover:border-primary/50 hover:shadow-xl transition-all duration-300 cursor-pointer bg-card"
+              className="bg-card shadow-lg shadow-stone-200/50 dark:shadow-black/20 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 group border border-border/60 hover:border-primary/50 hover:shadow-xl transition-all duration-300 cursor-pointer relative overflow-hidden"
               onClick={() =>
                 navigate(`/area-do-produtor/evento/${event.id}/dashboard`)
               }
@@ -255,154 +263,135 @@ export default function EventsList() {
               {/* Decorative Background Blur */}
               <div className="absolute top-0 right-0 p-40 bg-primary/5 rounded-full blur-3xl -mr-20 -mt-20 transition-all group-hover:bg-primary/10 pointer-events-none" />
 
-              <CardContent className="p-0">
-                <div className="flex flex-col lg:flex-row">
-                  {/* Main Content */}
-                  <div className="flex-1 p-6 lg:p-8 flex flex-col justify-between gap-6 relative z-10">
-                    {/* Header: Status & Title */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        {event.status === 'published' ? (
-                          <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/25 border-emerald-500/20 px-2.5 py-0.5 rounded-full transition-colors">
-                            <span className="relative flex h-2 w-2 mr-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                            </span>
-                            Publicado
-                          </Badge>
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 px-2.5 py-0.5 rounded-full"
-                          >
-                            Rascunho
-                          </Badge>
-                        )}
-                        <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                          {event.producerName || 'Organização'}
-                        </span>
-                      </div>
+              <div className="flex-shrink-0 flex flex-col items-center justify-center bg-primary/10 text-primary w-36 h-36 rounded-xl p-4 z-10">
+                <span className="block text-sm font-medium tracking-wide uppercase">
+                  {event.startDate ? format(event.startDate, 'MMM', { locale: ptBR }) : 'DATA'}
+                </span>
+                <span className="block text-6xl font-bold -my-1">
+                  {event.startDate ? format(event.startDate, 'dd') : '--'}
+                </span>
+                <span className="block text-sm font-medium tracking-wide">
+                  {event.startDate ? format(event.startDate, 'yyyy') : '----'}
+                </span>
+              </div>
 
-                      <div>
-                        <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors leading-tight">
-                          {event.name}
-                        </h3>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-                          <MapPin className="h-4 w-4 text-primary/70" />
-                          {event.location}
-                        </div>
+              <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-6 w-full z-10">
+                <div className="col-span-1 md:col-span-3">
+                  <div className="flex flex-col md:flex-row justify-between gap-4">
+                    <div className="flex flex-col gap-1">
+                      <h2 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
+                        {event.name}
+                      </h2>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        <span className="text-sm">{event.location || 'Local não definido'}</span>
                       </div>
                     </div>
 
-                    {/* Info Grid: Dates */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="flex items-start gap-3 p-3.5 rounded-xl bg-secondary/30 border border-secondary/50 group-hover:bg-secondary/50 transition-colors">
-                        <div className="p-2 bg-background rounded-lg shadow-sm text-primary shrink-0">
-                          <CalendarDays className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-0.5">
-                            Data do Evento
-                          </p>
-                          <p className="text-sm font-semibold text-foreground">
-                            {formatDateRange(event.startDate, event.endDate)}
-                          </p>
-                        </div>
+                    <div className="flex flex-col items-start md:items-end gap-1.5 -mt-6">
+                      <div className={cn(
+                        "flex items-center gap-2 px-3 py-1 rounded-sm text-xs font-semibold w-fit",
+                        event.status === 'published'
+                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                          : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                      )}>
+                        <span className="w-1.5 h-1.5 bg-current rounded-full"></span>
+                        <span>{event.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
                       </div>
-
-                      <div className="flex items-start gap-3 p-3.5 rounded-xl bg-secondary/30 border border-secondary/50 group-hover:bg-secondary/50 transition-colors">
-                        <div className="p-2 bg-background rounded-lg shadow-sm text-amber-600 shrink-0">
-                          <Clock className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-0.5">
-                            Período de Inscrição
-                          </p>
-                          <p className="text-sm font-semibold text-foreground">
-                            {getRegistrationRange(event)}
-                          </p>
-                        </div>
-                      </div>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                        {event.producerName || 'Organização'}
+                      </span>
                     </div>
-                  </div>
-
-                  {/* Action Sidebar */}
-                  <div className="bg-muted/30 lg:w-24 border-t lg:border-t-0 lg:border-l flex lg:flex-col items-center justify-center gap-3 p-4 lg:py-8 z-20">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-10 w-10 rounded-xl bg-background shadow-sm text-foreground hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all duration-300"
-                          onClick={(e) => handlePanel(e, event.id)}
-                        >
-                          <LayoutDashboard className="h-5 w-5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="left" className="font-semibold">
-                        Painel do Evento
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-10 w-10 rounded-xl bg-background shadow-sm text-foreground hover:bg-blue-600 hover:text-white hover:scale-110 transition-all duration-300"
-                          onClick={(e) => handleEdit(e, event.id)}
-                        >
-                          <Edit className="h-5 w-5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="left" className="font-semibold">
-                        Editar Evento
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-10 w-10 rounded-xl bg-background shadow-sm text-foreground hover:bg-emerald-600 hover:text-white hover:scale-110 transition-all duration-300"
-                          onClick={(e) =>
-                            handleOpenPublicLink(e, event.name, event.id)
-                          }
-                        >
-                          <ExternalLink className="h-5 w-5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="left" className="font-semibold">
-                        Link Público
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <div className="w-[1px] h-6 bg-border hidden lg:block my-1" />
-                    <div className="w-6 h-[1px] bg-border block lg:hidden mx-1" />
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-10 w-10 rounded-xl bg-background shadow-sm text-destructive hover:bg-destructive hover:text-white hover:scale-110 transition-all duration-300"
-                          onClick={(e) => handleDelete(e, event.id)}
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="left"
-                        className="font-semibold text-destructive"
-                      >
-                        Excluir Evento
-                      </TooltipContent>
-                    </Tooltip>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+
+                <div className="border-t border-border pt-4">
+                  <p className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-2">EVENTO</p>
+                  <div className="flex items-center gap-3">
+                    <CalendarDays className="h-5 w-5 text-muted-foreground" />
+                    <p className="text-sm font-semibold text-foreground">
+                      {formatDateRange(event.startDate, event.endDate)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="border-t border-border pt-4">
+                  <p className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-2">INSCRIÇÕES COLETIVO</p>
+                  <div className="flex items-center gap-3">
+                    <Users className="h-5 w-5 text-muted-foreground" />
+                    <p className="text-sm font-semibold text-foreground">
+                      {formatDateRange(event.registrationCollectiveStart, event.registrationCollectiveEnd)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="border-t border-border pt-4">
+                  <p className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-2">INSCRIÇÕES INDIVIDUAIS</p>
+                  <div className="flex items-center gap-3">
+                    <User className="h-5 w-5 text-muted-foreground" />
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {formatDateRange(event.registrationIndividualStart, event.registrationIndividualEnd)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-shrink-0 self-stretch flex flex-row md:flex-col items-center justify-between border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0 md:pl-6 gap-4 z-10 w-full md:w-auto">
+                <div className="flex flex-row md:flex-col gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        aria-label="View Details"
+                        className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                        onClick={(e) => handlePanel(e, event.id)}
+                      >
+                        <LayoutDashboard className="h-6 w-6" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">Painel</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        aria-label="Edit Event"
+                        className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-blue-500/10 hover:text-blue-600"
+                        onClick={(e) => handleEdit(e, event.id)}
+                      >
+                        <Edit className="h-6 w-6" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">Editar</TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        aria-label="Share Event"
+                        className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-600"
+                        onClick={(e) => handleOpenPublicLink(e, event.name, event.id)}
+                      >
+                        <ExternalLink className="h-6 w-6" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">Link Público</TooltipContent>
+                  </Tooltip>
+                </div>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      aria-label="Delete Event"
+                      className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-destructive hover:bg-destructive/10"
+                      onClick={(e) => handleDelete(e, event.id)}
+                    >
+                      <Trash2 className="h-6 w-6" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="text-destructive">Excluir</TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
           ))
         )}
       </div>
