@@ -102,9 +102,7 @@ export function DashboardSidebar() {
         </div>
 
         <div className="space-y-1">
-          <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Cadastro
-          </p>
+
           <NavItem
             to="/area-do-produtor/cadastro-basico/evento"
             icon={Calendar}
