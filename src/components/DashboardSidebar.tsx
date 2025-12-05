@@ -11,6 +11,8 @@ import {
   Trophy,
   Palette,
   ChevronRight,
+  School,
+  Megaphone,
 } from 'lucide-react'
 import { useCallback } from 'react'
 
@@ -93,15 +95,8 @@ export function DashboardSidebar() {
             label="Visão Geral"
             active={isActive('/area-do-produtor/inicio')}
           />
-          <NavItem
-            to="/area-do-produtor/relatorios"
-            icon={FileBarChart}
-            label="Relatórios"
-            active={isChildActive('/area-do-produtor/relatorios')}
-          />
-        </div>
 
-        <div className="space-y-1">
+
 
           <NavItem
             to="/area-do-produtor/cadastro-basico/evento"
@@ -130,6 +125,24 @@ export function DashboardSidebar() {
             icon={Users}
             label="Usuários"
             active={isChildActive('/area-do-produtor/cadastro-basico/usuarios')}
+          />
+          <NavItem
+            to="/area-do-produtor/escolas"
+            icon={School}
+            label="Escolas"
+            active={isChildActive('/area-do-produtor/escolas')}
+          />
+          <NavItem
+            to="/area-do-produtor/atletas"
+            icon={Users}
+            label="Atletas"
+            active={isChildActive('/area-do-produtor/atletas')}
+          />
+          <NavItem
+            to="/area-do-produtor/comunicacao"
+            icon={Megaphone}
+            label="Avisos e Boletins"
+            active={isChildActive('/area-do-produtor/comunicacao')}
           />
         </div>
 

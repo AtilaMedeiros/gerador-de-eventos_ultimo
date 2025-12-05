@@ -380,22 +380,14 @@ export default function ModalityForm() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="bg-muted/30 p-4 rounded-lg space-y-4 border">
-                    <div className="flex items-start gap-3">
-                      <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                      <p className="text-sm text-muted-foreground">
-                        Estas configurações aplicam-se globalmente a esta
-                        modalidade quando adicionada a um evento.
-                      </p>
-                    </div>
-                  </div>
+
 
                   <FormField
                     control={form.control}
                     name="maxTeams"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Limite de Equipes no Campeonato</FormLabel>
+                        <FormLabel>Máximo de Equipes</FormLabel>
                         <FormControl>
                           <Input type="number" className="h-11" {...field} />
                         </FormControl>
