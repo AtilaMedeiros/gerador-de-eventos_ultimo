@@ -78,42 +78,28 @@ export function EventPanelSidebar() {
   return (
     <aside className="hidden w-72 flex-col border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 text-sidebar-foreground md:flex min-h-screen sticky top-0 h-screen overflow-y-auto z-40 shadow-subtle">
       {/* Header with Back Button */}
-      <div className="p-4 border-b border-border/50">
-        <button
-          onClick={() => navigate('/area-do-produtor/cadastro-basico/evento')}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-4"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Voltar para Lista
-        </button>
-        <div className="flex items-center gap-3 px-2">
-          <div className="bg-primary/10 text-primary p-2 rounded-lg">
-            <Settings className="h-5 w-5" />
-          </div>
-          <div className="overflow-hidden">
-            <span
-              className="font-bold text-sm tracking-tight block leading-tight truncate"
-              title={event.name}
-            >
-              {event.name}
-            </span>
-            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-              Painel de Gestão
-            </span>
-          </div>
+      <div className="p-6 border-b border-border/50 flex items-center gap-3">
+        <div className="bg-primary text-primary-foreground p-1.5 rounded-lg shadow-lg shadow-primary/20">
+          <LayoutDashboard className="h-5 w-5" />
+        </div>
+        <div>
+          <span className="font-bold text-lg tracking-tight block leading-none">
+            Gerador
+          </span>
+          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+            Eventos
+          </span>
         </div>
       </div>
 
       <div className="flex-1 py-6 px-4 space-y-8">
         {/* Principal */}
         <div className="space-y-1">
-          <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Principal
-          </p>
+
           <NavItem
             to={`/area-do-produtor/evento/${eventId}/dashboard`}
             icon={LayoutDashboard}
-            label="Dashboard"
+            label="Visão Geral"
             active={isActive(`/area-do-produtor/evento/${eventId}/dashboard`)}
           />
           <NavItem
@@ -179,6 +165,17 @@ export function EventPanelSidebar() {
           />
         </div>
       </div>
-    </aside>
+
+
+      <div className="p-4 border-t border-border/50">
+        <button
+          onClick={() => navigate('/area-do-produtor/cadastro-basico/evento')}
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/10 w-full"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar para Lista
+        </button>
+      </div>
+    </aside >
   )
 }
