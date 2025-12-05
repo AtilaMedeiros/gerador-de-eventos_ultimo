@@ -86,9 +86,7 @@ export function DashboardSidebar() {
 
       <div className="flex-1 py-6 px-4 space-y-8">
         <div className="space-y-1">
-          <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Principal
-          </p>
+
           <NavItem
             to="/area-do-produtor/inicio"
             icon={LayoutDashboard}
@@ -105,7 +103,7 @@ export function DashboardSidebar() {
 
         <div className="space-y-1">
           <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Gestão
+            Cadastro
           </p>
           <NavItem
             to="/area-do-produtor/cadastro-basico/evento"
@@ -137,23 +135,7 @@ export function DashboardSidebar() {
           />
         </div>
 
-        <div className="space-y-1">
-          <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Conta
-          </p>
-          <NavItem
-            to="/area-do-produtor/perfil"
-            icon={User}
-            label="Meu Perfil"
-            active={isActive('/area-do-produtor/perfil')}
-          />
-          <NavItem
-            to="/area-do-produtor/configuracoes"
-            icon={Settings}
-            label="Configurações"
-            active={isActive('/area-do-produtor/configuracoes')}
-          />
-        </div>
+
       </div>
 
       <div className="p-4 border-t border-border/50">
