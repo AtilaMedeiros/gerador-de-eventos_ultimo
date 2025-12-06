@@ -99,13 +99,9 @@ const filterFields: FilterFieldConfig[] = [
     },
     {
         key: 'isEventActive',
-        label: 'Status Evento',
+        label: 'Evento Ativo',
         icon: <Activity className="size-3.5" />,
-        type: 'select',
-        options: [
-            { label: 'Ativo', value: 'true' },
-            { label: 'Encerrado', value: 'false' },
-        ]
+        type: 'boolean',
     },
     {
         key: 'city',
@@ -169,7 +165,9 @@ export default function SchoolsList() {
                 case 'event':
                     return school.event?.toLowerCase().includes(value)
                 case 'isEventActive':
-                    // Handle boolean string values 'true'/'false'
+                    // If 'true' (checked), show only active events.
+                    // If 'false' (unchecked), show all events (return true).
+                    if (value === 'false') return true
                     const boolValue = value === 'true' || value === true
                     return school.isEventActive === boolValue
                 case 'city':
@@ -231,7 +229,7 @@ export default function SchoolsList() {
                         placeholder="Pesquisar..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 h-12 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
+                        className="pl-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
                     />
                 </div>
 
@@ -244,7 +242,7 @@ export default function SchoolsList() {
                             addButton={
                                 <Button
                                     size="sm"
-                                    className="h-12 w-12 p-0 rounded-md bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-blue-200 dark:border-blue-800 hover:bg-primary/5 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
+                                    className="h-10 w-10 p-0 rounded-md bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-blue-200 dark:border-blue-800 hover:bg-primary/5 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-blue-400" aria-hidden="true">
                                         <path d="M13.354 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14v6a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341l1.218-1.348"></path>
@@ -258,11 +256,11 @@ export default function SchoolsList() {
                     {filters.length > 0 && (
                         <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
                             onClick={() => setFilters([])}
-                            className="text-muted-foreground hover:text-destructive text-xs h-12 px-2"
+                            className="text-muted-foreground hover:text-destructive h-10 w-10"
                         >
-                            Limpar
+                            <Trash2 className="h-4 w-4" />
                         </Button>
                     )}
                 </div>

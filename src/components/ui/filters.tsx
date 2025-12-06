@@ -66,7 +66,7 @@ export function Filters({ fields, filters, onChange, addButton, className }: Fil
                 const field = getField(filter.field)
                 if (!field) return null
                 return (
-                    <div key={filter.id} className="group flex items-center gap-2 bg-white/80 backdrop-blur-md border border-primary/30 rounded-md px-3 h-12 text-sm shadow-sm transition-all hover:border-primary/60 hover:bg-white hover:shadow-md animate-in fade-in zoom-in-95 duration-200">
+                    <div key={filter.id} className="group flex items-center gap-2 bg-white/80 backdrop-blur-md border border-primary/30 rounded-md px-3 h-10 text-sm shadow-sm transition-all hover:border-primary/60 hover:bg-white hover:shadow-md animate-in fade-in zoom-in-95 duration-200">
                         <span className="text-primary/70 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider">
                             {field.icon && <span className="opacity-70">{field.icon}</span>}
                             {field.label}:
@@ -93,6 +93,28 @@ export function Filters({ fields, filters, onChange, addButton, className }: Fil
                                     </option>
                                 ))}
                             </select>
+                        ) : field.type === 'boolean' ? (
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={filter.value === 'true'}
+                                    data-state={filter.value === 'true' ? 'checked' : 'unchecked'}
+                                    onClick={() => updateFilter(filter.id, filter.value === 'true' ? 'false' : 'true')}
+                                    className={cn(
+                                        "relative peer inline-flex shrink-0 cursor-pointer items-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 rounded-full h-5 w-8 border border-transparent",
+                                        filter.value === 'true' ? "bg-primary" : "bg-input"
+                                    )}
+                                >
+                                    <span
+                                        data-state={filter.value === 'true' ? 'checked' : 'unchecked'}
+                                        className={cn(
+                                            "pointer-events-none block bg-white w-4 h-4 shadow-lg ring-0 transition-transform rounded-full",
+                                            filter.value === 'true' ? "translate-x-[14px]" : "translate-x-[2px]"
+                                        )}
+                                    />
+                                </button>
+                            </div>
                         ) : (
                             <span className="font-medium text-foreground">{String(filter.value)}</span>
                         )}
