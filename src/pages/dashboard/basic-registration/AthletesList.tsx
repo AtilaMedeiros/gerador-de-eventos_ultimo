@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -225,6 +225,58 @@ export default function AthletesList() {
         setCurrentPage(1)
     }
 
+    // Column Resizing Logic
+    const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
+        const saved = localStorage.getItem('ge_athletes_col_widths')
+        return saved ? JSON.parse(saved) : {
+            name: 250,
+            sex: 120,
+            dob: 120,
+            cpf: 140,
+            school: 200,
+            event: 180,
+            actions: 130
+        }
+    })
+
+    useEffect(() => {
+        localStorage.setItem('ge_athletes_col_widths', JSON.stringify(colWidths))
+    }, [colWidths])
+
+    const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)
+
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+        if (!resizingRef.current) return
+        const { key, startX, startWidth } = resizingRef.current
+        const diff = e.clientX - startX
+        const newWidth = Math.max(50, startWidth + diff)
+
+        setColWidths(prev => ({
+            ...prev,
+            [key]: newWidth
+        }))
+    }, [])
+
+    const handleMouseUp = useCallback(() => {
+        resizingRef.current = null
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+        document.body.style.cursor = 'default'
+    }, [handleMouseMove])
+
+    const handleMouseDown = useCallback((e: React.MouseEvent, key: string) => {
+        e.preventDefault()
+        e.stopPropagation()
+        resizingRef.current = {
+            key,
+            startX: e.clientX,
+            startWidth: colWidths[key] || 100
+        }
+        document.addEventListener('mousemove', handleMouseMove)
+        document.addEventListener('mouseup', handleMouseUp)
+        document.body.style.cursor = 'col-resize'
+    }, [colWidths, handleMouseMove, handleMouseUp])
+
     const handleAction = (action: string) => {
         toast.info(`Ação ${action} simulada com sucesso.`)
     }
@@ -300,41 +352,71 @@ export default function AthletesList() {
                 </div>
             </div>
 
-            <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden">
-                <Table>
+            <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden overflow-x-auto">
+                <Table style={{ tableLayout: 'fixed', minWidth: '100%' }}>
                     <TableHeader className="bg-primary/5">
                         <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
-                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('name')}>
-                                <div className="flex items-center">
-                                    Nome {getSortIcon('name')}
+                            <TableHead style={{ width: colWidths.name }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('name')}>
+                                <div className="flex items-center overflow-hidden">
+                                    <span className="truncate">Nome</span> {getSortIcon('name')}
                                 </div>
+                                <div
+                                    onMouseDown={(e) => handleMouseDown(e, 'name')}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                />
                             </TableHead>
-                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('sex')}>
-                                <div className="flex items-center">
-                                    Naipe {getSortIcon('sex')}
+                            <TableHead style={{ width: colWidths.sex }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('sex')}>
+                                <div className="flex items-center justify-center overflow-hidden">
+                                    <span className="truncate">Naipe</span> {getSortIcon('sex')}
                                 </div>
+                                <div
+                                    onMouseDown={(e) => handleMouseDown(e, 'sex')}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                />
                             </TableHead>
-                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('dob')}>
-                                <div className="flex items-center">
-                                    Data Nasc. {getSortIcon('dob')}
+                            <TableHead style={{ width: colWidths.dob }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('dob')}>
+                                <div className="flex items-center justify-center overflow-hidden">
+                                    <span className="truncate">Data Nasc.</span> {getSortIcon('dob')}
                                 </div>
+                                <div
+                                    onMouseDown={(e) => handleMouseDown(e, 'dob')}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                />
                             </TableHead>
-                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('cpf')}>
-                                <div className="flex items-center">
-                                    CPF {getSortIcon('cpf')}
+                            <TableHead style={{ width: colWidths.cpf }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('cpf')}>
+                                <div className="flex items-center justify-center overflow-hidden">
+                                    <span className="truncate">CPF</span> {getSortIcon('cpf')}
                                 </div>
+                                <div
+                                    onMouseDown={(e) => handleMouseDown(e, 'cpf')}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                />
                             </TableHead>
-                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('school')}>
-                                <div className="flex items-center">
-                                    Escola {getSortIcon('school')}
+                            <TableHead style={{ width: colWidths.school }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('school')}>
+                                <div className="flex items-center justify-center overflow-hidden">
+                                    <span className="truncate">Escola</span> {getSortIcon('school')}
                                 </div>
+                                <div
+                                    onMouseDown={(e) => handleMouseDown(e, 'school')}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                />
                             </TableHead>
-                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('event')}>
-                                <div className="flex items-center">
-                                    Evento {getSortIcon('event')}
+                            <TableHead style={{ width: colWidths.event }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('event')}>
+                                <div className="flex items-center justify-center overflow-hidden">
+                                    <span className="truncate">Evento</span> {getSortIcon('event')}
                                 </div>
+                                <div
+                                    onMouseDown={(e) => handleMouseDown(e, 'event')}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                />
                             </TableHead>
-                            <TableHead className="text-right font-semibold text-primary/80 h-12">Ações</TableHead>
+                            <TableHead style={{ width: colWidths.actions }} className="relative text-right font-semibold text-primary/80 h-12">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -353,22 +435,22 @@ export default function AthletesList() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
-                                        <div className="flex items-center h-full text-muted-foreground">
+                                        <div className="flex items-center justify-center h-full text-muted-foreground">
                                             {athlete.sex}
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
-                                        <div className="flex items-center h-full text-muted-foreground">
+                                        <div className="flex items-center justify-center h-full text-muted-foreground">
                                             {athlete.dob}
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
-                                        <div className="flex items-center h-full text-muted-foreground font-mono text-xs">
+                                        <div className="flex items-center justify-center h-full text-muted-foreground font-mono text-xs">
                                             {athlete.cpf}
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
-                                        <div className="flex flex-col justify-center h-full">
+                                        <div className="flex flex-col items-center justify-center h-full">
                                             <span className="text-muted-foreground leading-tight text-sm">
                                                 {athlete.school}
                                             </span>
@@ -378,7 +460,7 @@ export default function AthletesList() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
-                                        <div className="flex flex-col justify-center h-full">
+                                        <div className="flex flex-col items-center justify-center h-full">
                                             <span className="text-muted-foreground leading-tight">
                                                 {athlete.event}
                                             </span>

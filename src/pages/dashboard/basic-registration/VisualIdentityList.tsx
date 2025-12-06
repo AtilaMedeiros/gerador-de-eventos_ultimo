@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -130,6 +130,58 @@ export default function VisualIdentityList() {
     setCurrentPage(1)
   }
 
+  // Column Resizing Logic
+  const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
+    const saved = localStorage.getItem('ge_visual_identity_col_widths')
+    return saved ? JSON.parse(saved) : {
+      name: 200,
+      primary: 120,
+      secondary: 130,
+      background: 120,
+      text: 100,
+      createdAt: 120,
+      actions: 100
+    }
+  })
+
+  useEffect(() => {
+    localStorage.setItem('ge_visual_identity_col_widths', JSON.stringify(colWidths))
+  }, [colWidths])
+
+  const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!resizingRef.current) return
+    const { key, startX, startWidth } = resizingRef.current
+    const diff = e.clientX - startX
+    const newWidth = Math.max(50, startWidth + diff)
+
+    setColWidths(prev => ({
+      ...prev,
+      [key]: newWidth
+    }))
+  }, [])
+
+  const handleMouseUp = useCallback(() => {
+    resizingRef.current = null
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'default'
+  }, [handleMouseMove])
+
+  const handleMouseDown = useCallback((e: React.MouseEvent, key: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    resizingRef.current = {
+      key,
+      startX: e.clientX,
+      startWidth: colWidths[key] || 100
+    }
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'col-resize'
+  }, [colWidths, handleMouseMove, handleMouseUp])
+
 
   return (
     <div className="space-y-8 animate-fade-in relative">
@@ -200,25 +252,71 @@ export default function VisualIdentityList() {
         </div>
       </div>
 
-      <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden">
-        <Table>
+      <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden overflow-x-auto">
+        <Table style={{ tableLayout: 'fixed', minWidth: '100%' }}>
           <TableHeader className="bg-primary/5">
             <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('name')}>
-                <div className="flex items-center">
-                  Nome {getSortIcon('name')}
+              <TableHead style={{ width: colWidths.name }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('name')}>
+                <div className="flex items-center overflow-hidden">
+                  <span className="truncate">Nome</span> {getSortIcon('name')}
                 </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'name')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12">Cor Primária</TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12">Cor Secundária</TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12">Cor de Fundo</TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12">Cor do Texto</TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('createdAt')}>
-                <div className="flex items-center">
-                  Data Criação {getSortIcon('createdAt')}
+              <TableHead style={{ width: colWidths.primary }} className="relative font-semibold text-primary/80 h-12 text-center">
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Cor Primária</span>
                 </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'primary')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
               </TableHead>
-              <TableHead className="text-right font-semibold text-primary/80 h-12">Ações</TableHead>
+              <TableHead style={{ width: colWidths.secondary }} className="relative font-semibold text-primary/80 h-12 text-center">
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Cor Secundária</span>
+                </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'secondary')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
+              </TableHead>
+              <TableHead style={{ width: colWidths.background }} className="relative font-semibold text-primary/80 h-12 text-center">
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Cor de Fundo</span>
+                </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'background')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
+              </TableHead>
+              <TableHead style={{ width: colWidths.text }} className="relative font-semibold text-primary/80 h-12 text-center">
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Cor do Texto</span>
+                </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'text')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
+              </TableHead>
+              <TableHead style={{ width: colWidths.createdAt }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('createdAt')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Data Criação</span> {getSortIcon('createdAt')}
+                </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'createdAt')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
+              </TableHead>
+              <TableHead style={{ width: colWidths.actions }} className="relative text-right font-semibold text-primary/80 h-12">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -250,7 +348,7 @@ export default function VisualIdentityList() {
                     </div>
                   </TableCell>
                   <TableCell className="h-12 py-0">
-                    <div className="flex items-center gap-2 h-full">
+                    <div className="flex items-center justify-center gap-2 h-full">
                       <div
                         className="h-4 w-4 rounded-full border shadow-sm ring-1 ring-white/20"
                         style={{ backgroundColor: theme.colors.primary }}
@@ -261,7 +359,7 @@ export default function VisualIdentityList() {
                     </div>
                   </TableCell>
                   <TableCell className="h-12 py-0">
-                    <div className="flex items-center gap-2 h-full">
+                    <div className="flex items-center justify-center gap-2 h-full">
                       <div
                         className="h-4 w-4 rounded-full border shadow-sm ring-1 ring-white/20"
                         style={{ backgroundColor: theme.colors.secondary }}
@@ -272,7 +370,7 @@ export default function VisualIdentityList() {
                     </div>
                   </TableCell>
                   <TableCell className="h-12 py-0">
-                    <div className="flex items-center gap-2 h-full">
+                    <div className="flex items-center justify-center gap-2 h-full">
                       <div
                         className="h-4 w-4 rounded-full border shadow-sm ring-1 ring-white/20"
                         style={{ backgroundColor: theme.colors.background }}
@@ -283,7 +381,7 @@ export default function VisualIdentityList() {
                     </div>
                   </TableCell>
                   <TableCell className="h-12 py-0">
-                    <div className="flex items-center gap-2 h-full">
+                    <div className="flex items-center justify-center gap-2 h-full">
                       <div
                         className="h-4 w-4 rounded-full border shadow-sm ring-1 ring-white/20"
                         style={{ backgroundColor: theme.colors.text }}
@@ -294,7 +392,7 @@ export default function VisualIdentityList() {
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground h-12 py-0">
-                    <div className="flex items-center h-full">
+                    <div className="flex items-center justify-center h-full">
                       {format(new Date(theme.createdAt), 'dd/MM/yyyy', { locale: ptBR })}
                     </div>
                   </TableCell>
