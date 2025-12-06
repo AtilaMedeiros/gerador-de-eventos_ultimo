@@ -11,9 +11,6 @@ import {
     Save,
     MapPin,
     Phone,
-    Mail,
-    Building2,
-    User,
     X
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -123,7 +120,7 @@ export default function SchoolForm() {
                 } else {
                     toast.error('CEP não encontrado.')
                 }
-            } catch (error) {
+            } catch {
                 toast.error('Erro ao buscar CEP.')
             } finally {
                 setIsLoadingCep(false)
@@ -131,7 +128,7 @@ export default function SchoolForm() {
         }
     }
 
-    async function onSubmit(data: RegisterFormValues) {
+    async function onSubmit(_: RegisterFormValues) {
         setIsSubmitting(true)
         try {
             // Mock Registration API call
@@ -139,7 +136,7 @@ export default function SchoolForm() {
 
             toast.success(isEditing ? 'Escola atualizada com sucesso!' : 'Escola cadastrada com sucesso!')
             navigate('/area-do-produtor/escolas')
-        } catch (error) {
+        } catch {
             toast.error('Erro ao salvar escola. Tente novamente.')
         } finally {
             setIsSubmitting(false)

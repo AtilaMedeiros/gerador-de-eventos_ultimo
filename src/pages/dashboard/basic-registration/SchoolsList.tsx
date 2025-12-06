@@ -10,7 +10,6 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { Filters, createFilter, type Filter, type FilterFieldConfig } from '@/components/ui/filters'
-import { Badge } from '@/components/ui/badge'
 import {
     Search,
     Download,
@@ -24,20 +23,12 @@ import {
     Trophy,
     Building,
     Activity,
-    ListFilter,
     ArrowUpDown,
     ArrowUp,
     ArrowDown,
     ChevronLeft,
     ChevronRight
 } from 'lucide-react'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 
@@ -177,12 +168,13 @@ export default function SchoolsList() {
                     return school.athletesList?.some(a => a.toLowerCase().includes(value))
                 case 'event':
                     return school.event?.toLowerCase().includes(value)
-                case 'isEventActive':
+                case 'isEventActive': {
                     // If 'true' (checked), show only active events.
                     // If 'false' (unchecked), show all events (return true).
                     if (value === 'false') return true
                     const boolValue = value === 'true' || value === true
                     return school.isEventActive === boolValue
+                }
                 case 'city':
                     return school.city.toLowerCase().includes(value)
                 case 'state':

@@ -174,7 +174,7 @@ export default function EventForm({
     setIsSubmitting(false)
   }
 
-  const onInvalid = (errors: any) => {
+  const onInvalid = () => {
     toast.error('Verifique os campos destacados.')
   }
 
@@ -233,7 +233,7 @@ export default function EventForm({
                 variant="secondary"
                 onClick={async () => {
                   if (await form.trigger()) setShowPreview(true)
-                  else onInvalid(form.formState.errors)
+                  else onInvalid()
                 }}
                 disabled={isSubmitting}
               >

@@ -71,7 +71,7 @@ export default function ModalitiesList() {
   const [filters, setFilters] = useState<Filter[]>([])
 
   const handleDuplicate = (modality: any) => {
-    const { id, ...rest } = modality
+    const { id: _, ...rest } = modality
     addModality({ ...rest, name: `${rest.name} (Cópia)` })
   }
 

@@ -174,7 +174,7 @@ export default function EventsList() {
           return event.location?.toLowerCase().includes(value) ?? false
         case 'producerName':
           return event.producerName?.toLowerCase().includes(value) ?? false
-        case 'isActive':
+        case 'isActive': {
           // Specific logic for Active/Inactive
           if (filter.value === 'false') return true // "Inactive" or "All"? Usually boolean filter is true/false. 
           // If boolean filter is 'true', we want only active events.
@@ -189,6 +189,7 @@ export default function EventsList() {
           if (value === 'true') return !isClosed
           if (value === 'false') return isClosed
           return true
+        }
         default:
           return true
       }

@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge'
 import {
   Calendar,
   Users,
-  UserCheck,
   ExternalLink,
   Ticket,
   ArrowRight,
