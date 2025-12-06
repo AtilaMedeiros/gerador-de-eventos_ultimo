@@ -38,8 +38,10 @@ export function DashboardHeader() {
       return 'Catálogo de Modalidades'
     if (path.includes('/area-do-produtor/cadastro-basico/identidade-visual'))
       return 'Temas & Identidade'
-    if (path.includes('/area-do-produtor/cadastro-basico/usuarios'))
+    if (path.includes('/area-do-produtor/usuarios'))
       return 'Gestão de Usuários'
+    if (path.includes('/area-do-produtor/comunicacao'))
+      return 'Comunicação e Avisos'
     if (path.includes('/area-do-produtor/configurar-evento'))
       return 'Configuração do Evento'
     if (path.includes('/area-do-produtor/relatorios'))

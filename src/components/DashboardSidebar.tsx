@@ -121,10 +121,10 @@ export function DashboardSidebar() {
             )}
           />
           <NavItem
-            to="/area-do-produtor/cadastro-basico/usuarios"
+            to="/area-do-produtor/usuarios"
             icon={Users}
             label="Usuários"
-            active={isChildActive('/area-do-produtor/cadastro-basico/usuarios')}
+            active={isChildActive('/area-do-produtor/usuarios')}
           />
           <NavItem
             to="/area-do-produtor/escolas"

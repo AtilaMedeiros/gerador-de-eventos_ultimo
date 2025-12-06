@@ -11,6 +11,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Save } from 'lucide-react'
@@ -25,10 +32,16 @@ const formSchema = z.object({
     .string()
     .min(1, 'CPF é obrigatório')
     .max(14, 'Máximo de 14 caracteres'),
+  email: z
+    .string()
+    .min(1, 'Email é obrigatório')
+    .email('Email inválido'),
+  phone: z
+    .string()
+    .min(1, 'Telefone é obrigatório'),
   role: z
     .string()
-    .min(1, 'Cargo/Função é obrigatório')
-    .max(255, 'Máximo de 255 caracteres'),
+    .min(1, 'Tipo de Acesso é obrigatório'),
   password: z.string().max(255),
 })
 
@@ -44,6 +57,8 @@ export default function UserForm() {
     defaultValues: {
       name: '',
       cpf: '',
+      email: '',
+      phone: '',
       role: '',
       password: '@Sme2025',
     },
@@ -55,8 +70,10 @@ export default function UserForm() {
       form.reset({
         name: 'Ana Silva',
         cpf: '123.456.789-00',
-        role: 'Administradora',
-        password: '@Sme2025', // Usually wouldn't return password, but adhering to form structure
+        email: 'ana.silva@email.com',
+        phone: '(11) 99999-9999',
+        role: 'Administrador', // Matching the Select value
+        password: '@Sme2025',
       })
     }
   }, [isEditing, form])
@@ -69,7 +86,7 @@ export default function UserForm() {
         ? 'Usuário atualizado com sucesso!'
         : 'Usuário criado com sucesso!',
     )
-    navigate('/area-do-produtor/cadastro-basico/usuarios')
+    navigate('/area-do-produtor/usuarios')
   }
 
   // Simple CPF Mask
@@ -88,13 +105,31 @@ export default function UserForm() {
     form.setValue('cpf', value, { shouldValidate: true })
   }
 
+  // Simple Phone Mask
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, '')
+    if (value.length > 11) value = value.slice(0, 11)
+
+    if (value.length > 10) {
+      value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3')
+    } else if (value.length > 6) {
+      value = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3')
+    } else if (value.length > 2) {
+      value = value.replace(/^(\d{2})(\d{0,5}).*/, '($1) $2')
+    } else if (value.length > 0) {
+      value = value.replace(/^(\d*)/, '($1')
+    }
+
+    form.setValue('phone', value, { shouldValidate: true })
+  }
+
   return (
     <div className="max-w-4xl mx-auto pb-10">
       <div className="flex items-center gap-4 mb-6">
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/area-do-produtor/cadastro-basico/usuarios')}
+          onClick={() => navigate('/area-do-produtor/usuarios')}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -130,19 +165,60 @@ export default function UserForm() {
               )}
             />
 
-            {/* CPF */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* CPF */}
+              <FormField
+                control={form.control}
+                name="cpf"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CPF</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="000.000.000-00"
+                        maxLength={14}
+                        {...field}
+                        onChange={handleCpfChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Telefone */}
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Telefone (WhatsApp)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="(00) 00000-0000"
+                        maxLength={15}
+                        {...field}
+                        onChange={handlePhoneChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Email */}
             <FormField
               control={form.control}
-              name="cpf"
+              name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cpf</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="00.000.000-00"
-                      maxLength={14}
+                      placeholder="email@exemplo.com"
+                      type="email"
                       {...field}
-                      onChange={handleCpfChange}
                     />
                   </FormControl>
                   <FormMessage />
@@ -150,20 +226,25 @@ export default function UserForm() {
               )}
             />
 
-            {/* Cargo/Função */}
+            {/* Tipo de Acesso (Cargo/Função renamed to role which is used for produtor type) */}
             <FormField
               control={form.control}
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cargo/Função</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Cargo ou Função"
-                      maxLength={255}
-                      {...field}
-                    />
-                  </FormControl>
+                  <FormLabel>Tipo de Acesso</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo de acesso" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Administrador">Administrador</SelectItem>
+                      <SelectItem value="Assistente">Assistente</SelectItem>
+                      <SelectItem value="Observador">Observador</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -197,7 +278,7 @@ export default function UserForm() {
               type="button"
               variant="outline"
               onClick={() =>
-                navigate('/area-do-produtor/cadastro-basico/usuarios')
+                navigate('/area-do-produtor/usuarios')
               }
             >
               Cancelar
