@@ -88,16 +88,12 @@ export function DashboardSidebar() {
 
       <div className="flex-1 py-6 px-4 space-y-8">
         <div className="space-y-1">
-
           <NavItem
             to="/area-do-produtor/inicio"
             icon={LayoutDashboard}
             label="Visão Geral"
             active={isActive('/area-do-produtor/inicio')}
           />
-
-
-
           <NavItem
             to="/area-do-produtor/cadastro-basico/evento"
             icon={Calendar}
@@ -105,26 +101,16 @@ export function DashboardSidebar() {
             active={isEventosActive}
           />
           <NavItem
-            to="/area-do-produtor/cadastro-basico/modalidades"
+            to="/area-do-produtor/modalidades"
             icon={Trophy}
             label="Modalidades"
-            active={isChildActive(
-              '/area-do-produtor/cadastro-basico/modalidades',
-            )}
+            active={isChildActive('/area-do-produtor/modalidades')}
           />
           <NavItem
-            to="/area-do-produtor/cadastro-basico/identidade-visual"
+            to="/area-do-produtor/identidade-visual"
             icon={Palette}
             label="Identidade Visual"
-            active={isChildActive(
-              '/area-do-produtor/cadastro-basico/identidade-visual',
-            )}
-          />
-          <NavItem
-            to="/area-do-produtor/usuarios"
-            icon={Users}
-            label="Usuários"
-            active={isChildActive('/area-do-produtor/usuarios')}
+            active={isChildActive('/area-do-produtor/identidade-visual')}
           />
           <NavItem
             to="/area-do-produtor/escolas"
@@ -143,6 +129,15 @@ export function DashboardSidebar() {
             icon={Megaphone}
             label="Avisos e Boletins"
             active={isChildActive('/area-do-produtor/comunicacao')}
+          />
+        </div>
+
+        <div className="space-y-1">
+          <NavItem
+            to="/area-do-produtor/usuarios"
+            icon={Users}
+            label="Usuários"
+            active={isChildActive('/area-do-produtor/usuarios')}
           />
         </div>
 

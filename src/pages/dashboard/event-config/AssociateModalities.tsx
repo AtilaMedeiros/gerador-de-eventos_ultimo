@@ -159,7 +159,7 @@ export default function AssociateModalities({
                     variant="link"
                     onClick={() =>
                       navigate(
-                        '/area-do-produtor/cadastro-basico/modalidades/nova',
+                        '/area-do-produtor/modalidades/nova',
                       )
                     }
                   >

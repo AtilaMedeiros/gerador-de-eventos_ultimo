@@ -118,7 +118,7 @@ export default function ModalityForm() {
           maxAge: modality.maxAge,
         })
       } else {
-        navigate('/area-do-produtor/cadastro-basico/modalidades')
+        navigate('/area-do-produtor/modalidades')
       }
     }
   }, [isEditing, id, getModalityById, navigate, form])
@@ -129,7 +129,7 @@ export default function ModalityForm() {
     } else {
       addModality(values)
     }
-    navigate('/area-do-produtor/cadastro-basico/modalidades')
+    navigate('/area-do-produtor/modalidades')
   }
 
   return (
@@ -139,7 +139,7 @@ export default function ModalityForm() {
           variant="ghost"
           size="icon"
           onClick={() =>
-            navigate('/area-do-produtor/cadastro-basico/modalidades')
+            navigate('/area-do-produtor/modalidades')
           }
         >
           <ArrowLeft className="h-5 w-5" />
@@ -425,7 +425,7 @@ export default function ModalityForm() {
               variant="outline"
               size="lg"
               onClick={() =>
-                navigate('/area-do-produtor/cadastro-basico/modalidades')
+                navigate('/area-do-produtor/modalidades')
               }
             >
               Cancelar

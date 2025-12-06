@@ -147,29 +147,27 @@ const App = () => (
                         <Route path="evento" element={<EventsList />} />
                         <Route path="evento/novo" element={<EventWizard />} />
                         <Route path="evento/:id" element={<EventForm />} />
-
-                        <Route
-                          path="modalidades"
-                          element={<ModalitiesList />}
-                        />
-                        <Route
-                          path="modalidades/:id"
-                          element={<ModalityForm />}
-                        />
-
-                        <Route
-                          path="identidade-visual"
-                          element={<VisualIdentityList />}
-                        />
-                        <Route
-                          path="identidade-visual/novo"
-                          element={<VisualIdentityForm />}
-                        />
-                        <Route
-                          path="identidade-visual/:id"
-                          element={<VisualIdentityForm />}
-                        />
                       </Route>
+                      <Route
+                        path="identidade-visual"
+                        element={<VisualIdentityList />}
+                      />
+                      <Route
+                        path="identidade-visual/novo"
+                        element={<VisualIdentityForm />}
+                      />
+                      <Route
+                        path="identidade-visual/:id"
+                        element={<VisualIdentityForm />}
+                      />
+                      <Route
+                        path="modalidades"
+                        element={<ModalitiesList />}
+                      />
+                      <Route
+                        path="modalidades/:id"
+                        element={<ModalityForm />}
+                      />
                       <Route path="usuarios" element={<UsersList />} />
                       <Route path="usuarios/novo" element={<UserForm />} />
                       <Route path="usuarios/:id" element={<UserForm />} />

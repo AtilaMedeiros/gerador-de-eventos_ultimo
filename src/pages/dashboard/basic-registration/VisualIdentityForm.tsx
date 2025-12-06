@@ -49,10 +49,10 @@ const hexToRgb = (hex: string) => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   return result
     ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16),
+    }
     : null
 }
 
@@ -195,7 +195,7 @@ export default function VisualIdentityForm() {
         })
       } else {
         toast.error('Tema não encontrado')
-        navigate('/area-do-produtor/cadastro-basico/identidade-visual')
+        navigate('/area-do-produtor/identidade-visual')
       }
     }
   }, [isEditing, id, getThemeById, form, navigate])
@@ -208,7 +208,7 @@ export default function VisualIdentityForm() {
     } else {
       addTheme(values)
     }
-    navigate('/area-do-produtor/cadastro-basico/identidade-visual')
+    navigate('/area-do-produtor/identidade-visual')
   }
 
   return (
@@ -219,7 +219,7 @@ export default function VisualIdentityForm() {
             variant="ghost"
             size="sm"
             onClick={() =>
-              navigate('/area-do-produtor/cadastro-basico/identidade-visual')
+              navigate('/area-do-produtor/identidade-visual')
             }
           >
             <ArrowLeft className="h-4 w-4" />
@@ -237,7 +237,7 @@ export default function VisualIdentityForm() {
           <Button
             variant="outline"
             onClick={() =>
-              navigate('/area-do-produtor/cadastro-basico/identidade-visual')
+              navigate('/area-do-produtor/identidade-visual')
             }
           >
             <X className="mr-2 h-4 w-4" /> Cancelar

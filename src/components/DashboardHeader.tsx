@@ -34,9 +34,9 @@ export function DashboardHeader() {
     if (path.includes('/area-do-produtor/inicio')) return 'Visão Geral'
     if (path.includes('/area-do-produtor/cadastro-basico/evento'))
       return path.includes('/novo') ? 'Criar Evento' : 'Gerenciar Eventos'
-    if (path.includes('/area-do-produtor/cadastro-basico/modalidades'))
+    if (path.includes('/area-do-produtor/modalidades'))
       return 'Catálogo de Modalidades'
-    if (path.includes('/area-do-produtor/cadastro-basico/identidade-visual'))
+    if (path.includes('/area-do-produtor/identidade-visual'))
       return 'Temas & Identidade'
     if (path.includes('/area-do-produtor/usuarios'))
       return 'Gestão de Usuários'

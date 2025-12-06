@@ -266,7 +266,7 @@ export default function ApplyVisualIdentity({
                 className="w-full"
                 onClick={() =>
                   navigate(
-                    '/area-do-produtor/cadastro-basico/identidade-visual/novo',
+                    '/area-do-produtor/identidade-visual/novo',
                   )
                 }
               >

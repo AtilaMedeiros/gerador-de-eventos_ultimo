@@ -155,7 +155,7 @@ export default function VisualIdentityList() {
             <Download className="mr-2 h-4 w-4" /> Exportar Excel
           </Button>
           <Button
-            onClick={() => navigate('/area-do-produtor/cadastro-basico/identidade-visual/novo')}
+            onClick={() => navigate('/area-do-produtor/identidade-visual/novo')}
             className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
           >
             <Plus className="mr-2 h-4 w-4" /> Novo Tema
@@ -306,7 +306,7 @@ export default function VisualIdentityList() {
                         className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
                         onClick={() =>
                           navigate(
-                            `/area-do-produtor/cadastro-basico/identidade-visual/${theme.id}`,
+                            `/area-do-produtor/identidade-visual/${theme.id}`,
                           )
                         }
                       >

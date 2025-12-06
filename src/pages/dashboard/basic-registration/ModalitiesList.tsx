@@ -191,7 +191,7 @@ export default function ModalitiesList() {
             <Download className="mr-2 h-4 w-4" /> Exportar
           </Button>
           <Button
-            onClick={() => navigate('/area-do-produtor/cadastro-basico/modalidades/nova')}
+            onClick={() => navigate('/area-do-produtor/modalidades/nova')}
             className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
           >
             <Plus className="mr-2 h-4 w-4" /> Nova Modalidade
@@ -327,7 +327,7 @@ export default function ModalitiesList() {
                         title="Editar"
                         onClick={() =>
                           navigate(
-                            `/area-do-produtor/cadastro-basico/modalidades/${mod.id}`,
+                            `/area-do-produtor/modalidades/${mod.id}`,
                           )
                         }
                       >
