@@ -24,7 +24,10 @@ import {
     Trophy,
     Building,
     Activity,
-    ListFilter
+    ListFilter,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
@@ -183,6 +186,49 @@ export default function SchoolsList() {
         })
     })
 
+    const [sortConfig, setSortConfig] = useState<{ key: keyof typeof MOCK_SCHOOLS[0] | 'location', direction: 'asc' | 'desc' } | null>(null)
+
+    // Apply Sorting
+    const sortedSchools = [...filteredSchools].sort((a, b) => {
+        if (!sortConfig) return 0
+
+        const { key, direction } = sortConfig
+
+        let aValue: any = a[key as keyof typeof a]
+        let bValue: any = b[key as keyof typeof b]
+
+        // Handle specific sorting cases
+        if (key === 'location') {
+            aValue = `${a.city}/${a.state}`
+            bValue = `${b.city}/${b.state}`
+        }
+
+        if (aValue < bValue) {
+            return direction === 'asc' ? -1 : 1
+        }
+        if (aValue > bValue) {
+            return direction === 'asc' ? 1 : -1
+        }
+        return 0
+    })
+
+    const requestSort = (key: keyof typeof MOCK_SCHOOLS[0] | 'location') => {
+        let direction: 'asc' | 'desc' = 'asc'
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc'
+        }
+        setSortConfig({ key, direction })
+    }
+
+    const getSortIcon = (key: string) => {
+        if (!sortConfig || sortConfig.key !== key) {
+            return <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground/50" />
+        }
+        return sortConfig.direction === 'asc' ?
+            <ArrowUp className="ml-2 h-4 w-4 text-primary" /> :
+            <ArrowDown className="ml-2 h-4 w-4 text-primary" />
+    }
+
     const handleAction = (action: string) => {
         toast.info(`Ação ${action} simulada com sucesso.`)
     }
@@ -227,7 +273,7 @@ export default function SchoolsList() {
                         <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     </div>
                     <Input
-                        placeholder="Pesquisar..."
+                        placeholder="Pesquisar por escola, atleta, evento..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
@@ -262,17 +308,37 @@ export default function SchoolsList() {
                 <Table>
                     <TableHeader className="bg-primary/5">
                         <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
-                            <TableHead className="font-semibold text-primary/80 h-12">Nome</TableHead>
-                            <TableHead className="font-semibold text-primary/80 h-12">Cidade/UF</TableHead>
-                            <TableHead className="font-semibold text-primary/80 h-12">Responsável</TableHead>
-                            <TableHead className="font-semibold text-primary/80 h-12">Evento</TableHead>
-                            <TableHead className="font-semibold text-primary/80 h-12">Atletas</TableHead>
+                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('name')}>
+                                <div className="flex items-center">
+                                    Nome {getSortIcon('name')}
+                                </div>
+                            </TableHead>
+                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('location')}>
+                                <div className="flex items-center">
+                                    Cidade/UF {getSortIcon('location')}
+                                </div>
+                            </TableHead>
+                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('responsible')}>
+                                <div className="flex items-center">
+                                    Responsável {getSortIcon('responsible')}
+                                </div>
+                            </TableHead>
+                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('event')}>
+                                <div className="flex items-center">
+                                    Evento {getSortIcon('event')}
+                                </div>
+                            </TableHead>
+                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('athletes')}>
+                                <div className="flex items-center">
+                                    Atletas {getSortIcon('athletes')}
+                                </div>
+                            </TableHead>
                             <TableHead className="text-right font-semibold text-primary/80 h-12">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredSchools.length > 0 ? (
-                            filteredSchools.map((school) => (
+                        {sortedSchools.length > 0 ? (
+                            sortedSchools.map((school) => (
                                 <TableRow
                                     key={school.id}
                                     className="hover:bg-primary/5 transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group"
