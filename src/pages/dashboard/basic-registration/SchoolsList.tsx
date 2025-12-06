@@ -240,18 +240,16 @@ export default function SchoolsList() {
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1)
-    const [itemsPerPage, setItemsPerPage] = useState(50)
+    const [itemsPerPage, setItemsPerPage] = useState<number | string>(50)
 
     // Pagination Logic
-    const totalPages = Math.ceil(sortedSchools.length / itemsPerPage)
-    const startIndex = (currentPage - 1) * itemsPerPage
-    const endIndex = startIndex + itemsPerPage
+    const pageSize = Number(itemsPerPage) > 0 ? Number(itemsPerPage) : 50
+    const totalPages = Math.ceil(sortedSchools.length / pageSize)
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
     const currentSchools = sortedSchools.slice(startIndex, endIndex)
 
     // Reset page when filters change
-    // You might want to use useEffect for this if filters are complex, but for now simple state reset on filter change is better handled in the filter change handler if possible, or just let the user navigate back. 
-    // Actually, it's better to reset to page 1 if filtered results change length significantly or if current page > total pages.
-    // I will add a safe check:
     if (currentPage > totalPages && totalPages > 0) {
         setCurrentPage(1)
     }
@@ -453,24 +451,25 @@ export default function SchoolsList() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                     <span>Monstrando</span>
-                    <Select
-                        value={String(itemsPerPage)}
-                        onValueChange={(value) => {
-                            setItemsPerPage(Number(value))
+                    <Input
+                        type="number"
+                        min={1}
+                        max={500}
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                            const val = e.target.value
+                            if (val === '') {
+                                setItemsPerPage('')
+                                return
+                            }
+                            let num = parseInt(val)
+                            if (isNaN(num)) return
+                            if (num > 500) num = 500
+                            setItemsPerPage(num)
                             setCurrentPage(1)
                         }}
-                    >
-                        <SelectTrigger className="h-8 w-[70px]">
-                            <SelectValue placeholder={itemsPerPage} />
-                        </SelectTrigger>
-                        <SelectContent side="top">
-                            {[10, 20, 50, 100].map(pageSize => (
-                                <SelectItem key={pageSize} value={String(pageSize)}>
-                                    {pageSize}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        className="h-8 w-10 text-center p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
                     <span>registros por página</span>
                 </div>
 
