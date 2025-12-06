@@ -139,7 +139,7 @@ export default function AthleteModalities() {
     }
 
     return (
-        <div className="space-y-8 animate-fade-in pt-6 max-w-5xl mx-auto relative">
+        <div className="space-y-8 animate-fade-in relative">
             {/* Background Gradients */}
             <div className="absolute -top-20 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl -z-10 opacity-50 pointer-events-none" />
             <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-secondary/20 rounded-full blur-3xl -z-10 opacity-50 pointer-events-none" />
@@ -275,28 +275,48 @@ export default function AthleteModalities() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-xl border border-blue-100/60 dark:border-blue-800/30 overflow-hidden bg-white/30 dark:bg-black/30">
+                    <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden">
                         <Table>
                             <TableHeader className="bg-primary/5">
-                                <TableRow className="hover:bg-transparent border-b border-blue-100/60 dark:border-blue-800/30">
-                                    <TableHead className="font-semibold text-primary/80">Tipo</TableHead>
-                                    <TableHead className="font-semibold text-primary/80">Modalidade</TableHead>
-                                    <TableHead className="font-semibold text-primary/80">Prova</TableHead>
-                                    <TableHead className="font-semibold text-primary/80">Naipe</TableHead>
-                                    <TableHead className="font-semibold text-primary/80">Faixa de Idade</TableHead>
-                                    <TableHead className="text-right font-semibold text-primary/80">Ações</TableHead>
+                                <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
+                                    <TableHead className="font-semibold text-primary/80 h-12">Tipo</TableHead>
+                                    <TableHead className="font-semibold text-primary/80 h-12">Modalidade</TableHead>
+                                    <TableHead className="font-semibold text-primary/80 h-12">Prova</TableHead>
+                                    <TableHead className="font-semibold text-primary/80 h-12">Naipe</TableHead>
+                                    <TableHead className="font-semibold text-primary/80 h-12">Faixa de Idade</TableHead>
+                                    <TableHead className="text-right font-semibold text-primary/80 h-12">Ações</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {linkedModalities.length > 0 ? (
                                     linkedModalities.map((item) => (
-                                        <TableRow key={item.id} className="hover:bg-primary/5 transition-colors border-b border-blue-50 dark:border-blue-900/20">
-                                            <TableCell className="font-medium">{item.type}</TableCell>
-                                            <TableCell>{item.modality}</TableCell>
-                                            <TableCell>{item.prova}</TableCell>
-                                            <TableCell>{item.sex}</TableCell>
-                                            <TableCell>{item.ageRange}</TableCell>
-                                            <TableCell className="text-right">
+                                        <TableRow key={item.id} className="hover:bg-primary/5 transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group">
+                                            <TableCell className="font-medium h-12 py-0">
+                                                <div className="flex items-center h-full">
+                                                    {item.type}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="h-12 py-0">
+                                                <div className="flex items-center h-full text-muted-foreground">
+                                                    {item.modality}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="h-12 py-0">
+                                                <div className="flex items-center h-full text-muted-foreground">
+                                                    {item.prova}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="h-12 py-0">
+                                                <div className="flex items-center h-full text-muted-foreground">
+                                                    {item.sex}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="h-12 py-0">
+                                                <div className="flex items-center h-full text-muted-foreground">
+                                                    {item.ageRange}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-right h-12 py-0">
                                                 <Button
                                                     variant="destructive"
                                                     size="sm"
