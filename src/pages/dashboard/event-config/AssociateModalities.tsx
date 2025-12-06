@@ -419,10 +419,9 @@ export default function AssociateModalities({
                           <TableRow
                             key={mod.id}
                             className={cn(
-                              "cursor-pointer transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group",
+                              "transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group",
                               isSelected ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-primary/5"
                             )}
-                            onClick={() => toggle(mod.id)}
                           >
                             <TableCell className="h-12 py-0">
                               <Checkbox
