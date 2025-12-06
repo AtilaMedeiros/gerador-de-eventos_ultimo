@@ -255,17 +255,25 @@ export default function ModalitiesList() {
                   Gênero {getSortIcon('gender')}
                 </div>
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12">
-                Idade (Min-Max)
+              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('minAge')}>
+                <div className="flex items-center">
+                  Idade (Min-Max) {getSortIcon('minAge')}
+                </div>
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12">
-                Atletas (Min-Max)
+              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('minAthletes')}>
+                <div className="flex items-center">
+                  Atletas (Min-Max) {getSortIcon('minAthletes')}
+                </div>
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12">
-                Equipes Máx
+              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('maxTeams')}>
+                <div className="flex items-center">
+                  Equipes Máx {getSortIcon('maxTeams')}
+                </div>
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12">
-                Máx. Provas
+              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('maxEventsPerAthlete')}>
+                <div className="flex items-center">
+                  Máx. Provas {getSortIcon('maxEventsPerAthlete')}
+                </div>
               </TableHead>
               <TableHead className="text-right font-semibold text-primary/80 h-12">
                 Ações
