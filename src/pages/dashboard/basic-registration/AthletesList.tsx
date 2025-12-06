@@ -37,6 +37,7 @@ const MOCK_ATHLETES = [
         name: 'Lucas Pereira',
         category: 'Sub-17',
         school: 'Escola Municipal de Esportes',
+        inep: '12345678',
         city: 'São Paulo',
         state: 'SP',
         event: 'Tech Summit 2025',
@@ -47,6 +48,7 @@ const MOCK_ATHLETES = [
         name: 'Beatriz Costa',
         category: 'Sub-15',
         school: 'Colégio Estadual do Saber',
+        inep: '87654321',
         city: 'Rio de Janeiro',
         state: 'RJ',
         event: 'Jogos Estudantis 2025',
@@ -57,6 +59,7 @@ const MOCK_ATHLETES = [
         name: 'Gabriel Almeida',
         category: 'Adulto',
         school: 'Instituto Atlético',
+        inep: '11223344',
         city: 'Belo Horizonte',
         state: 'MG',
         event: 'Tech Summit 2025',
@@ -67,6 +70,7 @@ const MOCK_ATHLETES = [
         name: 'Mariana Silva',
         category: 'Sub-17',
         school: 'Escola Municipal de Esportes',
+        inep: '12345678',
         city: 'São Paulo',
         state: 'SP',
         event: 'Tech Summit 2025',
@@ -77,6 +81,7 @@ const MOCK_ATHLETES = [
         name: 'João Pedro',
         category: 'Sub-13',
         school: 'Escola Particular do Sol',
+        inep: '55667788',
         city: 'Curitiba',
         state: 'PR',
         event: 'Jogos Estudantis 2025',
@@ -398,7 +403,7 @@ export default function AthletesList() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
-                                                onClick={() => handleAction('Editar')}
+                                                onClick={() => navigate(`/area-do-produtor/atletas/${athlete.id}`)}
                                             >
                                                 <Edit className="h-4 w-4" />
                                             </Button>
