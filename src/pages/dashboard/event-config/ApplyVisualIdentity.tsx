@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, Palette, Check, ArrowLeft, Save, Layout, Eye, Rocket } from 'lucide-react'
+import { Search, Palette, Check, ArrowLeft, Save, Layout, Eye, Rocket, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
@@ -111,8 +111,8 @@ export default function ApplyVisualIdentity({
 
   if (!selectedEventId) {
     return (
-      <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-10">
-        <div className="space-y-2 text-center pt-10">
+      <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-10 flex flex-col justify-center h-[calc(100vh-10rem)]">
+        <div className="space-y-2 text-center">
           <h2 className="text-3xl font-bold tracking-tight">
             Configuração de Identidade Visual
           </h2>
@@ -121,7 +121,7 @@ export default function ApplyVisualIdentity({
           </p>
         </div>
 
-        <Card className="max-w-md mx-auto shadow-md">
+        <Card className="max-w-md mx-auto shadow-md w-full">
           <CardContent className="p-8 space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-medium leading-none">
@@ -152,63 +152,82 @@ export default function ApplyVisualIdentity({
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto h-[calc(100vh-5rem)] flex flex-col">
+    <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
-        {!isWizard && (
+      <div className="flex items-center justify-between mb-6 shrink-0">
+        <div className="flex items-center gap-2">
+          {!isWizard && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/area-do-produtor/evento')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
           <div>
-            {!paramEventId && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mb-2 -ml-2 text-muted-foreground"
-                onClick={() =>
-                  navigate('/area-do-produtor/evento')
-                }
-              >
-                <ArrowLeft className="h-4 w-4 mr-1" /> Voltar para Eventos
-              </Button>
-            )}
             <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              Identidade Visual:{' '}
-              <span className="text-primary">{selectedEvent?.name}</span>
+              Identidade Visual
+              {selectedEvent && <span className="text-muted-foreground font-light px-2 border-l ml-2 text-xl">{selectedEvent.name}</span>}
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Escolha um tema para personalizar a página pública do evento.
             </p>
           </div>
-        )}
-        {!isWizard && (
-          <div className="flex items-center gap-2 ml-auto">
-            {!paramEventId && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSelectedEventId('')
-                  setSearchParams({})
-                  setSelectedThemeId('')
-                }}
-              >
-                Trocar Evento
-              </Button>
-            )}
+        </div>
+
+        <div className="flex gap-2">
+          {!isWizard && (
             <Button
-              onClick={handleSave}
-              disabled={!selectedThemeId}
-              className="gap-2"
+              variant="outline"
+              onClick={() => {
+                setSelectedEventId('')
+                setSearchParams({})
+                setSelectedThemeId('')
+              }}
             >
-              <Save className="h-4 w-4" /> Salvar Alterações
+              <X className="mr-2 h-4 w-4" /> Trocar Evento
             </Button>
-          </div>
-        )}
+          )}
+
+          {isWizard && onBack && (
+            <Button variant="ghost" onClick={onBack}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+            </Button>
+          )}
+
+          <Button
+            variant="outline"
+            onClick={handleDraft}
+            disabled={!selectedThemeId}
+          >
+            <Save className="mr-2 h-4 w-4" /> Rascunho
+          </Button>
+
+          <Button
+            variant="secondary"
+            onClick={handlePreview}
+            disabled={!selectedThemeId}
+          >
+            <Eye className="mr-2 h-4 w-4" /> Preview
+          </Button>
+
+          <Button
+            onClick={handleSave}
+            disabled={!selectedThemeId}
+          >
+            <Rocket className="mr-2 h-4 w-4" /> {isWizard ? 'Concluir' : 'Publicar'}
+          </Button>
+        </div>
       </div>
 
       {/* Content Grid */}
-      <div className="grid lg:grid-cols-12 gap-6 h-full overflow-hidden pb-6">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden pb-6">
+
         {/* Left Column: Theme Selection */}
-        <div className="lg:col-span-4 flex flex-col gap-6 overflow-y-auto pr-2 scrollbar-thin">
-          <Card>
-            <CardHeader>
+        <div className="lg:col-span-4 flex flex-col h-full min-h-0">
+          <Card className="flex flex-col h-full shadow-sm border-0 bg-background/50">
+            <CardHeader className="shrink-0 pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Palette className="h-5 w-5 text-primary" />
                 Temas Disponíveis
@@ -217,23 +236,23 @@ export default function ApplyVisualIdentity({
                 Selecione um tema abaixo para visualizar.
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4">
+            <CardContent className="flex-1 overflow-y-auto scrollbar-thin px-4 pb-4 grid gap-4">
               {themes.map((theme) => (
                 <div
                   key={theme.id}
                   className={cn(
-                    'cursor-pointer rounded-lg border-2 p-4 transition-all hover:border-primary/50',
+                    'cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 hover:border-primary/50 relative overflow-hidden',
                     selectedThemeId === theme.id
-                      ? 'border-primary bg-primary/5 shadow-sm'
-                      : 'border-transparent bg-muted/40',
+                      ? 'border-primary bg-primary/5 shadow-md'
+                      : 'border-transparent bg-card shadow-sm hover:translate-x-1',
                   )}
                   onClick={() => setSelectedThemeId(theme.id)}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-semibold">{theme.name}</span>
                     {selectedThemeId === theme.id && (
-                      <Badge className="bg-primary text-primary-foreground">
-                        Selecionado
+                      <Badge className="bg-primary text-primary-foreground absolute top-0 right-0 rounded-none rounded-bl-xl px-3">
+                        <Check className="h-3 w-3 mr-1" /> Ativo
                       </Badge>
                     )}
                   </div>
@@ -242,17 +261,17 @@ export default function ApplyVisualIdentity({
                   </p>
                   <div className="flex items-center gap-2">
                     <div
-                      className="h-4 w-4 rounded-full border shadow-sm"
+                      className="h-6 w-6 rounded-full border-2 border-background shadow-sm"
                       style={{ backgroundColor: theme.colors.primary }}
                       title="Primária"
                     />
                     <div
-                      className="h-4 w-4 rounded-full border shadow-sm"
+                      className="h-6 w-6 rounded-full border-2 border-background shadow-sm -ml-3"
                       style={{ backgroundColor: theme.colors.secondary }}
                       title="Secundária"
                     />
                     <div
-                      className="h-4 w-4 rounded-full border shadow-sm"
+                      className="h-6 w-6 rounded-full border-2 border-background shadow-sm -ml-3"
                       style={{ backgroundColor: theme.colors.background }}
                       title="Fundo"
                     />
@@ -260,114 +279,41 @@ export default function ApplyVisualIdentity({
                 </div>
               ))}
             </CardContent>
-            <CardFooter>
+            <CardFooter className="shrink-0 pt-2 border-t bg-muted/20">
               <Button
-                variant="outline"
-                className="w-full"
+                variant="ghost"
+                className="w-full text-muted-foreground hover:text-primary"
                 onClick={() =>
                   navigate(
                     '/area-do-produtor/identidade-visual/novo',
                   )
                 }
               >
-                Criar Novo Tema
+                + Criar Novo Tema
               </Button>
             </CardFooter>
           </Card>
         </div>
 
         {/* Right Column: Preview */}
-        <div className="lg:col-span-8 h-full flex flex-col">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="font-semibold flex items-center gap-2">
-              <Layout className="h-4 w-4" />
-              Visualização em Tempo Real
-            </h3>
-            {currentTheme && (
-              <span className="text-xs text-muted-foreground">
-                Exibindo: <strong>{currentTheme.name}</strong>
-              </span>
-            )}
-          </div>
-
-          <div className="flex-1 border rounded-xl overflow-hidden bg-background shadow-sm relative">
+        <div className="lg:col-span-8 h-full flex flex-col min-h-0 bg-background/50 rounded-xl border shadow-sm p-1">
+          <div className="flex-1 rounded-lg overflow-hidden relative bg-muted/10">
             {currentTheme ? (
-              <ThemePreview values={currentTheme} />
+              <div className="h-full overflow-y-auto scrollbar-thin">
+                <ThemePreview values={currentTheme} />
+              </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-muted-foreground bg-muted/10">
-                <Palette className="h-12 w-12 mb-4 opacity-20" />
-                <p>Selecione um tema para visualizar.</p>
+              <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
+                <div className="bg-muted/30 p-6 rounded-full mb-4">
+                  <Palette className="h-12 w-12 opacity-30" />
+                </div>
+                <p className="text-lg font-medium">Selecione um tema</p>
+                <p className="text-sm opacity-70">para visualizar o resultado.</p>
               </div>
             )}
           </div>
         </div>
       </div>
-
-      {isWizard && (
-        <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t p-4 z-40 shadow-lg md:pl-72">
-          <div className="container max-w-5xl mx-auto flex flex-col-reverse md:flex-row items-center justify-end gap-4">
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full md:w-auto"
-              onClick={onBack}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-            </Button>
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1 md:flex-none"
-                onClick={handleDraft}
-              >
-                <Save className="mr-2 h-4 w-4" /> Rascunho
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                className="flex-1 md:flex-none"
-                onClick={handlePreview}
-              >
-                <Eye className="mr-2 h-4 w-4" /> Preview
-              </Button>
-              <Button
-                onClick={handleSave}
-                className="flex-1 md:flex-none min-w-[160px]"
-              >
-                <Check className="mr-2 h-4 w-4" /> Concluir Evento
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <Dialog open={showPreview} onOpenChange={setShowPreview}>
-        <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] p-0 bg-transparent border-none shadow-none">
-          {selectedEvent && (
-            <EventPreview
-              data={{
-                name: selectedEvent.name,
-                textoInstitucional: selectedEvent.description,
-                nomeProdutor: selectedEvent.producerName,
-                descricaoProdutor: selectedEvent.producerDescription,
-                dataInicio: selectedEvent.startDate,
-                horaInicio: selectedEvent.startTime,
-                dataFim: selectedEvent.endDate,
-                horaFim: selectedEvent.endTime,
-                inscricaoColetivaFim: selectedEvent.registrationCollectiveEnd,
-                inscricaoIndividualFim: selectedEvent.registrationIndividualEnd,
-                // Add other fields as needed, mapping from selectedEvent
-              }}
-              onClose={() => setShowPreview(false)}
-              onPublish={() => {
-                setShowPreview(false)
-                handleSave()
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

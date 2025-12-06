@@ -5,25 +5,24 @@ import { cn } from '@/lib/utils'
 import EventForm from './EventForm'
 import AssociateModalities from '../event-config/AssociateModalities'
 import ApplyVisualIdentity from '../event-config/ApplyVisualIdentity'
-import { Button } from '@/components/ui/button'
 
 const steps = [
     {
         id: 1,
-        title: 'Informações Básicas',
-        description: 'Dados gerais do evento',
+        title: 'Informações',
+        description: 'Dados gerais',
         icon: Settings,
     },
     {
         id: 2,
         title: 'Modalidades',
-        description: 'Defina as competições',
+        description: 'Categorias',
         icon: List,
     },
     {
         id: 3,
-        title: 'Identidade Visual',
-        description: 'Personalize a aparência',
+        title: 'Identidade',
+        description: 'Aparência',
         icon: Layout,
     },
 ]
@@ -32,16 +31,13 @@ export default function EventWizard() {
     const navigate = useNavigate()
     const [currentStep, setCurrentStep] = useState(1)
     const [eventId, setEventId] = useState<string | undefined>(undefined)
-    const [direction, setDirection] = useState<'forward' | 'backward'>('forward')
 
     const handleNextStep = (id?: string) => {
         if (id) setEventId(id)
-        setDirection('forward')
         setCurrentStep((prev) => Math.min(prev + 1, steps.length))
     }
 
     const handlePrevStep = () => {
-        setDirection('backward')
         setCurrentStep((prev) => Math.max(prev - 1, 1))
     }
 
@@ -50,67 +46,56 @@ export default function EventWizard() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto pb-20 animate-fade-in">
-            {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold tracking-tight mb-2">
-                    Criar Novo Evento
-                </h1>
-                <p className="text-muted-foreground">
-                    Siga os passos para configurar seu evento completo.
-                </p>
-            </div>
+        <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col bg-background/50">
+            {/* Minimal Stepper Header */}
+            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 shrink-0">
+                <div className="max-w-3xl mx-auto py-3 px-4">
+                    <div className="relative">
+                        {/* Connecting Line */}
+                        <div className="absolute top-1/2 left-0 w-full h-0.5 bg-muted -translate-y-1/2 rounded-full" />
 
-            {/* Stepper */}
-            <div className="mb-8">
-                <div className="relative after:absolute after:inset-x-0 after:top-1/2 after:block after:h-0.5 after:-translate-y-1/2 after:rounded-lg after:bg-muted">
-                    <ol className="relative z-10 flex justify-between text-sm font-medium text-muted-foreground">
-                        {steps.map((step, index) => {
-                            const isActive = step.id === currentStep
-                            const isCompleted = step.id < currentStep
-                            const isLast = index === steps.length - 1
+                        {/* Steps */}
+                        <ol className="relative z-10 flex justify-between w-full">
+                            {steps.map((step) => {
+                                const isActive = step.id === currentStep
+                                const isCompleted = step.id < currentStep
 
-                            return (
-                                <li
-                                    key={step.id}
-                                    className={cn(
-                                        'flex items-center gap-2 bg-background p-2',
-                                        isActive && 'text-primary',
-                                        isCompleted && 'text-primary',
-                                    )}
-                                >
-                                    <span
-                                        className={cn(
-                                            'flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors',
-                                            isActive && 'border-primary bg-primary text-primary-foreground',
-                                            isCompleted &&
-                                            'border-primary bg-primary text-primary-foreground',
-                                            !isActive && !isCompleted && 'border-muted bg-background',
-                                        )}
-                                    >
-                                        {isCompleted ? (
-                                            <Check className="h-4 w-4" />
-                                        ) : (
-                                            <span>{step.id}</span>
-                                        )}
-                                    </span>
-                                    <span className="hidden sm:inline-block">
-                                        <span className="block font-bold">{step.title}</span>
-                                        <span className="block text-xs font-normal text-muted-foreground">
-                                            {step.description}
+                                return (
+                                    <li key={step.id} className="flex flex-col items-center bg-background px-2">
+                                        <div
+                                            className={cn(
+                                                'flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300',
+                                                isActive && 'border-primary bg-primary text-primary-foreground scale-110 shadow-md',
+                                                isCompleted && 'border-primary bg-primary text-primary-foreground',
+                                                !isActive && !isCompleted && 'border-muted-foreground/30 bg-background text-muted-foreground'
+                                            )}
+                                        >
+                                            {isCompleted ? (
+                                                <Check className="h-4 w-4" />
+                                            ) : (
+                                                <step.icon className="h-4 w-4" />
+                                            )}
+                                        </div>
+                                        <span
+                                            className={cn(
+                                                "text-[10px] mt-1 font-medium uppercase tracking-wider transition-colors duration-200",
+                                                isActive ? "text-primary" : "text-muted-foreground"
+                                            )}
+                                        >
+                                            {step.title}
                                         </span>
-                                    </span>
-                                </li>
-                            )
-                        })}
-                    </ol>
+                                    </li>
+                                )
+                            })}
+                        </ol>
+                    </div>
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="bg-card border rounded-xl shadow-sm p-6 min-h-[600px]">
+            {/* Content Content - Full Height */}
+            <div className="flex-1 overflow-hidden">
                 {currentStep === 1 && (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                    <div className="h-full animate-in fade-in zoom-in-95 duration-300">
                         <EventForm
                             isWizard={true}
                             eventId={eventId}
@@ -120,7 +105,7 @@ export default function EventWizard() {
                 )}
 
                 {currentStep === 2 && (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                    <div className="h-full animate-in fade-in zoom-in-95 duration-300">
                         <AssociateModalities
                             isWizard={true}
                             eventId={eventId}
@@ -131,7 +116,7 @@ export default function EventWizard() {
                 )}
 
                 {currentStep === 3 && (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                    <div className="h-full animate-in fade-in zoom-in-95 duration-300">
                         <ApplyVisualIdentity
                             isWizard={true}
                             eventId={eventId}

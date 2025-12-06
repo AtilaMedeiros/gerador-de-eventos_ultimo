@@ -1,14 +1,14 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Search, Link as LinkIcon, Filter, ArrowLeft } from 'lucide-react'
+import { Search, Filter, ArrowLeft, X, Save, Layers } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useEvent } from '@/contexts/EventContext'
 import { useModality } from '@/contexts/ModalityContext'
 import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { cn } from '@/lib/utils'
 
 export default function AssociateModalities({
   eventId: propEventId,
@@ -66,14 +66,10 @@ export default function AssociateModalities({
       toast.success('Modalidades associadas com sucesso!', {
         description: `Foram vinculadas ${selected.length} modalidades ao evento ${event?.name || 'Selecionado'}.`,
       })
-      // Determine where to navigate back based on context
+
       if (isWizard && onNext) {
         onNext()
-      } else if (paramEventId) {
-        // Inside Event Panel
-        // Just toast, stay on page or maybe refresh?
-        // Let's stay for now or reload to reflect changes if needed.
-      } else {
+      } else if (!paramEventId) {
         navigate('/area-do-produtor/evento')
       }
     }
@@ -88,46 +84,70 @@ export default function AssociateModalities({
   }, [modalities, searchTerm])
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-fade-in pb-10">
-      {!isWizard && (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 shrink-0">
+        <div className="flex items-center gap-2">
+          {!isWizard && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/area-do-produtor/evento')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="bg-primary/10 p-1.5 rounded-md">
-                <LinkIcon className="h-5 w-5 text-primary" />
-              </div>
-              <h2 className="text-2xl font-bold tracking-tight">
-                Associar Modalidades
-              </h2>
-            </div>
-            <p className="text-muted-foreground max-w-2xl">
-              Selecione as modalidades que farão parte do evento. As modalidades
-              criadas no cadastro básico aparecem aqui automaticamente.
+            <h2 className="text-2xl font-bold tracking-tight">
+              Associar Modalidades
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Selecione as modalidades que farão parte do evento.
             </p>
           </div>
-          {event && (
-            <div className="bg-secondary/50 text-secondary-foreground px-4 py-2 rounded-lg font-medium text-sm border border-secondary flex items-center gap-2 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
-              Evento: {event.name}
-            </div>
-          )}
         </div>
-      )}
 
-      <div className="grid lg:grid-cols-3 gap-8 items-start">
-        {/* Selection List */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card p-4 rounded-lg border shadow-sm">
-            <div className="flex items-center gap-2 flex-1 w-full">
-              <div className="relative w-full">
-                <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-3" />
-                <Input
-                  placeholder="Buscar modalidades..."
-                  className="bg-background pl-9"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
+        <div className="flex gap-2">
+          {!isWizard && (
+            <Button
+              variant="outline"
+              onClick={() => navigate('/area-do-produtor/evento')}
+            >
+              <X className="mr-2 h-4 w-4" /> Cancelar
+            </Button>
+          )}
+
+          {isWizard && onBack && (
+            <Button variant="ghost" onClick={onBack}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+            </Button>
+          )}
+
+          <Button onClick={handleSave} disabled={!eventId}>
+            {isWizard ? (
+              <>Próximo <ArrowLeft className="ml-2 h-4 w-4 rotate-180" /></>
+            ) : (
+              <><Save className="mr-2 h-4 w-4" /> Salvar Associações</>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-6 pb-6">
+
+        {/* Left Column: List */}
+        <div className="flex-1 flex flex-col min-h-0 space-y-4">
+          {/* Filter Bar */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card p-4 rounded-xl border shadow-sm shrink-0">
+            <div className="relative w-full flex-1">
+              <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-3" />
+              <Input
+                placeholder="Buscar modalidades..."
+                className="bg-background pl-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
               <Button
@@ -149,18 +169,17 @@ export default function AssociateModalities({
             </div>
           </div>
 
-          <ScrollArea className="h-[500px] rounded-md border bg-card shadow-inner">
-            <div className="p-4 grid gap-3">
+          {/* List */}
+          <div className="flex-1 overflow-y-auto scrollbar-thin pr-2">
+            <div className="grid gap-3 pb-2">
               {filteredModalities.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
+                <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground border rounded-xl bg-muted/20 border-dashed">
                   <Filter className="h-10 w-10 opacity-20 mb-2" />
                   <p>Nenhuma modalidade encontrada.</p>
                   <Button
                     variant="link"
                     onClick={() =>
-                      navigate(
-                        '/area-do-produtor/modalidades/nova',
-                      )
+                      navigate('/area-do-produtor/modalidades/nova')
                     }
                   >
                     Criar nova modalidade
@@ -170,43 +189,39 @@ export default function AssociateModalities({
                 filteredModalities.map((mod) => (
                   <div
                     key={mod.id}
-                    className={`flex items-center space-x-4 rounded-lg border p-4 transition-all duration-200 cursor-pointer group ${selected.includes(mod.id)
-                      ? 'bg-primary/5 border-primary/50 shadow-sm'
-                      : 'bg-card hover:bg-accent/50 hover:border-primary/20'
-                      }`}
+                    className={cn(
+                      "flex items-center space-x-4 rounded-xl border p-4 transition-all duration-200 cursor-pointer group",
+                      selected.includes(mod.id)
+                        ? "bg-primary/5 border-primary/50 shadow-sm ring-1 ring-primary/20"
+                        : "bg-card hover:bg-accent/50 hover:border-primary/30"
+                    )}
                     onClick={() => toggle(mod.id)}
                   >
                     <Checkbox
                       checked={selected.includes(mod.id)}
                       onCheckedChange={() => toggle(mod.id)}
                       id={`mod-${mod.id}`}
-                      className="mt-1"
+                      className="mt-1 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                     />
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center justify-between">
-                        <p
-                          className={`font-bold leading-none ${selected.includes(mod.id) ? 'text-primary' : ''}`}
-                        >
+                        <p className={cn("font-bold leading-none", selected.includes(mod.id) && "text-primary")}>
                           {mod.name}
                         </p>
                         <Badge
-                          variant={
-                            mod.type === 'coletiva' ? 'default' : 'secondary'
-                          }
-                          className="text-[10px] h-5 px-2"
+                          variant={mod.type === 'coletiva' ? 'default' : 'secondary'}
+                          className="text-[10px] h-5 px-2 uppercase tracking-wider"
                         >
                           {mod.type}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span className="capitalize">{mod.gender}</span>
-                        <span>•</span>
-                        <span>
-                          {mod.minAge}-{mod.maxAge} anos
-                        </span>
+                        <span className="text-muted-foreground/40">•</span>
+                        <span>{mod.minAge}-{mod.maxAge} anos</span>
                         {mod.eventCategory && (
                           <>
-                            <span>•</span>
+                            <span className="text-muted-foreground/40">•</span>
                             <span className="italic">{mod.eventCategory}</span>
                           </>
                         )}
@@ -216,89 +231,46 @@ export default function AssociateModalities({
                 ))
               )}
             </div>
-          </ScrollArea>
+          </div>
         </div>
 
-        {/* Summary Sidebar */}
-        <div className="bg-card border rounded-lg shadow-sm p-6 sticky top-4 space-y-6">
-          <div>
-            <h3 className="font-semibold text-lg mb-2">Resumo da Seleção</h3>
-            <p className="text-sm text-muted-foreground">
-              Você selecionou{' '}
-              <strong className="text-foreground">{selected.length}</strong>{' '}
-              modalidades para este evento.
-            </p>
-          </div>
-
-          {selected.length > 0 && (
-            <div className="space-y-2 border-t pt-4">
-              <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
-                Selecionadas Recentemente
+        {/* Right Column: Summary */}
+        <div className="w-80 shrink-0 hidden lg:flex flex-col gap-4">
+          <div className="bg-card border rounded-xl shadow-sm p-5 space-y-6 h-full flex flex-col">
+            <div>
+              <div className="flex items-center gap-2 mb-2 text-primary">
+                <Layers className="h-5 w-5" />
+                <h3 className="font-semibold text-lg">Resumo</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Você selecionou <strong className="text-foreground">{selected.length}</strong> modalidades.
               </p>
-              <ul className="space-y-2">
-                {selected.slice(-5).map((id) => {
-                  const mod = modalities.find((m) => m.id === id)
-                  if (!mod) return null
-                  return (
-                    <li key={id} className="text-sm flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
-                      <span className="truncate">{mod.name}</span>
-                    </li>
-                  )
-                })}
-                {selected.length > 5 && (
-                  <li className="text-xs text-muted-foreground pl-3.5">
-                    + {selected.length - 5} outras...
-                  </li>
-                )}
-              </ul>
             </div>
-          )}
 
-          <div className="space-y-3 pt-4 border-t">
-            {!isWizard && (
-              <Button
-                onClick={handleSave}
-                className="w-full bg-success hover:bg-success/90 font-semibold shadow-sm"
-              >
-                Salvar Associações
-              </Button>
-            )}
-            {!isWizard && !paramEventId && (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() =>
-                  navigate('/area-do-produtor/evento')
-                }
-              >
-                Cancelar
-              </Button>
-            )}
+            <div className="flex-1 overflow-y-auto scrollbar-thin rounded-lg bg-muted/20 border p-3">
+              {selected.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-xs text-muted-foreground text-center px-4">
+                  Nenhuma modalidade selecionada.
+                </div>
+              ) : (
+                <ul className="space-y-2">
+                  {selected.map((id) => {
+                    const mod = modalities.find((m) => m.id === id)
+                    if (!mod) return null
+                    return (
+                      <li key={id} className="text-sm flex items-start gap-2 p-2 rounded-md bg-background border shadow-sm">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0"></div>
+                        <span className="leading-tight">{mod.name}</span>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </div>
           </div>
         </div>
+
       </div>
-
-      {isWizard && (
-        <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t p-4 z-40 shadow-lg md:pl-72">
-          <div className="container max-w-5xl mx-auto flex flex-col-reverse md:flex-row items-center justify-end gap-4">
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full md:w-auto hover:text-destructive"
-              onClick={onBack}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
-            </Button>
-            <Button
-              onClick={handleSave}
-              className="flex-1 md:flex-none min-w-[160px]"
-            >
-              Próximo <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
