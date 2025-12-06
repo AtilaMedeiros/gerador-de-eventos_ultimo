@@ -23,7 +23,8 @@ import {
     Hash,
     Trophy,
     Building,
-    Activity
+    Activity,
+    ListFilter
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
@@ -221,25 +222,34 @@ export default function SchoolsList() {
             </div>
 
             {/* Search and Advanced Filters */}
-            <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-3 w-full relative group">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3 w-[450px] relative group">
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
                         <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     </div>
                     <Input
-                        placeholder="Pesquisar por nome, atleta, evento..."
+                        placeholder="Pesquisar..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 h-12 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left"
+                        className="pl-10 h-12 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
                     />
                 </div>
 
-                <div className="flex items-start gap-4">
+                <div className="flex bg-white items-center gap-4">
                     <div className="flex-1">
                         <Filters
                             fields={filterFields}
                             filters={filters}
                             onChange={setFilters}
+                            addButton={
+                                <Button
+                                    size="sm"
+                                    className="h-12 gap-2 rounded-md px-4 bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-dashed border-blue-200 dark:border-blue-800 text-primary hover:bg-primary/5 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
+                                >
+                                    <ListFilter className="h-4 w-4" />
+                                    Filtrar
+                                </Button>
+                            }
                         />
                     </div>
                     {filters.length > 0 && (
@@ -247,9 +257,9 @@ export default function SchoolsList() {
                             variant="ghost"
                             size="sm"
                             onClick={() => setFilters([])}
-                            className="text-muted-foreground hover:text-destructive text-xs"
+                            className="text-muted-foreground hover:text-destructive text-xs h-12 px-2"
                         >
-                            Limpar Filtros
+                            Limpar
                         </Button>
                     )}
                 </div>
