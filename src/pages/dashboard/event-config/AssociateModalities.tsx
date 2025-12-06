@@ -229,9 +229,12 @@ export default function AssociateModalities({
   const handleSave = () => {
     if (eventId) {
       setEventModalities(eventId, selected)
-      toast.success('Modalidades associadas com sucesso!', {
-        description: `Foram vinculadas ${selected.length} modalidades ao evento ${event?.name || 'Selecionado'}.`,
-      })
+
+      if (!isWizard) {
+        toast.success('Modalidades associadas com sucesso!', {
+          description: `Foram vinculadas ${selected.length} modalidades ao evento ${event?.name || 'Selecionado'}.`,
+        })
+      }
 
       if (isWizard && onNext) {
         onNext()
@@ -244,9 +247,9 @@ export default function AssociateModalities({
   return (
     <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col pt-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-10 shrink-0 px-1">
-        <div className="flex items-center gap-2">
-          {!isWizard && (
+      {!isWizard && (
+        <div className="flex items-center justify-between mb-10 shrink-0 px-1">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -254,22 +257,20 @@ export default function AssociateModalities({
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-          )}
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">
-              Associar Modalidades
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Selecione as modalidades que farão parte do evento.
-            </p>
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">
+                Associar Modalidades
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Selecione as modalidades que farão parte do evento.
+              </p>
+            </div>
           </div>
         </div>
-
-
-      </div>
+      )}
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-6 pb-24 px-1 pt-1">
+      <div className="flex-1 overflow-y-auto pr-2 lg:pr-4 scrollbar-thin pb-24 flex flex-col lg:flex-row gap-6 px-1 pt-1">
 
         {/* Left Column: List */}
         <div className="flex-1 flex flex-col min-h-0 space-y-4">
@@ -320,8 +321,8 @@ export default function AssociateModalities({
           </div>
 
           {/* Table */}
-          <div className="flex-1 overflow-hidden flex flex-col">
-            <div className="flex-1 overflow-auto scrollbar-thin">
+          <div className="flex-1 flex flex-col">
+            <div className="flex-1">
               <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden overflow-x-auto border-collapse">
                 <Table style={{ tableLayout: 'auto', minWidth: '100%' }}>
                   <TableHeader className="bg-primary/5">

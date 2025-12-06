@@ -16,6 +16,7 @@ import {
   Contact,
   X,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
@@ -186,29 +187,18 @@ export default function EventForm({
   return (
     <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col pt-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8 shrink-0 px-1">
-        <div className="flex items-center gap-2">
-          {!isWizard && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/area-do-produtor/evento')}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          )}
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">
-              {isEditing ? 'Editar Evento' : 'Novo Evento'}
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Configure datas, inscrições e detalhes do evento.
-            </p>
+      {!isWizard && (
+        <div className="flex items-center justify-between mb-8 shrink-0 px-1">
+          <div className="flex items-center gap-2">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Editar Evento</h2>
+              <p className="text-muted-foreground text-sm">
+                Configure datas, inscrições e detalhes do evento.
+              </p>
+            </div>
           </div>
         </div>
-
-
-      </div>
+      )}
 
       <div className="flex-1 overflow-y-auto pr-2 lg:pr-4 scrollbar-thin pb-24">
         <div className="max-w-5xl mx-auto space-y-6">
@@ -380,6 +370,6 @@ export default function EventForm({
         </Button>
       </div>
 
-    </div>
+    </div >
   )
 }

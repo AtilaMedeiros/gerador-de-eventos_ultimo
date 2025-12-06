@@ -62,9 +62,17 @@ export default function ApplyVisualIdentity({
       const event = getEventById(urlEventId)
       if (event && event.themeId) {
         setSelectedThemeId(event.themeId)
+      } else if (themes.length > 0) {
+        // Default to "Institucional" theme
+        const defaultTheme = themes.find((t) =>
+          t.name.toLowerCase().includes('institucional'),
+        )
+        if (defaultTheme) {
+          setSelectedThemeId(defaultTheme.id)
+        }
       }
     }
-  }, [urlEventId, getEventById])
+  }, [urlEventId, getEventById, themes])
 
   const handleEventSelect = (value: string) => {
     setSelectedEventId(value)
@@ -75,7 +83,14 @@ export default function ApplyVisualIdentity({
     if (event && event.themeId) {
       setSelectedThemeId(event.themeId)
     } else {
-      setSelectedThemeId('')
+      const defaultTheme = themes.find((t) =>
+        t.name.toLowerCase().includes('institucional'),
+      )
+      if (defaultTheme) {
+        setSelectedThemeId(defaultTheme.id)
+      } else {
+        setSelectedThemeId('')
+      }
     }
   }
 
@@ -154,9 +169,9 @@ export default function ApplyVisualIdentity({
   return (
     <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col pt-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8 shrink-0 px-1">
-        <div className="flex items-center gap-2">
-          {!isWizard && (
+      {!isWizard && (
+        <div className="flex items-center justify-between mb-8 shrink-0 px-1">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -164,27 +179,25 @@ export default function ApplyVisualIdentity({
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-          )}
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              Identidade Visual
-              {selectedEvent && <span className="text-muted-foreground font-light px-2 border-l ml-2 text-xl">{selectedEvent.name}</span>}
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Escolha um tema para personalizar a página pública do evento.
-            </p>
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+                Identidade Visual
+                {selectedEvent && <span className="text-muted-foreground font-light px-2 border-l ml-2 text-xl">{selectedEvent.name}</span>}
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Escolha um tema para personalizar a página pública do evento.
+              </p>
+            </div>
           </div>
         </div>
-
-
-      </div>
+      )}
 
       {/* Content Grid */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden pb-24">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-y-auto pr-2 lg:pr-4 scrollbar-thin pb-24">
 
         {/* Left Column: Theme Selection */}
-        <div className="lg:col-span-4 flex flex-col h-full min-h-0">
-          <Card className="flex flex-col h-full shadow-sm border-0 bg-background/50">
+        <div className="lg:col-span-4 flex flex-col">
+          <Card className="flex flex-col shadow-sm border-0 bg-background/50">
             <CardHeader className="shrink-0 pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Palette className="h-5 w-5 text-primary" />
@@ -194,7 +207,7 @@ export default function ApplyVisualIdentity({
                 Selecione um tema abaixo para visualizar.
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto scrollbar-thin px-4 pb-4 grid gap-4">
+            <CardContent className="px-4 pb-4 grid gap-4">
               {themes.map((theme) => (
                 <div
                   key={theme.id}
