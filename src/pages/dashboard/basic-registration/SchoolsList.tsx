@@ -221,7 +221,7 @@ export default function SchoolsList() {
 
             {/* Search and Advanced Filters */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3 w-[450px] relative group">
+                <div className="flex items-center gap-3 flex-1 min-w-[200px] relative group">
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
                         <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     </div>
