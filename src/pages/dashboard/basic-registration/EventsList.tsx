@@ -8,7 +8,7 @@ import {
   Plus,
   Edit,
   ExternalLink,
-  Filter,
+  Filter as FilterIcon,
   MapPin,
   LayoutDashboard,
   Trash2,
@@ -18,12 +18,15 @@ import {
   Trophy,
   Users,
   User,
+  Activity,
+  Building,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Filters, createFilter, type Filter, type FilterFieldConfig } from '@/components/ui/filters'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   DropdownMenu,
@@ -89,12 +92,38 @@ const getRegistrationRange = (event: Event) => {
   return formatDateRange(minStart, maxEnd)
 }
 
+const filterFields: FilterFieldConfig[] = [
+  {
+    key: 'location',
+    label: 'Local',
+    icon: <MapPin className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Local do evento...',
+  },
+  {
+    key: 'producerName',
+    label: 'Produtor',
+    icon: <User className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Nome do produtor...',
+  },
+  {
+    key: 'isActive',
+    label: 'Evento Ativo',
+    activeLabel: 'Evento',
+    icon: <Activity className="size-3.5" />,
+    type: 'boolean',
+  },
+]
+
 export default function EventsList() {
   const navigate = useNavigate()
   const { hasPermission } = useAuth()
   const { events, deleteEvent } = useEvent()
   const [search, setSearch] = useState('')
-  const [showActiveOnly, setShowActiveOnly] = useState(true)
+  const [filters, setFilters] = useState<Filter[]>([
+    createFilter('isActive', 'equals', 'true')
+  ])
 
   const handleCreateEvent = () => {
     if (hasPermission('criar_evento')) {
@@ -135,14 +164,37 @@ export default function EventsList() {
   }
 
   const filteredEvents = events.filter((event) => {
-    if (showActiveOnly) {
-      if (
-        event.status === 'closed' ||
-        event.status === 'deleted' ||
-        event.status === 'ended'
-      )
-        return false
-    }
+    // 1. Filter by Filters Component state
+    const matchesFilters = filters.every(filter => {
+      if (!filter.value) return true
+      const value = filter.value.toLowerCase()
+
+      switch (filter.field) {
+        case 'location':
+          return event.location?.toLowerCase().includes(value) ?? false
+        case 'producerName':
+          return event.producerName?.toLowerCase().includes(value) ?? false
+        case 'isActive':
+          // Specific logic for Active/Inactive
+          if (filter.value === 'false') return true // "Inactive" or "All"? Usually boolean filter is true/false. 
+          // If boolean filter is 'true', we want only active events.
+          // If boolean filter is 'false', we usually want inactive. 
+          // BUT the previous logic was "Active Only" toggle.
+          // SchoolsList logic for boolean:
+          // const boolValue = value === 'true' || value === true
+          // return school.isEventActive === boolValue
+
+          // Based on previous logic:
+          const isClosed = event.status === 'closed' || event.status === 'deleted' || event.status === 'ended'
+          if (value === 'true') return !isClosed
+          if (value === 'false') return isClosed
+          return true
+        default:
+          return true
+      }
+    })
+
+    if (!matchesFilters) return false
 
     if (search) {
       const searchLower = search.toLowerCase()
@@ -194,38 +246,40 @@ export default function EventsList() {
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="flex items-center gap-3 w-full relative group">
-        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
-          <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+      {/* Search and Filter */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-1 min-w-[200px] relative group w-full">
+          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
+            <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          </div>
+          <Input
+            placeholder="Buscar evento por nome, local ou inscrição..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
+          />
         </div>
-        <Input
-          placeholder="Buscar evento por nome, local ou inscrição..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-10 pr-12 h-12 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left"
-        />
-        <div className="absolute inset-y-0 right-2 flex items-center z-10">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowActiveOnly(!showActiveOnly)}
-                className={cn(
-                  "h-8 w-8 rounded-md transition-colors",
-                  showActiveOnly
-                    ? "bg-primary/10 text-primary hover:bg-primary/20"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <Filter className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {showActiveOnly ? 'Exibindo apenas ativos' : 'Exibindo todos'}
-            </TooltipContent>
-          </Tooltip>
+
+        <div className="flex bg-white items-center gap-4">
+          <div className="flex-1">
+            <Filters
+              fields={filterFields}
+              filters={filters}
+              onChange={setFilters}
+              addButton={
+                <Button
+                  size="sm"
+                  className="h-10 w-10 p-0 rounded-md bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-blue-200 dark:border-blue-800 hover:bg-primary/5 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-blue-400" aria-hidden="true">
+                    <path d="M13.354 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14v6a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341l1.218-1.348"></path>
+                    <path d="M16 6h6"></path>
+                    <path d="M19 3v6"></path>
+                  </svg>
+                </Button>
+              }
+            />
+          </div>
         </div>
       </div>
 
@@ -288,7 +342,7 @@ export default function EventsList() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-start md:items-end gap-1.5 -mt-6">
+                    <div className="flex flex-col items-start md:items-end gap-1.5 -mt-2">
                       <div className={cn(
                         "flex items-center gap-2 px-3 py-1 rounded-sm text-xs font-semibold w-fit",
                         event.status === 'published'
@@ -336,47 +390,80 @@ export default function EventsList() {
                 </div>
               </div>
 
-              <div className="flex-shrink-0 self-stretch flex flex-row md:flex-col items-center justify-between border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0 md:pl-6 gap-4 z-10 w-full md:w-auto">
-                <div className="flex flex-row md:flex-col gap-2">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        aria-label="View Details"
-                        className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                        onClick={(e) => handlePanel(e, event.id)}
-                      >
-                        <LayoutDashboard className="h-6 w-6" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="left">Painel</TooltipContent>
-                  </Tooltip>
+              <div className="grid grid-cols-2 gap-2 z-10 w-full md:w-auto mt-4 md:mt-0 md:pl-6 border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      aria-label="Communication"
+                      className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/area-do-produtor/evento/${event.id}/comunicacao`)
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true"><path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"></path><path d="M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14"></path><path d="M8 6v8"></path></svg>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">Comunicação</TooltipContent>
+                </Tooltip>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        aria-label="Edit Event"
-                        className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-blue-500/10 hover:text-blue-600"
-                        onClick={(e) => handleEdit(e, event.id)}
-                      >
-                        <Edit className="h-6 w-6" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="left">Editar</TooltipContent>
-                  </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      aria-label="Participants"
+                      className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/area-do-produtor/evento/${event.id}/participantes`)
+                      }}
+                    >
+                      <Users className="h-5 w-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">Participantes</TooltipContent>
+                </Tooltip>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        aria-label="Share Event"
-                        className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-600"
-                        onClick={(e) => handleOpenPublicLink(e, event.name, event.id)}
-                      >
-                        <ExternalLink className="h-6 w-6" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="left">Link Público</TooltipContent>
-                  </Tooltip>
-                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      aria-label="Modalities"
+                      className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/area-do-produtor/evento/${event.id}/modalidades`)
+                      }}
+                    >
+                      <Trophy className="h-5 w-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">Modalidades</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      aria-label="Edit Event"
+                      className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-blue-500/10 hover:text-blue-600"
+                      onClick={(e) => handleEdit(e, event.id)}
+                    >
+                      <Edit className="h-5 w-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">Editar</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      aria-label="Share Event"
+                      className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-600"
+                      onClick={(e) => handleOpenPublicLink(e, event.name, event.id)}
+                    >
+                      <ExternalLink className="h-5 w-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">Link Público</TooltipContent>
+                </Tooltip>
 
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -385,7 +472,7 @@ export default function EventsList() {
                       className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-destructive hover:bg-destructive/10"
                       onClick={(e) => handleDelete(e, event.id)}
                     >
-                      <Trash2 className="h-6 w-6" />
+                      <Trash2 className="h-5 w-5" />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="left" className="text-destructive">Excluir</TooltipContent>

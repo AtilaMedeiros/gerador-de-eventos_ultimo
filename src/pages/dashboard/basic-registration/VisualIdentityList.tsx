@@ -152,7 +152,7 @@ export default function VisualIdentityList() {
             size="sm"
             className="backdrop-blur-sm bg-background/50 border-primary/20 hover:bg-primary/5 hover:border-primary/40 transition-all duration-300"
           >
-            <Download className="mr-2 h-4 w-4" /> Exportar Excel
+            <Download className="mr-2 h-4 w-4" /> Exportar
           </Button>
           <Button
             onClick={() => navigate('/area-do-produtor/identidade-visual/novo')}
