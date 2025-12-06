@@ -123,23 +123,13 @@ export default function UsersList() {
                   </div>
                 </TableCell>
                 <TableCell className="h-12 py-0">
-                  <div className="flex items-center h-full">
-                    <Badge variant="outline" className="bg-background/50 backdrop-blur-sm">
-                      {user.role}
-                    </Badge>
+                  <div className="flex items-center h-full text-muted-foreground">
+                    {user.role}
                   </div>
                 </TableCell>
                 <TableCell className="h-12 py-0">
-                  <div className="flex items-center h-full">
-                    {user.status === 'active' ? (
-                      <Badge className="bg-success/90 hover:bg-success text-white shadow-sm shadow-success/20">
-                        Ativo
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="bg-muted text-muted-foreground">
-                        Inativo
-                      </Badge>
-                    )}
+                  <div className="flex items-center h-full text-muted-foreground">
+                    {user.status === 'active' ? 'Ativo' : 'Inativo'}
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm h-12 py-0">

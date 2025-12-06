@@ -24,6 +24,7 @@ import VisualIdentityForm from './pages/dashboard/basic-registration/VisualIdent
 import UsersList from './pages/dashboard/basic-registration/UsersList'
 import UserForm from './pages/dashboard/basic-registration/UserForm'
 import SchoolsList from './pages/dashboard/basic-registration/SchoolsList'
+import SchoolForm from './pages/dashboard/basic-registration/SchoolForm'
 import AdminAthletesList from './pages/dashboard/basic-registration/AthletesList'
 import AssociateModalities from './pages/dashboard/event-config/AssociateModalities'
 import ApplyVisualIdentity from './pages/dashboard/event-config/ApplyVisualIdentity'
@@ -137,6 +138,8 @@ const App = () => (
                       />
                       <Route path="inicio" element={<DashboardHome />} />
                       <Route path="escolas" element={<SchoolsList />} />
+                      <Route path="escolas/novo" element={<SchoolForm />} />
+                      <Route path="escolas/:id" element={<SchoolForm />} />
                       <Route path="atletas" element={<AdminAthletesList />} />
 
                       {/* Cadastro Básico */}

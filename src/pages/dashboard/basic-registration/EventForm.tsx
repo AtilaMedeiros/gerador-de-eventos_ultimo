@@ -479,31 +479,35 @@ export default function EventForm({
                 Cancelar
               </Button>
               <div className="flex items-center gap-3 w-full md:w-auto">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1 md:flex-none"
-                  onClick={async () => {
-                    const isValid = await form.trigger(['name'])
-                    if (isValid) processSubmit(form.getValues(), 'draft')
-                    else toast.error('Preencha o nome para salvar rascunho.')
-                  }}
-                  disabled={isSubmitting}
-                >
-                  <Save className="mr-2 h-4 w-4" /> Rascunho
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="flex-1 md:flex-none"
-                  onClick={async () => {
-                    if (await form.trigger()) setShowPreview(true)
-                    else onInvalid(form.formState.errors)
-                  }}
-                  disabled={isSubmitting}
-                >
-                  <Eye className="mr-2 h-4 w-4" /> Preview
-                </Button>
+                {!isCreating && (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1 md:flex-none"
+                      onClick={async () => {
+                        const isValid = await form.trigger(['name'])
+                        if (isValid) processSubmit(form.getValues(), 'draft')
+                        else toast.error('Preencha o nome para salvar rascunho.')
+                      }}
+                      disabled={isSubmitting}
+                    >
+                      <Save className="mr-2 h-4 w-4" /> Rascunho
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="flex-1 md:flex-none"
+                      onClick={async () => {
+                        if (await form.trigger()) setShowPreview(true)
+                        else onInvalid(form.formState.errors)
+                      }}
+                      disabled={isSubmitting}
+                    >
+                      <Eye className="mr-2 h-4 w-4" /> Preview
+                    </Button>
+                  </>
+                )}
                 <Button
                   type="submit"
                   className="flex-1 md:flex-none min-w-[160px]"

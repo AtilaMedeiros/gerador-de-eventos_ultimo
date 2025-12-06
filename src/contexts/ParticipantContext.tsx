@@ -107,7 +107,13 @@ export function ParticipantProvider({
 
   // Load data based on logged user
   useEffect(() => {
-    if (user && (user.role === 'school_admin' || user.role === 'technician')) {
+    if (
+      user &&
+      (user.role === 'school_admin' ||
+        user.role === 'technician' ||
+        user.role === 'producer' ||
+        user.role === 'admin')
+    ) {
       // In a real app, fetch from API using user.schoolId
       // For mock, we use local storage or defaults
       const storedSchool = localStorage.getItem('ge_school_data')
