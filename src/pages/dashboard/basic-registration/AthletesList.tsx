@@ -35,55 +35,55 @@ const MOCK_ATHLETES = [
     {
         id: 1,
         name: 'Lucas Pereira',
-        category: 'Sub-17',
+        sex: 'Masculino',
+        dob: '15/05/2008',
+        cpf: '123.456.789-00',
         school: 'Escola Municipal de Esportes',
         inep: '12345678',
-        city: 'São Paulo',
-        state: 'SP',
         event: 'Tech Summit 2025',
         isEventActive: true,
     },
     {
         id: 2,
         name: 'Beatriz Costa',
-        category: 'Sub-15',
+        sex: 'Feminino',
+        dob: '20/08/2010',
+        cpf: '987.654.321-00',
         school: 'Colégio Estadual do Saber',
         inep: '87654321',
-        city: 'Rio de Janeiro',
-        state: 'RJ',
         event: 'Jogos Estudantis 2025',
         isEventActive: false,
     },
     {
         id: 3,
         name: 'Gabriel Almeida',
-        category: 'Adulto',
+        sex: 'Masculino',
+        dob: '10/01/2005',
+        cpf: '111.222.333-44',
         school: 'Instituto Atlético',
         inep: '11223344',
-        city: 'Belo Horizonte',
-        state: 'MG',
         event: 'Tech Summit 2025',
         isEventActive: true,
     },
     {
         id: 4,
         name: 'Mariana Silva',
-        category: 'Sub-17',
+        sex: 'Feminino',
+        dob: '05/11/2008',
+        cpf: '555.666.777-88',
         school: 'Escola Municipal de Esportes',
         inep: '12345678',
-        city: 'São Paulo',
-        state: 'SP',
         event: 'Tech Summit 2025',
         isEventActive: true,
     },
     {
         id: 5,
         name: 'João Pedro',
-        category: 'Sub-13',
+        sex: 'Masculino',
+        dob: '25/03/2012',
+        cpf: '999.888.777-66',
         school: 'Escola Particular do Sol',
         inep: '55667788',
-        city: 'Curitiba',
-        state: 'PR',
         event: 'Jogos Estudantis 2025',
         isEventActive: false,
     },
@@ -98,11 +98,11 @@ const filterFields: FilterFieldConfig[] = [
         placeholder: 'Buscar por nome...',
     },
     {
-        key: 'category',
-        label: 'Categoria',
-        icon: <Trophy className="size-3.5" />,
+        key: 'cpf',
+        label: 'CPF',
+        icon: <Activity className="size-3.5" />,
         type: 'text',
-        placeholder: 'Ex: Sub-17...',
+        placeholder: 'Número do CPF...',
     },
     {
         key: 'school',
@@ -110,13 +110,6 @@ const filterFields: FilterFieldConfig[] = [
         icon: <School className="size-3.5" />,
         type: 'text',
         placeholder: 'Nome da escola...',
-    },
-    {
-        key: 'city',
-        label: 'Cidade',
-        icon: <MapPin className="size-3.5" />,
-        type: 'text',
-        placeholder: 'Nome da cidade...',
     },
     {
         key: 'event',
@@ -148,9 +141,7 @@ export default function AthletesList() {
         const matchesSearch =
             athlete.name.toLowerCase().includes(searchLower) ||
             athlete.school.toLowerCase().includes(searchLower) ||
-            athlete.category.toLowerCase().includes(searchLower) ||
-            athlete.city.toLowerCase().includes(searchLower) ||
-            athlete.state.toLowerCase().includes(searchLower) ||
+            athlete.cpf.includes(searchLower) ||
             athlete.event.toLowerCase().includes(searchLower)
 
         if (!matchesSearch) return false
@@ -165,12 +156,10 @@ export default function AthletesList() {
             switch (filter.field) {
                 case 'name':
                     return athlete.name.toLowerCase().includes(value)
-                case 'category':
-                    return athlete.category.toLowerCase().includes(value)
+                case 'cpf':
+                    return athlete.cpf.includes(value)
                 case 'school':
                     return athlete.school.toLowerCase().includes(value)
-                case 'city':
-                    return athlete.city.toLowerCase().includes(value)
                 case 'event':
                     return athlete.event.toLowerCase().includes(value)
                 case 'isEventActive':
@@ -183,7 +172,7 @@ export default function AthletesList() {
         })
     })
 
-    const [sortConfig, setSortConfig] = useState<{ key: keyof typeof MOCK_ATHLETES[0] | 'location', direction: 'asc' | 'desc' } | null>(null)
+    const [sortConfig, setSortConfig] = useState<{ key: keyof typeof MOCK_ATHLETES[0], direction: 'asc' | 'desc' } | null>(null)
 
     // Apply Sorting
     const sortedAthletes = [...filteredAthletes].sort((a, b) => {
@@ -191,13 +180,8 @@ export default function AthletesList() {
 
         const { key, direction } = sortConfig
 
-        let aValue: any = a[key as keyof typeof a]
-        let bValue: any = b[key as keyof typeof b]
-
-        if (key === 'location') {
-            aValue = `${a.city}/${a.state}`
-            bValue = `${b.city}/${b.state}`
-        }
+        const aValue: any = a[key as keyof typeof a]
+        const bValue: any = b[key as keyof typeof b]
 
         if (aValue < bValue) {
             return direction === 'asc' ? -1 : 1
@@ -208,7 +192,7 @@ export default function AthletesList() {
         return 0
     })
 
-    const requestSort = (key: keyof typeof MOCK_ATHLETES[0] | 'location') => {
+    const requestSort = (key: keyof typeof MOCK_ATHLETES[0]) => {
         let direction: 'asc' | 'desc' = 'asc'
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
             direction = 'desc'
@@ -325,19 +309,24 @@ export default function AthletesList() {
                                     Nome {getSortIcon('name')}
                                 </div>
                             </TableHead>
-                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('category')}>
+                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('sex')}>
                                 <div className="flex items-center">
-                                    Categoria {getSortIcon('category')}
+                                    Naipe {getSortIcon('sex')}
+                                </div>
+                            </TableHead>
+                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('dob')}>
+                                <div className="flex items-center">
+                                    Data Nasc. {getSortIcon('dob')}
+                                </div>
+                            </TableHead>
+                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('cpf')}>
+                                <div className="flex items-center">
+                                    CPF {getSortIcon('cpf')}
                                 </div>
                             </TableHead>
                             <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('school')}>
                                 <div className="flex items-center">
                                     Escola {getSortIcon('school')}
-                                </div>
-                            </TableHead>
-                            <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('location')}>
-                                <div className="flex items-center">
-                                    Cidade/UF {getSortIcon('location')}
                                 </div>
                             </TableHead>
                             <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('event')}>
@@ -365,17 +354,27 @@ export default function AthletesList() {
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
                                         <div className="flex items-center h-full text-muted-foreground">
-                                            {athlete.category}
+                                            {athlete.sex}
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
                                         <div className="flex items-center h-full text-muted-foreground">
-                                            {athlete.school}
+                                            {athlete.dob}
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
-                                        <div className="flex items-center h-full text-muted-foreground">
-                                            {athlete.city}/{athlete.state}
+                                        <div className="flex items-center h-full text-muted-foreground font-mono text-xs">
+                                            {athlete.cpf}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="h-12 py-0">
+                                        <div className="flex flex-col justify-center h-full">
+                                            <span className="text-muted-foreground leading-tight text-sm">
+                                                {athlete.school}
+                                            </span>
+                                            {athlete.inep && (
+                                                <span className="text-[10px] text-muted-foreground/60">INEP: {athlete.inep}</span>
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
@@ -399,6 +398,15 @@ export default function AthletesList() {
                                     <TableCell className="text-right h-12 py-0">
 
                                         <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity h-full items-center">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                                                onClick={() => navigate(`/area-do-produtor/atletas/${athlete.id}/modalidades`)}
+                                                title="Vincular Modalidade"
+                                            >
+                                                <Trophy className="h-4 w-4" />
+                                            </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"

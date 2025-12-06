@@ -28,7 +28,7 @@ const athleteSchema = z.object({
     dob: z.string().refine((val) => !isNaN(Date.parse(val)), {
         message: 'Data inválida',
     }),
-    rg: z.string().min(2, 'RG é obrigatório'),
+    rg: z.string().optional(),
     cpf: z.string().min(11, 'CPF inválido').max(14),
     nis: z.string().optional(),
     motherName: z.string().min(3, 'Nome do Responsável é obrigatório'),
@@ -128,7 +128,7 @@ export default function AthleteForm() {
                             name="sex"
                             render={({ field }) => (
                                 <FormItem className="space-y-3">
-                                    <FormLabel>Sexo *</FormLabel>
+                                    <FormLabel>Naipe *</FormLabel>
                                     <FormControl>
                                         <RadioGroup
                                             onValueChange={field.onChange}
@@ -158,10 +158,10 @@ export default function AthleteForm() {
                             control={form.control}
                             name="dob"
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="w-fit ml-auto">
                                     <FormLabel>Data de Nascimento *</FormLabel>
                                     <FormControl>
-                                        <Input type="date" {...field} />
+                                        <Input type="date" {...field} className="w-[180px]" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -194,7 +194,7 @@ export default function AthleteForm() {
                             name="rg"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>RG *</FormLabel>
+                                    <FormLabel>RG</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Número do RG" {...field} />
                                     </FormControl>
