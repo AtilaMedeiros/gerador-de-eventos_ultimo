@@ -86,8 +86,8 @@ const INITIAL_EVENTS: Event[] = [
 
 interface EventContextType {
   events: Event[]
-  addEvent: (event: Omit<Event, 'id'>) => Event
-  updateEvent: (id: string, event: Partial<Event>) => void
+  addEvent: (event, suppressToast?: boolean) => Event
+  updateEvent: (id: string, event: Partial<Event>, suppressToast?: boolean) => void
   deleteEvent: (id: string) => void
   getEventById: (id: string) => Event | undefined
   getEventModalities: (eventId: string) => string[]
@@ -148,23 +148,27 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('ge_event_modalities', JSON.stringify(eventModalities))
   }, [eventModalities])
 
-  const addEvent = (eventData: Omit<Event, 'id'>) => {
+  const addEvent = (eventData: Omit<Event, 'id'>, suppressToast = false) => {
     const newEvent: Event = {
       ...eventData,
       id: crypto.randomUUID(),
     }
     setEvents((prev) => [newEvent, ...prev])
-    toast.success('Evento criado com sucesso!')
+    if (!suppressToast) toast.success('Evento criado com sucesso!')
     return newEvent
   }
 
-  const updateEvent = (id: string, eventData: Partial<Event>) => {
+  const updateEvent = (
+    id: string,
+    eventData: Partial<Event>,
+    suppressToast = false,
+  ) => {
     setEvents((prev) =>
       prev.map((event) =>
         event.id === id ? { ...event, ...eventData } : event,
       ),
     )
-    toast.success('Evento atualizado com sucesso!')
+    if (!suppressToast) toast.success('Evento atualizado com sucesso!')
   }
 
   const deleteEvent = (id: string) => {

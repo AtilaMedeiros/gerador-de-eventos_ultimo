@@ -157,14 +157,14 @@ export default function EventForm({
       registrationIndividualEnd: data.inscricaoIndividualFim,
     }
     if (isEditing && id) {
-      updateEvent(id, eventData)
+      updateEvent(id, eventData, isWizard)
       if (isWizard && onNext) {
         onNext(id)
       } else {
         navigate('/area-do-produtor/evento')
       }
     } else {
-      const newEvent = addEvent(eventData)
+      const newEvent = addEvent(eventData, isWizard)
       if (isWizard && onNext) {
         onNext(newEvent.id)
       } else {
@@ -184,9 +184,9 @@ export default function EventForm({
       : ''
 
   return (
-    <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col">
+    <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col pt-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 shrink-0">
+      <div className="flex items-center justify-between mb-8 shrink-0 px-1">
         <div className="flex items-center gap-2">
           {!isWizard && (
             <Button
@@ -207,62 +207,10 @@ export default function EventForm({
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/area-do-produtor/evento')}
-            disabled={isSubmitting}
-          >
-            <X className="mr-2 h-4 w-4" /> Cancelar
-          </Button>
 
-          {!isCreating && (
-            <>
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  const isValid = await form.trigger(['name'])
-                  if (isValid) processSubmit(form.getValues(), 'draft')
-                  else toast.error('Preencha o nome para salvar rascunho.')
-                }}
-                disabled={isSubmitting}
-              >
-                <Save className="mr-2 h-4 w-4" /> Rascunho
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={async () => {
-                  if (await form.trigger()) setShowPreview(true)
-                  else onInvalid()
-                }}
-                disabled={isSubmitting}
-              >
-                <Eye className="mr-2 h-4 w-4" /> Preview
-              </Button>
-            </>
-          )}
-
-          <Button
-            onClick={form.handleSubmit(
-              (data) => processSubmit(data, 'published'),
-              onInvalid,
-            )}
-            disabled={isSubmitting}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            {isWizard ? (
-              <>Próximo <ArrowLeft className="ml-2 h-4 w-4 rotate-180" /></>
-            ) : (
-              <>
-                <Rocket className="mr-2 h-4 w-4" />
-                {isSubmitting ? 'Processando...' : 'Publicar'}
-              </>
-            )}
-          </Button>
-        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto pr-2 lg:pr-4 scrollbar-thin pb-6">
+      <div className="flex-1 overflow-y-auto pr-2 lg:pr-4 scrollbar-thin pb-24">
         <div className="max-w-5xl mx-auto space-y-6">
 
           {publicUrl && (
@@ -375,6 +323,63 @@ export default function EventForm({
           />
         </DialogContent>
       </Dialog>
+
+      {/* Fixed Footer Actions */}
+      <div className="fixed bottom-0 right-0 p-4 border-t bg-white/80 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-end gap-2 w-full lg:w-[calc(100%-16rem)] transition-all duration-300">
+        <Button
+          variant="outline"
+          onClick={() => navigate('/area-do-produtor/evento')}
+          disabled={isSubmitting}
+        >
+          <X className="mr-2 h-4 w-4" /> Cancelar
+        </Button>
+
+        {/* Buttons visible ONLY if NOT Wizard */}
+        {!isWizard && !isCreating && (
+          <>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                const isValid = await form.trigger(['name'])
+                if (isValid) processSubmit(form.getValues(), 'draft')
+                else toast.error('Preencha o nome para salvar rascunho.')
+              }}
+              disabled={isSubmitting}
+            >
+              <Save className="mr-2 h-4 w-4" /> Rascunho
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={async () => {
+                if (await form.trigger()) setShowPreview(true)
+                else onInvalid()
+              }}
+              disabled={isSubmitting}
+            >
+              <Eye className="mr-2 h-4 w-4" /> Preview
+            </Button>
+          </>
+        )}
+
+        <Button
+          onClick={form.handleSubmit(
+            (data) => processSubmit(data, 'published'),
+            onInvalid,
+          )}
+          disabled={isSubmitting}
+          className="bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]"
+        >
+          {isWizard ? (
+            <>Próximo <ArrowLeft className="ml-2 h-4 w-4 rotate-180" /></>
+          ) : (
+            <>
+              <Rocket className="mr-2 h-4 w-4" />
+              {isSubmitting ? 'Processando...' : 'Publicar'}
+            </>
+          )}
+        </Button>
+      </div>
+
     </div>
   )
 }

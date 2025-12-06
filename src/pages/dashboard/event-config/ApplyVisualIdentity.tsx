@@ -152,9 +152,9 @@ export default function ApplyVisualIdentity({
   }
 
   return (
-    <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col">
+    <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col pt-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 shrink-0">
+      <div className="flex items-center justify-between mb-8 shrink-0 px-1">
         <div className="flex items-center gap-2">
           {!isWizard && (
             <Button
@@ -176,53 +176,11 @@ export default function ApplyVisualIdentity({
           </div>
         </div>
 
-        <div className="flex gap-2">
-          {!isWizard && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSelectedEventId('')
-                setSearchParams({})
-                setSelectedThemeId('')
-              }}
-            >
-              <X className="mr-2 h-4 w-4" /> Trocar Evento
-            </Button>
-          )}
 
-          {isWizard && onBack && (
-            <Button variant="ghost" onClick={onBack}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-            </Button>
-          )}
-
-          <Button
-            variant="outline"
-            onClick={handleDraft}
-            disabled={!selectedThemeId}
-          >
-            <Save className="mr-2 h-4 w-4" /> Rascunho
-          </Button>
-
-          <Button
-            variant="secondary"
-            onClick={handlePreview}
-            disabled={!selectedThemeId}
-          >
-            <Eye className="mr-2 h-4 w-4" /> Preview
-          </Button>
-
-          <Button
-            onClick={handleSave}
-            disabled={!selectedThemeId}
-          >
-            <Rocket className="mr-2 h-4 w-4" /> {isWizard ? 'Concluir' : 'Publicar'}
-          </Button>
-        </div>
       </div>
 
       {/* Content Grid */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden pb-6">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden pb-24">
 
         {/* Left Column: Theme Selection */}
         <div className="lg:col-span-4 flex flex-col h-full min-h-0">
@@ -313,6 +271,56 @@ export default function ApplyVisualIdentity({
             )}
           </div>
         </div>
+      </div>
+
+      {/* Fixed Footer Actions */}
+      <div className="fixed bottom-0 right-0 p-4 border-t bg-white/80 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-end gap-2 w-full lg:w-[calc(100%-16rem)] transition-all duration-300">
+        {!isWizard && (
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSelectedEventId('')
+              setSearchParams({})
+              setSelectedThemeId('')
+            }}
+          >
+            <X className="mr-2 h-4 w-4" /> Trocar Evento
+          </Button>
+        )}
+
+        {isWizard && onBack && (
+          <Button variant="outline" onClick={onBack}>
+            Voltar
+          </Button>
+        )}
+
+        <Button
+          variant="outline"
+          onClick={handleDraft}
+          disabled={!selectedThemeId}
+        >
+          <Save className="mr-2 h-4 w-4" /> Rascunho
+        </Button>
+
+        <Button
+          variant="secondary"
+          onClick={handlePreview}
+          disabled={!selectedThemeId}
+        >
+          <Eye className="mr-2 h-4 w-4" /> Preview
+        </Button>
+
+        <Button
+          onClick={handleSave}
+          disabled={!selectedThemeId}
+          className="bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]"
+        >
+          {isWizard ? (
+            <>Concluir <Check className="ml-2 h-4 w-4" /></>
+          ) : (
+            <><Rocket className="mr-2 h-4 w-4" /> Publicar</>
+          )}
+        </Button>
       </div>
     </div>
   )

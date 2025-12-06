@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Search, ArrowLeft, X, Save, Layers, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Activity, Users, Trophy } from 'lucide-react'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useEvent } from '@/contexts/EventContext'
@@ -67,7 +67,60 @@ export default function AssociateModalities({
   // Filtering & Sorting State
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<FilterType[]>([])
+
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
+
+  // Column Resizing Logic
+  const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
+    const saved = localStorage.getItem('ge_associate_modalities_col_widths')
+    return saved ? JSON.parse(saved) : {
+      name: 250,
+      type: 150,
+      gender: 150,
+      minAge: 180,
+      minAthletes: 180,
+      maxTeams: 150,
+      maxEventsPerAthlete: 150
+    }
+  })
+
+  useEffect(() => {
+    localStorage.setItem('ge_associate_modalities_col_widths', JSON.stringify(colWidths))
+  }, [colWidths])
+
+  const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!resizingRef.current) return
+    const { key, startX, startWidth } = resizingRef.current
+    const diff = e.clientX - startX
+    const newWidth = Math.max(50, startWidth + diff) // Min width 50
+
+    setColWidths(prev => ({
+      ...prev,
+      [key]: newWidth
+    }))
+  }, [])
+
+  const handleMouseUp = useCallback(() => {
+    resizingRef.current = null
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'default'
+  }, [handleMouseMove])
+
+  const handleMouseDown = useCallback((e: React.MouseEvent, key: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    resizingRef.current = {
+      key,
+      startX: e.clientX,
+      startWidth: colWidths[key] || 100
+    }
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'col-resize'
+  }, [colWidths, handleMouseMove, handleMouseUp])
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1)
@@ -189,7 +242,7 @@ export default function AssociateModalities({
   }
 
   return (
-    <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col">
+    <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col pt-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-10 shrink-0 px-1">
         <div className="flex items-center gap-2">
@@ -280,40 +333,75 @@ export default function AssociateModalities({
                           className="translate-y-[2px]"
                         />
                       </TableHead>
-                      <TableHead className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('name')}>
-                        <div className="flex items-center">
-                          Nome {getSortIcon('name')}
+                      <TableHead style={{ width: colWidths.name }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('name')}>
+                        <div className="flex items-center overflow-hidden">
+                          <span className="truncate">Nome</span> {getSortIcon('name')}
                         </div>
+                        <div
+                          onMouseDown={(e) => handleMouseDown(e, 'name')}
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                        />
                       </TableHead>
-                      <TableHead className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('type')}>
-                        <div className="flex items-center justify-center">
-                          Tipo {getSortIcon('type')}
+                      <TableHead style={{ width: colWidths.type }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('type')}>
+                        <div className="flex items-center justify-center overflow-hidden">
+                          <span className="truncate">Tipo</span> {getSortIcon('type')}
                         </div>
+                        <div
+                          onMouseDown={(e) => handleMouseDown(e, 'type')}
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                        />
                       </TableHead>
-                      <TableHead className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('gender')}>
-                        <div className="flex items-center justify-center">
-                          Gênero {getSortIcon('gender')}
+                      <TableHead style={{ width: colWidths.gender }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('gender')}>
+                        <div className="flex items-center justify-center overflow-hidden">
+                          <span className="truncate">Gênero</span> {getSortIcon('gender')}
                         </div>
+                        <div
+                          onMouseDown={(e) => handleMouseDown(e, 'gender')}
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                        />
                       </TableHead>
-                      <TableHead className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('minAge')}>
-                        <div className="flex items-center justify-center">
-                          Idade (Min-Max) {getSortIcon('minAge')}
+                      <TableHead style={{ width: colWidths.minAge }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('minAge')}>
+                        <div className="flex items-center justify-center overflow-hidden">
+                          <span className="truncate">Idade (Min-Max)</span> {getSortIcon('minAge')}
                         </div>
+                        <div
+                          onMouseDown={(e) => handleMouseDown(e, 'minAge')}
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                        />
                       </TableHead>
-                      <TableHead className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('minAthletes')}>
-                        <div className="flex items-center justify-center">
-                          Atletas (Min-Max) {getSortIcon('minAthletes')}
+                      <TableHead style={{ width: colWidths.minAthletes }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('minAthletes')}>
+                        <div className="flex items-center justify-center overflow-hidden">
+                          <span className="truncate">Atletas (Min-Max)</span> {getSortIcon('minAthletes')}
                         </div>
+                        <div
+                          onMouseDown={(e) => handleMouseDown(e, 'minAthletes')}
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                        />
                       </TableHead>
-                      <TableHead className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('maxTeams')}>
-                        <div className="flex items-center justify-center">
-                          Equipes Máx {getSortIcon('maxTeams')}
+                      <TableHead style={{ width: colWidths.maxTeams }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('maxTeams')}>
+                        <div className="flex items-center justify-center overflow-hidden">
+                          <span className="truncate">Equipes Máx</span> {getSortIcon('maxTeams')}
                         </div>
+                        <div
+                          onMouseDown={(e) => handleMouseDown(e, 'maxTeams')}
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                        />
                       </TableHead>
-                      <TableHead className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('maxEventsPerAthlete')}>
-                        <div className="flex items-center justify-center">
-                          Máx. Provas {getSortIcon('maxEventsPerAthlete')}
+                      <TableHead style={{ width: colWidths.maxEventsPerAthlete }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('maxEventsPerAthlete')}>
+                        <div className="flex items-center justify-center overflow-hidden">
+                          <span className="truncate">Máx. Provas</span> {getSortIcon('maxEventsPerAthlete')}
                         </div>
+                        <div
+                          onMouseDown={(e) => handleMouseDown(e, 'maxEventsPerAthlete')}
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                        />
                       </TableHead>
                     </TableRow>
                   </TableHeader>
