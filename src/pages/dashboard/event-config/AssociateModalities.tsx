@@ -191,7 +191,7 @@ export default function AssociateModalities({
   return (
     <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 shrink-0">
+      <div className="flex items-center justify-between mb-6 shrink-0 px-1">
         <div className="flex items-center gap-2">
           {!isWizard && (
             <Button
@@ -212,46 +212,25 @@ export default function AssociateModalities({
           </div>
         </div>
 
-        <div className="flex gap-2">
-          {!isWizard && (
-            <Button
-              variant="outline"
-              onClick={() => navigate('/area-do-produtor/evento')}
-            >
-              <X className="mr-2 h-4 w-4" /> Cancelar
-            </Button>
-          )}
 
-          {isWizard && onBack && (
-            <Button variant="ghost" onClick={onBack}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-            </Button>
-          )}
-
-          <Button onClick={handleSave} disabled={!eventId}>
-            {isWizard ? (
-              <>Próximo <ArrowLeft className="ml-2 h-4 w-4 rotate-180" /></>
-            ) : (
-              <><Save className="mr-2 h-4 w-4" /> Salvar Associações</>
-            )}
-          </Button>
-        </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-6 pb-6">
+      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-6 pb-24">
 
         {/* Left Column: List */}
         <div className="flex-1 flex flex-col min-h-0 space-y-4">
           {/* Filter Bar */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
-            <div className="flex items-center gap-3 flex-1 min-w-[200px] w-full relative">
-              <Search className="h-4 w-4 text-muted-foreground absolute left-3" />
+            <div className="flex items-center gap-3 flex-1 min-w-[200px] relative group">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
+                <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              </div>
               <Input
                 placeholder="Pesquisar por nome, tipo..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800"
+                className="pl-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
               />
             </div>
             <div className="flex items-center gap-2 w-full md:w-auto">
@@ -288,7 +267,7 @@ export default function AssociateModalities({
           </div>
 
           {/* Table */}
-          <div className="flex-1 rounded-xl border bg-card shadow-sm overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-hidden flex flex-col">
             <div className="flex-1 overflow-auto scrollbar-thin">
               <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden overflow-x-auto border-collapse">
                 <Table style={{ tableLayout: 'auto', minWidth: '100%' }}>
@@ -389,7 +368,7 @@ export default function AssociateModalities({
               </div>
             </div>
             {/* Pagination Footer in Table */}
-            <div className="border-t p-4 flex items-center justify-between text-sm text-muted-foreground bg-muted/10 shrink-0">
+            <div className="pt-4 flex items-center justify-between text-sm text-muted-foreground shrink-0">
               <div>
                 Página {currentPage} de {totalPages || 1}
               </div>
@@ -417,42 +396,31 @@ export default function AssociateModalities({
           </div>
         </div>
 
-        {/* Right Column: Summary */}
-        <div className="w-80 shrink-0 hidden lg:flex flex-col gap-4">
-          <div className="bg-card border rounded-xl shadow-sm p-5 space-y-6 h-full flex flex-col">
-            <div>
-              <div className="flex items-center gap-2 mb-2 text-primary">
-                <Layers className="h-5 w-5" />
-                <h3 className="font-semibold text-lg">Resumo</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Você selecionou <strong className="text-foreground">{selected.length}</strong> modalidades.
-              </p>
-            </div>
+      </div>
+      {/* Fixed Footer Actions */}
+      <div className="fixed bottom-0 right-0 p-4 border-t bg-white/80 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-end gap-2 w-full lg:w-[calc(100%-16rem)] transition-all duration-300">
+        {!isWizard && (
+          <Button
+            variant="outline"
+            onClick={() => navigate('/area-do-produtor/evento')}
+          >
+            Cancelar
+          </Button>
+        )}
 
-            <div className="flex-1 overflow-y-auto scrollbar-thin rounded-lg bg-muted/20 border p-3">
-              {selected.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-xs text-muted-foreground text-center px-4">
-                  Nenhuma modalidade selecionada.
-                </div>
-              ) : (
-                <ul className="space-y-2">
-                  {selected.map((id) => {
-                    const mod = modalities.find((m) => m.id === id)
-                    if (!mod) return null
-                    return (
-                      <li key={id} className="text-sm flex items-start gap-2 p-2 rounded-md bg-background border shadow-sm">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0"></div>
-                        <span className="leading-tight">{mod.name}</span>
-                      </li>
-                    )
-                  })}
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
+        {isWizard && onBack && (
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+          </Button>
+        )}
 
+        <Button onClick={handleSave} disabled={!eventId} className="min-w-[120px]">
+          {isWizard ? (
+            <>Próximo <ArrowLeft className="ml-2 h-4 w-4 rotate-180" /></>
+          ) : (
+            <><Save className="mr-2 h-4 w-4" /> Salvar</>
+          )}
+        </Button>
       </div>
     </div>
   )
