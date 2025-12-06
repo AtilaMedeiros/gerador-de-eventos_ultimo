@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -166,6 +166,59 @@ export default function ModalitiesList() {
     setCurrentPage(1)
   }
 
+  // Column Resizing Logic
+  const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
+    const saved = localStorage.getItem('ge_modalities_col_widths')
+    return saved ? JSON.parse(saved) : {
+      name: 250,
+      type: 150,
+      gender: 150,
+      minAge: 180,
+      minAthletes: 180,
+      maxTeams: 150,
+      maxEventsPerAthlete: 150,
+      actions: 100
+    }
+  })
+
+  useEffect(() => {
+    localStorage.setItem('ge_modalities_col_widths', JSON.stringify(colWidths))
+  }, [colWidths])
+
+  const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!resizingRef.current) return
+    const { key, startX, startWidth } = resizingRef.current
+    const diff = e.clientX - startX
+    const newWidth = Math.max(50, startWidth + diff) // Min width 50
+
+    setColWidths(prev => ({
+      ...prev,
+      [key]: newWidth
+    }))
+  }, [])
+
+  const handleMouseUp = useCallback(() => {
+    resizingRef.current = null
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'default'
+  }, [handleMouseMove])
+
+  const handleMouseDown = useCallback((e: React.MouseEvent, key: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    resizingRef.current = {
+      key,
+      startX: e.clientX,
+      startWidth: colWidths[key] || 100
+    }
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'col-resize'
+  }, [colWidths, handleMouseMove, handleMouseUp])
+
 
   return (
     <div className="space-y-8 animate-fade-in relative">
@@ -236,46 +289,81 @@ export default function ModalitiesList() {
         </div>
       </div>
 
-      <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden">
-        <Table>
+      <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden overflow-x-auto">
+        <Table style={{ tableLayout: 'fixed', minWidth: '100%' }}>
           <TableHeader className="bg-primary/5">
             <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
-              <TableHead className="w-[250px] font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('name')}>
-                <div className="flex items-center">
-                  Nome {getSortIcon('name')}
+              <TableHead style={{ width: colWidths.name }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('name')}>
+                <div className="flex items-center overflow-hidden">
+                  <span className="truncate">Nome</span> {getSortIcon('name')}
                 </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'name')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('type')}>
-                <div className="flex items-center">
-                  Tipo {getSortIcon('type')}
+              <TableHead style={{ width: colWidths.type }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('type')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Tipo</span> {getSortIcon('type')}
                 </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'type')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('gender')}>
-                <div className="flex items-center">
-                  Gênero {getSortIcon('gender')}
+              <TableHead style={{ width: colWidths.gender }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('gender')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Gênero</span> {getSortIcon('gender')}
                 </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'gender')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap" onClick={() => requestSort('minAge')}>
-                <div className="flex items-center">
-                  Idade (Min-Max) {getSortIcon('minAge')}
+              <TableHead style={{ width: colWidths.minAge }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap text-center" onClick={() => requestSort('minAge')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Idade (Min-Max)</span> {getSortIcon('minAge')}
                 </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'minAge')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap" onClick={() => requestSort('minAthletes')}>
-                <div className="flex items-center">
-                  Atletas (Min-Max) {getSortIcon('minAthletes')}
+              <TableHead style={{ width: colWidths.minAthletes }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap text-center" onClick={() => requestSort('minAthletes')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Atletas (Min-Max)</span> {getSortIcon('minAthletes')}
                 </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'minAthletes')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap" onClick={() => requestSort('maxTeams')}>
-                <div className="flex items-center">
-                  Equipes Máx {getSortIcon('maxTeams')}
+              <TableHead style={{ width: colWidths.maxTeams }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap text-center" onClick={() => requestSort('maxTeams')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Equipes Máx</span> {getSortIcon('maxTeams')}
                 </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'maxTeams')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap" onClick={() => requestSort('maxEventsPerAthlete')}>
-                <div className="flex items-center">
-                  Máx. Provas {getSortIcon('maxEventsPerAthlete')}
+              <TableHead style={{ width: colWidths.maxEventsPerAthlete }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap text-center" onClick={() => requestSort('maxEventsPerAthlete')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Máx. Provas</span> {getSortIcon('maxEventsPerAthlete')}
                 </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'maxEventsPerAthlete')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
               </TableHead>
-              <TableHead className="text-right font-semibold text-primary/80 h-12">
+              <TableHead style={{ width: colWidths.actions }} className="relative text-right font-semibold text-primary/80 h-12">
                 Ações
               </TableHead>
             </TableRow>
@@ -308,22 +396,22 @@ export default function ModalitiesList() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="capitalize text-muted-foreground h-12 py-0">
+                  <TableCell className="capitalize text-muted-foreground h-12 py-0 text-center">
                     {mod.type}
                   </TableCell>
-                  <TableCell className="capitalize text-muted-foreground h-12 py-0">
+                  <TableCell className="capitalize text-muted-foreground h-12 py-0 text-center">
                     {mod.gender}
                   </TableCell>
-                  <TableCell className="text-muted-foreground h-12 py-0">
+                  <TableCell className="text-muted-foreground h-12 py-0 text-center">
                     {mod.minAge} - {mod.maxAge} anos
                   </TableCell>
-                  <TableCell className="text-muted-foreground h-12 py-0">
+                  <TableCell className="text-muted-foreground h-12 py-0 text-center">
                     {mod.minAthletes} - {mod.maxAthletes}
                   </TableCell>
-                  <TableCell className="text-muted-foreground h-12 py-0">
+                  <TableCell className="text-muted-foreground h-12 py-0 text-center">
                     {mod.maxTeams > 0 ? mod.maxTeams : 'Ilimitado'}
                   </TableCell>
-                  <TableCell className="text-muted-foreground pl-8 h-12 py-0">
+                  <TableCell className="text-muted-foreground pl-8 h-12 py-0 text-center">
                     {mod.maxEventsPerAthlete}
                   </TableCell>
                   <TableCell className="text-right h-12 py-0">
