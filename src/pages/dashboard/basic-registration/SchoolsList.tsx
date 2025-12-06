@@ -99,7 +99,8 @@ const filterFields: FilterFieldConfig[] = [
     },
     {
         key: 'isEventActive',
-        label: 'Evento',
+        label: 'Evento Ativo',
+        activeLabel: 'Evento',
         icon: <Activity className="size-3.5" />,
         type: 'boolean',
     },

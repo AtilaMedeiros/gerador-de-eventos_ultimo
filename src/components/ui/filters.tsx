@@ -17,6 +17,7 @@ export interface FilterFieldConfig {
     label: string
     icon?: React.ReactNode
     type: FilterType
+    activeLabel?: string
     placeholder?: string
     className?: string
     options?: { label: string; value: string; icon?: React.ReactNode }[]
@@ -67,10 +68,16 @@ export function Filters({ fields, filters, onChange, addButton, className }: Fil
                 if (!field) return null
                 return (
                     <div key={filter.id} className="group flex items-center gap-2 bg-white/80 backdrop-blur-md border border-primary/30 rounded-md px-3 h-10 text-sm shadow-sm transition-all hover:border-primary/60 hover:bg-white hover:shadow-md animate-in fade-in zoom-in-95 duration-200">
-                        <span className="text-primary/70 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider">
-                            {field.icon && <span className="opacity-70">{field.icon}</span>}
-                            {field.label}:
-                        </span>
+                        {field.icon && (
+                            <span className="text-primary/70 opacity-70 flex items-center justify-center">
+                                {field.icon}
+                            </span>
+                        )}
+                        {field.activeLabel && (
+                            <span className="text-primary/70 text-xs font-medium uppercase tracking-wider">
+                                {field.activeLabel}
+                            </span>
+                        )}
                         {field.type === 'text' || field.type === 'email' ? (
                             <input
                                 className="bg-transparent border-none outline-none w-32 text-foreground placeholder:text-muted-foreground/50 text-sm font-medium focus:w-48 transition-all duration-300"
