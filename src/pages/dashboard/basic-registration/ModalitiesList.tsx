@@ -255,22 +255,22 @@ export default function ModalitiesList() {
                   Gênero {getSortIcon('gender')}
                 </div>
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('minAge')}>
+              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap" onClick={() => requestSort('minAge')}>
                 <div className="flex items-center">
                   Idade (Min-Max) {getSortIcon('minAge')}
                 </div>
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('minAthletes')}>
+              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap" onClick={() => requestSort('minAthletes')}>
                 <div className="flex items-center">
                   Atletas (Min-Max) {getSortIcon('minAthletes')}
                 </div>
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('maxTeams')}>
+              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap" onClick={() => requestSort('maxTeams')}>
                 <div className="flex items-center">
                   Equipes Máx {getSortIcon('maxTeams')}
                 </div>
               </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('maxEventsPerAthlete')}>
+              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap" onClick={() => requestSort('maxEventsPerAthlete')}>
                 <div className="flex items-center">
                   Máx. Provas {getSortIcon('maxEventsPerAthlete')}
                 </div>
