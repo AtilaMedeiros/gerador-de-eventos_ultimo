@@ -66,7 +66,7 @@ export function Filters({ fields, filters, onChange, addButton, className }: Fil
                 const field = getField(filter.field)
                 if (!field) return null
                 return (
-                    <div key={filter.id} className="group flex items-center gap-2 bg-white/80 backdrop-blur-md border border-primary/30 rounded-md px-3 py-1.5 text-sm shadow-sm transition-all hover:border-primary/60 hover:bg-white hover:shadow-md animate-in fade-in zoom-in-95 duration-200">
+                    <div key={filter.id} className="group flex items-center gap-2 bg-white/80 backdrop-blur-md border border-primary/30 rounded-md px-3 h-12 text-sm shadow-sm transition-all hover:border-primary/60 hover:bg-white hover:shadow-md animate-in fade-in zoom-in-95 duration-200">
                         <span className="text-primary/70 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider">
                             {field.icon && <span className="opacity-70">{field.icon}</span>}
                             {field.label}:
