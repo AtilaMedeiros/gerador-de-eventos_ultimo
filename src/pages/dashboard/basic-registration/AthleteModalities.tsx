@@ -157,7 +157,7 @@ export default function AthleteModalities() {
                 </div>
             </div>
 
-            <Card className="border-blue-100/50 dark:border-blue-900/30 bg-white/40 dark:bg-black/40 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all duration-300">
+            <Card className="border-blue-100/50 dark:border-blue-900/30 bg-white/40 dark:bg-black/40 backdrop-blur-xl transition-all duration-300">
                 <CardHeader className="pb-4">
                     <CardTitle className="text-xl flex items-center gap-2 text-primary">
                         <div className="p-2 bg-primary/10 rounded-lg">
@@ -267,7 +267,7 @@ export default function AthleteModalities() {
                 </CardContent>
             </Card>
 
-            <Card className="border-blue-100/50 dark:border-blue-900/30 bg-white/40 dark:bg-black/40 backdrop-blur-xl shadow-lg mt-8 overflow-hidden">
+            <Card className="border-blue-100/50 dark:border-blue-900/30 bg-white/40 dark:bg-black/40 backdrop-blur-xl mt-8 overflow-hidden">
                 <CardHeader className="pb-4">
                     <div className="flex flex-col">
                         <CardTitle className="text-xl text-primary">Modalidades Cadastradas</CardTitle>
