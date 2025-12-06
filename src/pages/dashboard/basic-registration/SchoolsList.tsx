@@ -27,8 +27,17 @@ import {
     ListFilter,
     ArrowUpDown,
     ArrowUp,
-    ArrowDown
+    ArrowDown,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 
@@ -229,6 +238,24 @@ export default function SchoolsList() {
             <ArrowDown className="ml-2 h-4 w-4 text-primary" />
     }
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1)
+    const [itemsPerPage, setItemsPerPage] = useState(50)
+
+    // Pagination Logic
+    const totalPages = Math.ceil(sortedSchools.length / itemsPerPage)
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    const currentSchools = sortedSchools.slice(startIndex, endIndex)
+
+    // Reset page when filters change
+    // You might want to use useEffect for this if filters are complex, but for now simple state reset on filter change is better handled in the filter change handler if possible, or just let the user navigate back. 
+    // Actually, it's better to reset to page 1 if filtered results change length significantly or if current page > total pages.
+    // I will add a safe check:
+    if (currentPage > totalPages && totalPages > 0) {
+        setCurrentPage(1)
+    }
+
     const handleAction = (action: string) => {
         toast.info(`Ação ${action} simulada com sucesso.`)
     }
@@ -337,8 +364,8 @@ export default function SchoolsList() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {sortedSchools.length > 0 ? (
-                            sortedSchools.map((school) => (
+                        {currentSchools.length > 0 ? (
+                            currentSchools.map((school) => (
                                 <TableRow
                                     key={school.id}
                                     className="hover:bg-primary/5 transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group"
@@ -420,6 +447,58 @@ export default function SchoolsList() {
                         )}
                     </TableBody>
                 </Table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                    <span>Monstrando</span>
+                    <Select
+                        value={String(itemsPerPage)}
+                        onValueChange={(value) => {
+                            setItemsPerPage(Number(value))
+                            setCurrentPage(1)
+                        }}
+                    >
+                        <SelectTrigger className="h-8 w-[70px]">
+                            <SelectValue placeholder={itemsPerPage} />
+                        </SelectTrigger>
+                        <SelectContent side="top">
+                            {[10, 20, 50, 100].map(pageSize => (
+                                <SelectItem key={pageSize} value={String(pageSize)}>
+                                    {pageSize}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <span>registros por página</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <span>
+                        Página {currentPage} de {totalPages || 1}
+                    </span>
+                    <div className="flex gap-1">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
             </div>
         </div>
     )
