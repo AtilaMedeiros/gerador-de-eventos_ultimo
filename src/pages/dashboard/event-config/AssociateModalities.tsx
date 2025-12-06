@@ -191,7 +191,7 @@ export default function AssociateModalities({
   return (
     <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 shrink-0 px-1">
+      <div className="flex items-center justify-between mb-10 shrink-0 px-1">
         <div className="flex items-center gap-2">
           {!isWizard && (
             <Button
@@ -216,7 +216,7 @@ export default function AssociateModalities({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-6 pb-24">
+      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-6 pb-24 px-1 pt-1">
 
         {/* Left Column: List */}
         <div className="flex-1 flex flex-col min-h-0 space-y-4">
