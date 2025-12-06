@@ -46,7 +46,7 @@ export function Filters({ fields, filters, onChange, addButton, className }: Fil
         const field = fields.find(f => f.key === fieldKey)
         if (!field) return
         const newFilter = createFilter(fieldKey, 'contains', '')
-        onChange([...filters, newFilter])
+        onChange([newFilter, ...filters])
     }
 
     const removeFilter = (id: string) => {
@@ -141,17 +141,17 @@ export function Filters({ fields, filters, onChange, addButton, className }: Fil
                         </Button>
                     )}
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56 p-2 border-primary/20 bg-white/95 backdrop-blur-xl shadow-xl shadow-primary/10">
-                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <DropdownMenuContent align="start" className="w-56 p-2 border-blue-100 bg-white/95 backdrop-blur-xl shadow-xl shadow-blue-500/5">
+                    <div className="px-2 py-1.5 text-xs font-semibold text-blue-400/60 uppercase tracking-wider">
                         Campos Disponíveis
                     </div>
                     {fields.map(field => (
                         <DropdownMenuItem
                             key={field.key}
                             onClick={() => addFilter(field.key)}
-                            className="gap-3 py-2.5 cursor-pointer focus:bg-primary/5 focus:text-primary"
+                            className="gap-3 py-2.5 cursor-pointer text-blue-400 focus:bg-blue-50 focus:text-blue-500"
                         >
-                            <span className="flex items-center justify-center w-8 h-8 rounded-md bg-secondary/50 text-muted-foreground group-hover:text-primary">
+                            <span className="flex items-center justify-center w-8 h-8 text-blue-400">
                                 {field.icon || <FilterIcon className="h-4 w-4" />}
                             </span>
                             <span className="flex-1 font-medium">{field.label}</span>

@@ -99,7 +99,7 @@ const filterFields: FilterFieldConfig[] = [
     },
     {
         key: 'isEventActive',
-        label: 'Evento Ativo',
+        label: 'Evento',
         icon: <Activity className="size-3.5" />,
         type: 'boolean',
     },
@@ -253,16 +253,7 @@ export default function SchoolsList() {
                             }
                         />
                     </div>
-                    {filters.length > 0 && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setFilters([])}
-                            className="text-muted-foreground hover:text-destructive h-10 w-10"
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    )}
+
                 </div>
             </div>
 
