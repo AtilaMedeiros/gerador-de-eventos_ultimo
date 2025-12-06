@@ -47,6 +47,41 @@ const filterFields: FilterFieldConfig[] = [
     icon: <Palette className="size-3.5" />,
     type: 'text',
     placeholder: 'Buscar por nome...',
+  },
+  {
+    key: 'primary',
+    label: 'Cor Primária',
+    icon: <Palette className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Ex: #FF0000',
+  },
+  {
+    key: 'secondary',
+    label: 'Cor Secundária',
+    icon: <Palette className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Ex: #00FF00',
+  },
+  {
+    key: 'headingFont',
+    label: 'Fonte Título',
+    icon: <Palette className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Ex: Inter',
+  },
+  {
+    key: 'bodyFont',
+    label: 'Fonte Corpo',
+    icon: <Palette className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Ex: Roboto',
+  },
+  {
+    key: 'radius',
+    label: 'Tamanho',
+    icon: <Palette className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Ex: medium',
   }
 ]
 
@@ -74,6 +109,21 @@ export default function VisualIdentityList() {
       if (filter.field === 'name') {
         return theme.name.toLowerCase().includes(value)
       }
+      if (filter.field === 'primary') {
+        return theme.colors.primary.toLowerCase().includes(value)
+      }
+      if (filter.field === 'secondary') {
+        return theme.colors.secondary.toLowerCase().includes(value)
+      }
+      if (filter.field === 'headingFont') {
+        return theme.typography.titleFont.toLowerCase().includes(value)
+      }
+      if (filter.field === 'bodyFont') {
+        return theme.typography.bodyFont.toLowerCase().includes(value)
+      }
+      if (filter.field === 'radius') {
+        return theme.style.borderRadius.toLowerCase().includes(value)
+      }
       return true
     })
   })
@@ -86,8 +136,25 @@ export default function VisualIdentityList() {
 
     const { key, direction } = sortConfig
 
-    let aValue: any = a[key as keyof typeof a]
-    let bValue: any = b[key as keyof typeof b]
+    let aValue: any
+    let bValue: any
+
+    if (['primary', 'secondary'].includes(key)) {
+      aValue = a.colors[key as keyof typeof a.colors]
+      bValue = b.colors[key as keyof typeof b.colors]
+    } else if (key === 'headingFont') {
+      aValue = a.typography.titleFont
+      bValue = b.typography.titleFont
+    } else if (key === 'bodyFont') {
+      aValue = a.typography.bodyFont
+      bValue = b.typography.bodyFont
+    } else if (key === 'radius') {
+      aValue = a.style.borderRadius
+      bValue = b.style.borderRadius
+    } else {
+      aValue = a[key as keyof typeof a]
+      bValue = b[key as keyof typeof b]
+    }
 
     if (aValue < bValue) {
       return direction === 'asc' ? -1 : 1
@@ -137,9 +204,9 @@ export default function VisualIdentityList() {
       name: 200,
       primary: 120,
       secondary: 130,
-      background: 120,
-      text: 100,
-      createdAt: 120,
+      headingFont: 150,
+      bodyFont: 150,
+      radius: 100,
       actions: 100
     }
   })
@@ -266,9 +333,9 @@ export default function VisualIdentityList() {
                   className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                 />
               </TableHead>
-              <TableHead style={{ width: colWidths.primary }} className="relative font-semibold text-primary/80 h-12 text-center">
+              <TableHead style={{ width: colWidths.primary }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('primary')}>
                 <div className="flex items-center justify-center overflow-hidden">
-                  <span className="truncate">Cor Primária</span>
+                  <span className="truncate">Cor Primária</span> {getSortIcon('primary')}
                 </div>
                 <div
                   onMouseDown={(e) => handleMouseDown(e, 'primary')}
@@ -276,9 +343,9 @@ export default function VisualIdentityList() {
                   className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                 />
               </TableHead>
-              <TableHead style={{ width: colWidths.secondary }} className="relative font-semibold text-primary/80 h-12 text-center">
+              <TableHead style={{ width: colWidths.secondary }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('secondary')}>
                 <div className="flex items-center justify-center overflow-hidden">
-                  <span className="truncate">Cor Secundária</span>
+                  <span className="truncate">Cor Secundária</span> {getSortIcon('secondary')}
                 </div>
                 <div
                   onMouseDown={(e) => handleMouseDown(e, 'secondary')}
@@ -286,32 +353,32 @@ export default function VisualIdentityList() {
                   className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                 />
               </TableHead>
-              <TableHead style={{ width: colWidths.background }} className="relative font-semibold text-primary/80 h-12 text-center">
+              <TableHead style={{ width: colWidths.headingFont }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('headingFont')}>
                 <div className="flex items-center justify-center overflow-hidden">
-                  <span className="truncate">Cor de Fundo</span>
+                  <span className="truncate">Fonte Título</span> {getSortIcon('headingFont')}
                 </div>
                 <div
-                  onMouseDown={(e) => handleMouseDown(e, 'background')}
+                  onMouseDown={(e) => handleMouseDown(e, 'headingFont')}
                   onClick={(e) => e.stopPropagation()}
                   className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                 />
               </TableHead>
-              <TableHead style={{ width: colWidths.text }} className="relative font-semibold text-primary/80 h-12 text-center">
+              <TableHead style={{ width: colWidths.bodyFont }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('bodyFont')}>
                 <div className="flex items-center justify-center overflow-hidden">
-                  <span className="truncate">Cor do Texto</span>
+                  <span className="truncate">Fonte Corpo</span> {getSortIcon('bodyFont')}
                 </div>
                 <div
-                  onMouseDown={(e) => handleMouseDown(e, 'text')}
+                  onMouseDown={(e) => handleMouseDown(e, 'bodyFont')}
                   onClick={(e) => e.stopPropagation()}
                   className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                 />
               </TableHead>
-              <TableHead style={{ width: colWidths.createdAt }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('createdAt')}>
+              <TableHead style={{ width: colWidths.radius }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('radius')}>
                 <div className="flex items-center justify-center overflow-hidden">
-                  <span className="truncate">Data Criação</span> {getSortIcon('createdAt')}
+                  <span className="truncate">Tamanho</span> {getSortIcon('radius')}
                 </div>
                 <div
-                  onMouseDown={(e) => handleMouseDown(e, 'createdAt')}
+                  onMouseDown={(e) => handleMouseDown(e, 'radius')}
                   onClick={(e) => e.stopPropagation()}
                   className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                 />
@@ -371,29 +438,23 @@ export default function VisualIdentityList() {
                   </TableCell>
                   <TableCell className="h-12 py-0">
                     <div className="flex items-center justify-center gap-2 h-full">
-                      <div
-                        className="h-4 w-4 rounded-full border shadow-sm ring-1 ring-white/20"
-                        style={{ backgroundColor: theme.colors.background }}
-                      />
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {theme.colors.background}
+                      <span className="text-xs text-muted-foreground font-mono truncate max-w-[120px]" title={theme.typography.titleFont}>
+                        {theme.typography.titleFont}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell className="h-12 py-0">
                     <div className="flex items-center justify-center gap-2 h-full">
-                      <div
-                        className="h-4 w-4 rounded-full border shadow-sm ring-1 ring-white/20"
-                        style={{ backgroundColor: theme.colors.text }}
-                      />
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {theme.colors.text}
+                      <span className="text-xs text-muted-foreground font-mono truncate max-w-[120px]" title={theme.typography.bodyFont}>
+                        {theme.typography.bodyFont}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground h-12 py-0">
-                    <div className="flex items-center justify-center h-full">
-                      {format(new Date(theme.createdAt), 'dd/MM/yyyy', { locale: ptBR })}
+                  <TableCell className="h-12 py-0">
+                    <div className="flex items-center justify-center gap-2 h-full">
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {theme.style.borderRadius}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell className="text-right h-12 py-0">
@@ -509,6 +570,6 @@ export default function VisualIdentityList() {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
