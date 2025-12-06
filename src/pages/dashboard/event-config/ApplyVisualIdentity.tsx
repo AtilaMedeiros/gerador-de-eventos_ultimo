@@ -163,7 +163,7 @@ export default function ApplyVisualIdentity({
                 size="sm"
                 className="mb-2 -ml-2 text-muted-foreground"
                 onClick={() =>
-                  navigate('/area-do-produtor/cadastro-basico/evento')
+                  navigate('/area-do-produtor/evento')
                 }
               >
                 <ArrowLeft className="h-4 w-4 mr-1" /> Voltar para Eventos

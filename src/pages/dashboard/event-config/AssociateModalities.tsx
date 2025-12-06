@@ -40,7 +40,7 @@ export default function AssociateModalities({
       toast.warning('Nenhum evento selecionado.', {
         description: 'Retornando para a lista de eventos.',
       })
-      navigate('/area-do-produtor/cadastro-basico/evento')
+      navigate('/area-do-produtor/evento')
     } else {
       // Load existing associations
       const existing = getEventModalities(eventId)
@@ -74,7 +74,7 @@ export default function AssociateModalities({
         // Just toast, stay on page or maybe refresh?
         // Let's stay for now or reload to reflect changes if needed.
       } else {
-        navigate('/area-do-produtor/cadastro-basico/evento')
+        navigate('/area-do-produtor/evento')
       }
     }
   }
@@ -269,7 +269,7 @@ export default function AssociateModalities({
                 variant="outline"
                 className="w-full"
                 onClick={() =>
-                  navigate('/area-do-produtor/cadastro-basico/evento')
+                  navigate('/area-do-produtor/evento')
                 }
               >
                 Cancelar

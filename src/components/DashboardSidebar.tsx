@@ -28,10 +28,7 @@ export function DashboardSidebar() {
     [location.pathname],
   )
 
-  // Highlight "Eventos" if we are in the basic registration for events OR configuring an event
-  const isEventosActive =
-    isChildActive('/area-do-produtor/cadastro-basico/evento') ||
-    isChildActive('/area-do-produtor/configurar-evento')
+
 
   const NavItem = ({
     to,
@@ -95,10 +92,10 @@ export function DashboardSidebar() {
             active={isActive('/area-do-produtor/inicio')}
           />
           <NavItem
-            to="/area-do-produtor/cadastro-basico/evento"
+            to="/area-do-produtor/evento"
             icon={Calendar}
             label="Eventos"
-            active={isEventosActive}
+            active={isChildActive('/area-do-produtor/evento')}
           />
           <NavItem
             to="/area-do-produtor/modalidades"

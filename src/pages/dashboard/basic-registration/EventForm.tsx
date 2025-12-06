@@ -126,7 +126,7 @@ export default function EventForm({
         })
       } else {
         toast.error('Evento não encontrado.')
-        navigate('/area-do-produtor/cadastro-basico/evento')
+        navigate('/area-do-produtor/evento')
       }
     }
   }, [isEditing, id, getEventById, navigate, user, form])
@@ -218,14 +218,14 @@ export default function EventForm({
       if (isWizard && onNext) {
         onNext(id)
       } else {
-        navigate('/area-do-produtor/cadastro-basico/evento')
+        navigate('/area-do-produtor/evento')
       }
     } else {
       const newEvent = addEvent(eventData)
       if (isWizard && onNext) {
         onNext(newEvent.id)
       } else {
-        navigate('/area-do-produtor/cadastro-basico/evento')
+        navigate('/area-do-produtor/evento')
       }
     }
     setIsSubmitting(false)
@@ -252,7 +252,7 @@ export default function EventForm({
               variant="ghost"
               size="sm"
               className="h-6 px-2 -ml-2 text-muted-foreground mb-2"
-              onClick={() => navigate('/area-do-produtor/cadastro-basico/evento')}
+              onClick={() => navigate('/area-do-produtor/evento')}
             >
               <ArrowLeft className="h-3 w-3 mr-1" /> Voltar
             </Button>
@@ -472,7 +472,7 @@ export default function EventForm({
                 variant="ghost"
                 className="w-full md:w-auto hover:text-destructive"
                 onClick={() =>
-                  navigate('/area-do-produtor/cadastro-basico/evento')
+                  navigate('/area-do-produtor/evento')
                 }
                 disabled={isSubmitting}
               >

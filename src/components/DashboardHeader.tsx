@@ -32,7 +32,7 @@ export function DashboardHeader() {
   const getPageTitle = () => {
     const path = location.pathname
     if (path.includes('/area-do-produtor/inicio')) return 'Visão Geral'
-    if (path.includes('/area-do-produtor/cadastro-basico/evento'))
+    if (path.includes('/area-do-produtor/evento') && !path.includes('/dashboard'))
       return path.includes('/novo') ? 'Criar Evento' : 'Gerenciar Eventos'
     if (path.includes('/area-do-produtor/modalidades'))
       return 'Catálogo de Modalidades'

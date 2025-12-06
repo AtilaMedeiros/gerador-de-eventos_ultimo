@@ -26,6 +26,7 @@ import UserForm from './pages/dashboard/basic-registration/UserForm'
 import SchoolsList from './pages/dashboard/basic-registration/SchoolsList'
 import SchoolForm from './pages/dashboard/basic-registration/SchoolForm'
 import AdminAthletesList from './pages/dashboard/basic-registration/AthletesList'
+import AdminAthleteForm from './pages/dashboard/basic-registration/AthleteForm'
 import AssociateModalities from './pages/dashboard/event-config/AssociateModalities'
 import ApplyVisualIdentity from './pages/dashboard/event-config/ApplyVisualIdentity'
 import Communication from './pages/dashboard/event-config/Communication'
@@ -141,13 +142,12 @@ const App = () => (
                       <Route path="escolas/novo" element={<SchoolForm />} />
                       <Route path="escolas/:id" element={<SchoolForm />} />
                       <Route path="atletas" element={<AdminAthletesList />} />
+                      <Route path="atletas/novo" element={<AdminAthleteForm />} />
+                      <Route path="atletas/:id" element={<AdminAthleteForm />} />
 
-                      {/* Cadastro Básico */}
-                      <Route path="cadastro-basico">
-                        <Route path="evento" element={<EventsList />} />
-                        <Route path="evento/novo" element={<EventWizard />} />
-                        <Route path="evento/:id" element={<EventForm />} />
-                      </Route>
+                      <Route path="evento" element={<EventsList />} />
+                      <Route path="evento/novo" element={<EventWizard />} />
+                      <Route path="evento/:id" element={<EventForm />} />
                       <Route
                         path="identidade-visual"
                         element={<VisualIdentityList />}

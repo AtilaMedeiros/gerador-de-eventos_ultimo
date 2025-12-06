@@ -98,7 +98,7 @@ export default function EventsList() {
 
   const handleCreateEvent = () => {
     if (hasPermission('criar_evento')) {
-      navigate('/area-do-produtor/cadastro-basico/evento/novo')
+      navigate('/area-do-produtor/evento/novo')
     } else {
       toast.error('Acesso Negado', {
         description: 'Você não tem permissão para criar novos eventos.',
@@ -126,7 +126,7 @@ export default function EventsList() {
 
   const handleEdit = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
-    navigate(`/area-do-produtor/cadastro-basico/evento/${id}`)
+    navigate(`/area-do-produtor/evento/${id}`)
   }
 
   const handlePanel = (e: React.MouseEvent, id: string) => {

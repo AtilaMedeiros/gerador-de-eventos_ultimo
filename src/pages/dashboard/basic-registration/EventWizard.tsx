@@ -46,7 +46,7 @@ export default function EventWizard() {
     }
 
     const handleFinish = () => {
-        navigate('/area-do-produtor/cadastro-basico/evento')
+        navigate('/area-do-produtor/evento')
     }
 
     return (
