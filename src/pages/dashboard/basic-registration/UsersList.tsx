@@ -34,7 +34,7 @@ const MOCK_USERS = [
     id: 1,
     name: 'Ana Silva',
     email: 'ana.silva@email.com',
-    role: 'Admin',
+    role: 'Administrador',
     status: 'active',
     lastAccess: 'Hoje, 10:30',
   },
@@ -42,7 +42,7 @@ const MOCK_USERS = [
     id: 2,
     name: 'Carlos Oliveira',
     email: 'carlos.o@email.com',
-    role: 'Organizador',
+    role: 'Produtor',
     status: 'active',
     lastAccess: 'Ontem, 15:45',
   },
@@ -50,7 +50,7 @@ const MOCK_USERS = [
     id: 3,
     name: 'Marcos Santos',
     email: 'marcos.s@email.com',
-    role: 'Staff',
+    role: 'Participante',
     status: 'inactive',
     lastAccess: '10/05/2025',
   },
@@ -73,10 +73,10 @@ const filterFields: FilterFieldConfig[] = [
   },
   {
     key: 'role',
-    label: 'Função',
+    label: 'Tipo de Acesso',
     icon: <Shield className="size-3.5" />,
     type: 'text', // Keeping text for simplicity as mock roles are limited but could be select
-    placeholder: 'Admin, Organizador...',
+    placeholder: 'Administrador, Produtor...',
   },
   {
     key: 'status',
@@ -271,7 +271,7 @@ export default function UsersList() {
               </TableHead>
               <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('role')}>
                 <div className="flex items-center">
-                  Função {getSortIcon('role')}
+                  Tipo de Acesso {getSortIcon('role')}
                 </div>
               </TableHead>
               <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('status')}>

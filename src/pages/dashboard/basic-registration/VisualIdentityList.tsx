@@ -91,11 +91,11 @@ const filterFields: FilterFieldConfig[] = [
     placeholder: 'Ex: Roboto',
   },
   {
-    key: 'radius',
-    label: 'Tamanho',
+    key: 'baseSize',
+    label: 'Tamanho Base',
     icon: <Palette className="size-3.5" />,
     type: 'text',
-    placeholder: 'Ex: medium',
+    placeholder: 'Ex: 16',
   }
 ]
 
@@ -141,8 +141,8 @@ export default function VisualIdentityList() {
       if (filter.field === 'bodyFont') {
         return theme.typography.bodyFont.toLowerCase().includes(value)
       }
-      if (filter.field === 'radius') {
-        return theme.style.borderRadius.toLowerCase().includes(value)
+      if (filter.field === 'baseSize') {
+        return theme.typography.baseSize.toString().includes(value)
       }
       return true
     })
@@ -168,9 +168,9 @@ export default function VisualIdentityList() {
     } else if (key === 'bodyFont') {
       aValue = a.typography.bodyFont
       bValue = b.typography.bodyFont
-    } else if (key === 'radius') {
-      aValue = a.style.borderRadius
-      bValue = b.style.borderRadius
+    } else if (key === 'baseSize') {
+      aValue = a.typography.baseSize
+      bValue = b.typography.baseSize
     } else {
       aValue = a[key as keyof typeof a]
       bValue = b[key as keyof typeof b]
@@ -221,15 +221,15 @@ export default function VisualIdentityList() {
   const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
     const saved = localStorage.getItem('ge_visual_identity_col_widths')
     return saved ? JSON.parse(saved) : {
-      name: 200,
-      primary: 120,
-      secondary: 120,
-      background: 120,
-      text: 120,
-      headingFont: 150,
-      bodyFont: 150,
-      radius: 100,
-      actions: 100
+      name: 140,
+      primary: 75,
+      secondary: 75,
+      background: 75,
+      text: 75,
+      headingFont: 85,
+      bodyFont: 85,
+      baseSize: 75,
+      actions: 60
     }
   })
 
@@ -397,7 +397,7 @@ export default function VisualIdentityList() {
               </TableHead>
               <TableHead style={{ width: colWidths.headingFont }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('headingFont')}>
                 <div className="flex items-center justify-center overflow-hidden">
-                  <span className="truncate">Fonte Título</span> {getSortIcon('headingFont')}
+                  <span className="truncate">Fonte</span> {getSortIcon('headingFont')}
                 </div>
                 <div
                   onMouseDown={(e) => handleMouseDown(e, 'headingFont')}
@@ -407,7 +407,7 @@ export default function VisualIdentityList() {
               </TableHead>
               <TableHead style={{ width: colWidths.bodyFont }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('bodyFont')}>
                 <div className="flex items-center justify-center overflow-hidden">
-                  <span className="truncate">Fonte Corpo</span> {getSortIcon('bodyFont')}
+                  <span className="truncate">Fonte</span> {getSortIcon('bodyFont')}
                 </div>
                 <div
                   onMouseDown={(e) => handleMouseDown(e, 'bodyFont')}
@@ -415,12 +415,12 @@ export default function VisualIdentityList() {
                   className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                 />
               </TableHead>
-              <TableHead style={{ width: colWidths.radius }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('radius')}>
+              <TableHead style={{ width: colWidths.baseSize }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('baseSize')}>
                 <div className="flex items-center justify-center overflow-hidden">
-                  <span className="truncate">Tamanho</span> {getSortIcon('radius')}
+                  <span className="truncate">Tamanho</span> {getSortIcon('baseSize')}
                 </div>
                 <div
-                  onMouseDown={(e) => handleMouseDown(e, 'radius')}
+                  onMouseDown={(e) => handleMouseDown(e, 'baseSize')}
                   onClick={(e) => e.stopPropagation()}
                   className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                 />
@@ -522,13 +522,17 @@ export default function VisualIdentityList() {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="h-12 py-0">
-                    <div className="flex items-center justify-center gap-2 h-full">
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {theme.style.borderRadius}
+                  <TableCell className="h-16 py-0">
+                    <div className="flex flex-col items-center justify-center gap-0.5 h-full">
+                      <span className="text-sm font-medium">
+                        {theme.typography.baseSize}px
+                      </span>
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                        base
                       </span>
                     </div>
                   </TableCell>
+
                   <TableCell className="text-right h-12 py-0">
                     <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity h-full items-center">
                       <Button

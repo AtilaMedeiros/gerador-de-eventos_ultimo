@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { GiSoccerKick } from 'react-icons/gi'
 
 const MOCK_ATHLETES = [
     {

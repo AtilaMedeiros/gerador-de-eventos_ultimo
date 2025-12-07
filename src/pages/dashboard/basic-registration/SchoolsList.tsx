@@ -18,54 +18,64 @@ import {
     Trash2,
     School,
     User,
-    MapPin,
-    Hash,
+    UserPlus,
     Trophy,
-    Building,
+    Hash,
     Activity,
     ArrowUpDown,
     ArrowUp,
     ArrowDown,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Phone,
+    Mail,
+    UserCheck,
+    GraduationCap,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { FaWhatsapp } from 'react-icons/fa'
 
 const MOCK_SCHOOLS = [
     {
         id: 1,
         name: 'Escola Municipal de Esportes',
-        city: 'São Paulo',
-        state: 'SP',
+        type: 'Pública',
+        director: 'Carlos Muniz',
+        phone: '(11) 3344-5566',
+        whatsapp: '(11) 99887-7665',
+        email: 'contato@esportes.sp.gov.br',
         responsible: 'João Silva',
         event: 'Tech Summit 2025',
         isEventActive: true,
-        athletes: 45,
         inep: '11223344',
         athletesList: ['Pedro Santos', 'Maria Oliveira', 'Carlos Souza']
     },
     {
         id: 2,
         name: 'Colégio Estadual do Saber',
-        city: 'Rio de Janeiro',
-        state: 'RJ',
+        type: 'Pública',
+        director: 'Ana Paula',
+        phone: '(21) 3322-1100',
+        whatsapp: '(21) 98765-4321',
+        email: 'direcao@saber.rj.gov.br',
         responsible: 'Maria Santos',
         event: 'Jogos Estudantis 2025',
         isEventActive: false,
-        athletes: 32,
         inep: '55667788',
         athletesList: ['Ana Lima', 'Beatriz Costa', 'Daniel Rocha']
     },
     {
         id: 3,
         name: 'Instituto Atlético',
-        city: 'Belo Horizonte',
-        state: 'MG',
+        type: 'Privada',
+        director: 'Roberto Campos',
+        phone: '(31) 3214-5678',
+        whatsapp: '(31) 99112-2334',
+        email: 'admin@institutoatletico.com.br',
         responsible: 'Pedro Costa',
         event: 'Tech Summit 2025',
         isEventActive: true,
-        athletes: 60,
         inep: '99001122',
         athletesList: ['Lucas Pereira', 'Fernanda Alves', 'Gabriel Dias']
     },
@@ -108,20 +118,6 @@ const filterFields: FilterFieldConfig[] = [
         type: 'boolean',
     },
     {
-        key: 'city',
-        label: 'Cidade',
-        icon: <Building className="size-3.5" />,
-        type: 'text',
-        placeholder: 'Nome da cidade...',
-    },
-    {
-        key: 'state',
-        label: 'UF',
-        icon: <MapPin className="size-3.5" />,
-        type: 'text',
-        placeholder: 'Sigla UF...',
-    },
-    {
         key: 'inep',
         label: 'INEP',
         icon: <Hash className="size-3.5" />,
@@ -145,8 +141,6 @@ export default function SchoolsList() {
             school.name.toLowerCase().includes(searchLower) ||
             school.responsible.toLowerCase().includes(searchLower) ||
             school.event.toLowerCase().includes(searchLower) ||
-            school.city.toLowerCase().includes(searchLower) ||
-            school.state.toLowerCase().includes(searchLower) ||
             school.inep?.includes(searchLower) ||
             school.athletesList?.some(athlete => athlete.toLowerCase().includes(searchLower))
 
@@ -175,10 +169,6 @@ export default function SchoolsList() {
                     const boolValue = value === 'true' || value === true
                     return school.isEventActive === boolValue
                 }
-                case 'city':
-                    return school.city.toLowerCase().includes(value)
-                case 'state':
-                    return school.state.toLowerCase().includes(value)
                 case 'inep':
                     return school.inep?.includes(value)
                 default:
@@ -197,12 +187,6 @@ export default function SchoolsList() {
 
         let aValue: any = a[key as keyof typeof a]
         let bValue: any = b[key as keyof typeof b]
-
-        // Handle specific sorting cases
-        if (key === 'location') {
-            aValue = `${a.city}/${a.state}`
-            bValue = `${b.city}/${b.state}`
-        }
 
         if (aValue < bValue) {
             return direction === 'asc' ? -1 : 1
@@ -250,11 +234,13 @@ export default function SchoolsList() {
     const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
         const saved = localStorage.getItem('ge_schools_col_widths')
         return saved ? JSON.parse(saved) : {
-            name: 300,
-            location: 180,
-            responsible: 200,
+            name: 250,
+            type: 120,
+            director: 180,
+            phone: 160,
+            email: 200,
+            responsible: 180,
             event: 200,
-            athletes: 100,
             actions: 100
         }
     })
@@ -386,12 +372,42 @@ export default function SchoolsList() {
                                     className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                                 />
                             </TableHead>
-                            <TableHead style={{ width: colWidths.location }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('location')}>
+                            <TableHead style={{ width: colWidths.type }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('type' as any)}>
                                 <div className="flex items-center justify-center overflow-hidden">
-                                    <span className="truncate">Cidade/UF</span> {getSortIcon('location')}
+                                    <span className="truncate">Tipo</span> {getSortIcon('type')}
                                 </div>
                                 <div
-                                    onMouseDown={(e) => handleMouseDown(e, 'location')}
+                                    onMouseDown={(e) => handleMouseDown(e, 'type')}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                />
+                            </TableHead>
+                            <TableHead style={{ width: colWidths.director }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('director' as any)}>
+                                <div className="flex items-center justify-center overflow-hidden">
+                                    <span className="truncate">Diretor</span> {getSortIcon('director')}
+                                </div>
+                                <div
+                                    onMouseDown={(e) => handleMouseDown(e, 'director')}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                />
+                            </TableHead>
+                            <TableHead style={{ width: colWidths.phone }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('phone' as any)}>
+                                <div className="flex items-center justify-center overflow-hidden">
+                                    <span className="truncate">Telefone</span> {getSortIcon('phone')}
+                                </div>
+                                <div
+                                    onMouseDown={(e) => handleMouseDown(e, 'phone')}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                />
+                            </TableHead>
+                            <TableHead style={{ width: colWidths.email }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('email' as any)}>
+                                <div className="flex items-center justify-center overflow-hidden">
+                                    <span className="truncate">Email</span> {getSortIcon('email')}
+                                </div>
+                                <div
+                                    onMouseDown={(e) => handleMouseDown(e, 'email')}
                                     onClick={(e) => e.stopPropagation()}
                                     className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                                 />
@@ -412,16 +428,6 @@ export default function SchoolsList() {
                                 </div>
                                 <div
                                     onMouseDown={(e) => handleMouseDown(e, 'event')}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
-                                />
-                            </TableHead>
-                            <TableHead style={{ width: colWidths.athletes }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('athletes')}>
-                                <div className="flex items-center justify-center overflow-hidden">
-                                    <span className="truncate">Atletas</span> {getSortIcon('athletes')}
-                                </div>
-                                <div
-                                    onMouseDown={(e) => handleMouseDown(e, 'athletes')}
                                     onClick={(e) => e.stopPropagation()}
                                     className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                                 />
@@ -450,13 +456,39 @@ export default function SchoolsList() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
-                                        <div className="flex items-center justify-center h-full text-muted-foreground">
-                                            {school.city}/{school.state}
+                                        <div className="flex items-center justify-center h-full">
+                                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-secondary/10 text-secondary-foreground border border-secondary/20">
+                                                {school.type}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="h-12 py-0">
+                                        <div className="flex items-center justify-center h-full gap-2 text-muted-foreground">
+                                            <UserCheck className="h-3.5 w-3.5" />
+                                            <span className="text-sm">{school.director}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="h-12 py-0">
+                                        <div className="flex flex-col items-center justify-center h-full gap-0.5">
+                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                <Phone className="h-3 w-3" />
+                                                {school.phone}
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground/80">
+                                                <FaWhatsapp className="h-3.5 w-3.5 text-emerald-500" />
+                                                {school.whatsapp}
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="h-12 py-0">
+                                        <div className="flex items-center justify-center h-full gap-2 text-muted-foreground">
+                                            {/* <Mail className="h-3.5 w-3.5" /> */}
+                                            <span className="text-sm truncate max-w-[180px]" title={school.email}>{school.email}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
                                         <div className="flex items-center justify-center h-full text-muted-foreground">
-                                            {school.responsible}
+                                            <span className="text-sm font-medium text-foreground/80">{school.responsible}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
@@ -477,13 +509,17 @@ export default function SchoolsList() {
                                             )}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="h-12 py-0">
-                                        <div className="flex items-center justify-center h-full font-mono text-muted-foreground">
-                                            {school.athletes}
-                                        </div>
-                                    </TableCell>
                                     <TableCell className="text-right h-12 py-0">
                                         <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity h-full items-center">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                                                onClick={() => navigate(`/area-do-produtor/escolas/${school.id}/participantes`)} // Assumed route or action
+                                                title="Participante Técnico"
+                                            >
+                                                <UserPlus className="h-4 w-4" />
+                                            </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
@@ -506,7 +542,7 @@ export default function SchoolsList() {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                                     Nenhuma escola encontrada com os filtros selecionados.
                                 </TableCell>
                             </TableRow>

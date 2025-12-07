@@ -241,8 +241,8 @@ export default function UserForm() {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="Administrador">Administrador</SelectItem>
-                      <SelectItem value="Assistente">Assistente</SelectItem>
-                      <SelectItem value="Observador">Observador</SelectItem>
+                      <SelectItem value="Produtor">Produtor</SelectItem>
+                      <SelectItem value="Participante">Participante</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

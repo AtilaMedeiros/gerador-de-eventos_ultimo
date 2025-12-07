@@ -7,14 +7,15 @@ import {
   User,
   Users,
   LogOut,
-  Calendar,
-  Trophy,
+  PartyPopper,
   Palette,
   ChevronRight,
   School,
   Megaphone,
+  Trophy,
 } from 'lucide-react'
 import { useCallback } from 'react'
+import { GiSoccerKick } from 'react-icons/gi'
 
 export function DashboardSidebar() {
   const location = useLocation()
@@ -35,11 +36,13 @@ export function DashboardSidebar() {
     icon: Icon,
     label,
     active,
+    iconClassName,
   }: {
     to: string
     icon: any
     label: string
     active: boolean
+    iconClassName?: string
   }) => (
     <Link
       to={to}
@@ -53,7 +56,8 @@ export function DashboardSidebar() {
       <div className="flex items-center gap-3">
         <Icon
           className={cn(
-            'h-4 w-4 transition-colors',
+            'transition-colors',
+            iconClassName || 'h-5 w-5',
             active
               ? 'text-primary'
               : 'text-muted-foreground group-hover:text-foreground',
@@ -93,9 +97,10 @@ export function DashboardSidebar() {
           />
           <NavItem
             to="/area-do-produtor/evento"
-            icon={Calendar}
+            icon={PartyPopper}
             label="Eventos"
             active={isChildActive('/area-do-produtor/evento')}
+            iconClassName="h-6 w-6"
           />
           <NavItem
             to="/area-do-produtor/modalidades"
@@ -117,9 +122,10 @@ export function DashboardSidebar() {
           />
           <NavItem
             to="/area-do-produtor/atletas"
-            icon={Users}
+            icon={GiSoccerKick}
             label="Atletas"
             active={isChildActive('/area-do-produtor/atletas')}
+            iconClassName="h-6 w-6"
           />
           <NavItem
             to="/area-do-produtor/comunicacao"
