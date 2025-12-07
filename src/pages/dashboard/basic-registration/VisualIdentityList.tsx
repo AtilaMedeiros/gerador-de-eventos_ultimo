@@ -63,6 +63,20 @@ const filterFields: FilterFieldConfig[] = [
     placeholder: 'Ex: #00FF00',
   },
   {
+    key: 'background',
+    label: 'Cor Fundo',
+    icon: <Palette className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Ex: #FFFFFF',
+  },
+  {
+    key: 'text',
+    label: 'Cor Texto',
+    icon: <Palette className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Ex: #000000',
+  },
+  {
     key: 'headingFont',
     label: 'Fonte Título',
     icon: <Palette className="size-3.5" />,
@@ -115,6 +129,12 @@ export default function VisualIdentityList() {
       if (filter.field === 'secondary') {
         return theme.colors.secondary.toLowerCase().includes(value)
       }
+      if (filter.field === 'background') {
+        return theme.colors.background.toLowerCase().includes(value)
+      }
+      if (filter.field === 'text') {
+        return theme.colors.text.toLowerCase().includes(value)
+      }
       if (filter.field === 'headingFont') {
         return theme.typography.titleFont.toLowerCase().includes(value)
       }
@@ -139,7 +159,7 @@ export default function VisualIdentityList() {
     let aValue: any
     let bValue: any
 
-    if (['primary', 'secondary'].includes(key)) {
+    if (['primary', 'secondary', 'background', 'text'].includes(key)) {
       aValue = a.colors[key as keyof typeof a.colors]
       bValue = b.colors[key as keyof typeof b.colors]
     } else if (key === 'headingFont') {
@@ -203,7 +223,9 @@ export default function VisualIdentityList() {
     return saved ? JSON.parse(saved) : {
       name: 200,
       primary: 120,
-      secondary: 130,
+      secondary: 120,
+      background: 120,
+      text: 120,
       headingFont: 150,
       bodyFont: 150,
       radius: 100,
@@ -335,7 +357,7 @@ export default function VisualIdentityList() {
               </TableHead>
               <TableHead style={{ width: colWidths.primary }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('primary')}>
                 <div className="flex items-center justify-center overflow-hidden">
-                  <span className="truncate">Cor Primária</span> {getSortIcon('primary')}
+                  <span className="truncate">Cor</span> {getSortIcon('primary')}
                 </div>
                 <div
                   onMouseDown={(e) => handleMouseDown(e, 'primary')}
@@ -345,10 +367,30 @@ export default function VisualIdentityList() {
               </TableHead>
               <TableHead style={{ width: colWidths.secondary }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('secondary')}>
                 <div className="flex items-center justify-center overflow-hidden">
-                  <span className="truncate">Cor Secundária</span> {getSortIcon('secondary')}
+                  <span className="truncate">Cor</span> {getSortIcon('secondary')}
                 </div>
                 <div
                   onMouseDown={(e) => handleMouseDown(e, 'secondary')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
+              </TableHead>
+              <TableHead style={{ width: colWidths.background }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('background')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Cor</span> {getSortIcon('background')}
+                </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'background')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
+              </TableHead>
+              <TableHead style={{ width: colWidths.text }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('text')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Cor</span> {getSortIcon('text')}
+                </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'text')}
                   onClick={(e) => e.stopPropagation()}
                   className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                 />
@@ -414,39 +456,69 @@ export default function VisualIdentityList() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="h-12 py-0">
-                    <div className="flex items-center justify-center gap-2 h-full">
+                  <TableCell className="h-16 py-0">
+                    <div className="flex flex-col items-center justify-center gap-1 h-full">
                       <div
                         className="h-4 w-4 rounded-full border shadow-sm ring-1 ring-white/20"
                         style={{ backgroundColor: theme.colors.primary }}
                       />
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {theme.colors.primary}
+                      <span className="text-[10px] text-muted-foreground font-medium">
+                        Primária
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="h-12 py-0">
-                    <div className="flex items-center justify-center gap-2 h-full">
+                  <TableCell className="h-16 py-0">
+                    <div className="flex flex-col items-center justify-center gap-1 h-full">
                       <div
                         className="h-4 w-4 rounded-full border shadow-sm ring-1 ring-white/20"
                         style={{ backgroundColor: theme.colors.secondary }}
                       />
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {theme.colors.secondary}
+                      <span className="text-[10px] text-muted-foreground font-medium">
+                        Secundária
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="h-16 py-0">
+                    <div className="flex flex-col items-center justify-center gap-1 h-full">
+                      <div
+                        className="h-4 w-4 rounded-full border shadow-sm ring-1 ring-white/20"
+                        style={{ backgroundColor: theme.colors.background }}
+                      />
+                      <span className="text-[10px] text-muted-foreground font-medium">
+                        Fundo
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="h-16 py-0">
+                    <div className="flex flex-col items-center justify-center gap-1 h-full">
+                      <div
+                        className="h-4 w-4 rounded-full border shadow-sm ring-1 ring-white/20"
+                        style={{ backgroundColor: theme.colors.text }}
+                      />
+                      <span className="text-[10px] text-muted-foreground font-medium">
+                        Texto
                       </span>
                     </div>
                   </TableCell>
                   <TableCell className="h-12 py-0">
                     <div className="flex items-center justify-center gap-2 h-full">
-                      <span className="text-xs text-muted-foreground font-mono truncate max-w-[120px]" title={theme.typography.titleFont}>
-                        {theme.typography.titleFont}
+                      <span
+                        className="text-lg text-foreground font-medium truncate max-w-[120px]"
+                        title={theme.typography.titleFont}
+                        style={{ fontFamily: theme.typography.titleFont }}
+                      >
+                        Título
                       </span>
                     </div>
                   </TableCell>
                   <TableCell className="h-12 py-0">
                     <div className="flex items-center justify-center gap-2 h-full">
-                      <span className="text-xs text-muted-foreground font-mono truncate max-w-[120px]" title={theme.typography.bodyFont}>
-                        {theme.typography.bodyFont}
+                      <span
+                        className="text-lg text-foreground font-medium truncate max-w-[120px]"
+                        title={theme.typography.bodyFont}
+                        style={{ fontFamily: theme.typography.bodyFont }}
+                      >
+                        Corpo
                       </span>
                     </div>
                   </TableCell>
