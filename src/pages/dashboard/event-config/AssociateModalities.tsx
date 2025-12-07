@@ -1,13 +1,14 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Search, ArrowLeft, X, Save, Layers, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Activity, Users, Trophy } from 'lucide-react'
+import { Search, ArrowLeft, X, Save, Layers, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Activity, Users, Trophy, Plus } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
-import { useNavigate, useSearchParams, useParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, useParams, useLocation } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useEvent } from '@/contexts/EventContext'
 import { useModality } from '@/contexts/ModalityContext'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import {
   Table,
@@ -18,6 +19,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Filters, type Filter as FilterType, type FilterFieldConfig } from '@/components/ui/filters'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import ModalityForm from '../basic-registration/ModalityForm'
 
 const filterFields: FilterFieldConfig[] = [
   {
@@ -57,10 +60,12 @@ export default function AssociateModalities({
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { eventId: paramEventId } = useParams()
+  const location = useLocation()
 
   const eventId = propEventId || paramEventId || searchParams.get('eventId')
 
   const [selected, setSelected] = useState<string[]>([])
+  const [showNewModalityModal, setShowNewModalityModal] = useState(false)
   const { getEventById, getEventModalities, setEventModalities } = useEvent()
   const { modalities } = useModality()
 
@@ -124,7 +129,7 @@ export default function AssociateModalities({
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 50
+  const [itemsPerPage, setItemsPerPage] = useState(50)
 
   const event = eventId ? getEventById(eventId) : undefined
 
@@ -245,7 +250,7 @@ export default function AssociateModalities({
   }
 
   return (
-    <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col pt-6">
+    <div className={cn("container mx-auto px-4 lg:px-8 flex flex-col pt-6", isWizard ? "h-full" : "h-[calc(100vh-5rem)]")}>
       {/* Header */}
       {!isWizard && (
         <div className="flex items-center justify-between mb-10 shrink-0 px-1">
@@ -273,216 +278,245 @@ export default function AssociateModalities({
       <div className="flex-1 overflow-y-auto pr-2 lg:pr-4 scrollbar-thin pb-24 flex flex-col lg:flex-row gap-6 px-1 pt-1">
 
         {/* Left Column: List */}
-        <div className="flex-1 flex flex-col min-h-0 space-y-4">
-          {/* Filter Bar */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
-            <div className="flex items-center gap-3 flex-1 min-w-[200px] relative group">
-              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
-                <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-              </div>
-              <Input
-                placeholder="Pesquisar por nome, tipo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
-              />
+        <Card className="flex-1 flex flex-col min-h-0 shadow-md border bg-card">
+          <CardContent className="flex-1 flex flex-col min-h-0 p-4 space-y-4">
+            <div className="flex justify-end">
+              <Button
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
+                onClick={() => navigate(`/area-do-produtor/modalidades/novo?returnTo=${encodeURIComponent(location.pathname + location.search)}`)}
+              >
+                <Plus className="mr-2 h-4 w-4" /> Nova Modalidade
+              </Button>
             </div>
-            <div className="flex items-center gap-2 w-full md:w-auto">
-              <Filters
-                fields={filterFields}
-                filters={filters}
-                onChange={setFilters}
-                addButton={
-                  <button
-                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-primary-foreground h-10 w-10 p-0 rounded-md bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-blue-200 dark:border-blue-800 hover:bg-primary/5 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
-                    type="button"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-5 w-5 text-blue-400"
-                      aria-hidden="true"
-                    >
-                      <path d="M13.354 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14v6a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341l1.218-1.348" />
-                      <path d="M16 6h6" />
-                      <path d="M19 3v6" />
-                    </svg>
-                  </button>
-                }
-              />
-            </div>
-          </div>
 
-          {/* Table */}
-          <div className="flex-1 flex flex-col">
-            <div className="flex-1">
-              <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden overflow-x-auto border-collapse">
-                <Table style={{ tableLayout: 'auto', minWidth: '100%' }}>
-                  <TableHeader className="bg-primary/5">
-                    <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
-                      <TableHead className="w-[50px] relative font-semibold text-primary/80 h-12">
-                        <Checkbox
-                          checked={areAllVisibleSelected}
-                          onCheckedChange={(checked) => toggleAll(!!checked)}
-                          className="translate-y-[2px]"
-                        />
-                      </TableHead>
-                      <TableHead style={{ width: colWidths.name }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('name')}>
-                        <div className="flex items-center overflow-hidden">
-                          <span className="truncate">Nome</span> {getSortIcon('name')}
-                        </div>
-                        <div
-                          onMouseDown={(e) => handleMouseDown(e, 'name')}
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
-                        />
-                      </TableHead>
-                      <TableHead style={{ width: colWidths.type }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('type')}>
-                        <div className="flex items-center justify-center overflow-hidden">
-                          <span className="truncate">Tipo</span> {getSortIcon('type')}
-                        </div>
-                        <div
-                          onMouseDown={(e) => handleMouseDown(e, 'type')}
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
-                        />
-                      </TableHead>
-                      <TableHead style={{ width: colWidths.gender }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('gender')}>
-                        <div className="flex items-center justify-center overflow-hidden">
-                          <span className="truncate">Gênero</span> {getSortIcon('gender')}
-                        </div>
-                        <div
-                          onMouseDown={(e) => handleMouseDown(e, 'gender')}
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
-                        />
-                      </TableHead>
-                      <TableHead style={{ width: colWidths.minAge }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('minAge')}>
-                        <div className="flex items-center justify-center overflow-hidden">
-                          <span className="truncate">Idade (Min-Max)</span> {getSortIcon('minAge')}
-                        </div>
-                        <div
-                          onMouseDown={(e) => handleMouseDown(e, 'minAge')}
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
-                        />
-                      </TableHead>
-                      <TableHead style={{ width: colWidths.minAthletes }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('minAthletes')}>
-                        <div className="flex items-center justify-center overflow-hidden">
-                          <span className="truncate">Atletas (Min-Max)</span> {getSortIcon('minAthletes')}
-                        </div>
-                        <div
-                          onMouseDown={(e) => handleMouseDown(e, 'minAthletes')}
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
-                        />
-                      </TableHead>
-                      <TableHead style={{ width: colWidths.maxTeams }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('maxTeams')}>
-                        <div className="flex items-center justify-center overflow-hidden">
-                          <span className="truncate">Equipes Máx</span> {getSortIcon('maxTeams')}
-                        </div>
-                        <div
-                          onMouseDown={(e) => handleMouseDown(e, 'maxTeams')}
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
-                        />
-                      </TableHead>
-                      <TableHead style={{ width: colWidths.maxEventsPerAthlete }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('maxEventsPerAthlete')}>
-                        <div className="flex items-center justify-center overflow-hidden">
-                          <span className="truncate">Máx. Provas</span> {getSortIcon('maxEventsPerAthlete')}
-                        </div>
-                        <div
-                          onMouseDown={(e) => handleMouseDown(e, 'maxEventsPerAthlete')}
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
-                        />
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {currentModalities.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={8} className="h-32 text-center text-muted-foreground text-lg">
-                          Nenhuma modalidade encontrada.
-                        </TableCell>
+            {/* Filter Bar */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
+              <div className="flex items-center gap-3 flex-1 min-w-[200px] relative group">
+                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
+                  <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                </div>
+                <Input
+                  placeholder="Pesquisar por nome, tipo..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
+                />
+              </div>
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <Filters
+                  fields={filterFields}
+                  filters={filters}
+                  onChange={setFilters}
+                  addButton={
+                    <button
+                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-primary-foreground h-10 w-10 p-0 rounded-md bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-blue-200 dark:border-blue-800 hover:bg-primary/5 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
+                      type="button"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-5 w-5 text-blue-400"
+                        aria-hidden="true"
+                      >
+                        <path d="M13.354 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14v6a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341l1.218-1.348" />
+                        <path d="M16 6h6" />
+                        <path d="M19 3v6" />
+                      </svg>
+                    </button>
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="flex-1 flex flex-col">
+              <div className="flex-1">
+                <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden overflow-x-auto border-collapse">
+                  <Table style={{ tableLayout: 'auto', minWidth: '100%' }}>
+                    <TableHeader className="bg-primary/5">
+                      <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
+                        <TableHead className="w-[50px] relative font-semibold text-primary/80 h-12">
+                          <Checkbox
+                            checked={areAllVisibleSelected}
+                            onCheckedChange={(checked) => toggleAll(!!checked)}
+                            className="translate-y-[2px]"
+                          />
+                        </TableHead>
+                        <TableHead style={{ width: colWidths.name }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('name')}>
+                          <div className="flex items-center overflow-hidden">
+                            <span className="truncate">Nome</span> {getSortIcon('name')}
+                          </div>
+                          <div
+                            onMouseDown={(e) => handleMouseDown(e, 'name')}
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                          />
+                        </TableHead>
+                        <TableHead style={{ width: colWidths.type }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('type')}>
+                          <div className="flex items-center justify-center overflow-hidden">
+                            <span className="truncate">Tipo</span> {getSortIcon('type')}
+                          </div>
+                          <div
+                            onMouseDown={(e) => handleMouseDown(e, 'type')}
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                          />
+                        </TableHead>
+                        <TableHead style={{ width: colWidths.gender }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('gender')}>
+                          <div className="flex items-center justify-center overflow-hidden">
+                            <span className="truncate">Gênero</span> {getSortIcon('gender')}
+                          </div>
+                          <div
+                            onMouseDown={(e) => handleMouseDown(e, 'gender')}
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                          />
+                        </TableHead>
+                        <TableHead style={{ width: colWidths.minAge }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('minAge')}>
+                          <div className="flex items-center justify-center overflow-hidden">
+                            <span className="truncate">Idade (Min-Max)</span> {getSortIcon('minAge')}
+                          </div>
+                          <div
+                            onMouseDown={(e) => handleMouseDown(e, 'minAge')}
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                          />
+                        </TableHead>
+                        <TableHead style={{ width: colWidths.minAthletes }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('minAthletes')}>
+                          <div className="flex items-center justify-center overflow-hidden">
+                            <span className="truncate">Atletas (Min-Max)</span> {getSortIcon('minAthletes')}
+                          </div>
+                          <div
+                            onMouseDown={(e) => handleMouseDown(e, 'minAthletes')}
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                          />
+                        </TableHead>
+                        <TableHead style={{ width: colWidths.maxTeams }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('maxTeams')}>
+                          <div className="flex items-center justify-center overflow-hidden">
+                            <span className="truncate">Equipes Máx</span> {getSortIcon('maxTeams')}
+                          </div>
+                          <div
+                            onMouseDown={(e) => handleMouseDown(e, 'maxTeams')}
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                          />
+                        </TableHead>
+                        <TableHead style={{ width: colWidths.maxEventsPerAthlete }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('maxEventsPerAthlete')}>
+                          <div className="flex items-center justify-center overflow-hidden">
+                            <span className="truncate">Máx. Provas</span> {getSortIcon('maxEventsPerAthlete')}
+                          </div>
+                          <div
+                            onMouseDown={(e) => handleMouseDown(e, 'maxEventsPerAthlete')}
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                          />
+                        </TableHead>
                       </TableRow>
-                    ) : (
-                      currentModalities.map((mod) => {
-                        const isSelected = selected.includes(mod.id);
-                        return (
-                          <TableRow
-                            key={mod.id}
-                            className={cn(
-                              "transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group",
-                              isSelected ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-primary/5"
-                            )}
-                          >
-                            <TableCell className="h-12 py-0">
-                              <Checkbox
-                                checked={isSelected}
-                                onCheckedChange={() => toggle(mod.id)}
-                                className="translate-y-[2px]"
-                              />
-                            </TableCell>
-                            <TableCell className="font-medium h-12 py-0">
-                              <div className="flex flex-col justify-center h-full">
-                                <span className={cn("text-sm transition-colors leading-tight", isSelected && "text-primary font-bold")}>{mod.name}</span>
-                                {mod.eventCategory && <span className="text-[10px] text-muted-foreground font-light leading-tight">{mod.eventCategory}</span>}
-                              </div>
-                            </TableCell>
-                            <TableCell className="capitalize text-muted-foreground h-12 py-0 text-center text-sm">{mod.type}</TableCell>
-                            <TableCell className="capitalize text-muted-foreground h-12 py-0 text-center text-sm">{mod.gender}</TableCell>
-                            <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">{mod.minAge} - {mod.maxAge} anos</TableCell>
-                            <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">{mod.minAthletes} - {mod.maxAthletes}</TableCell>
-                            <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">
-                              {mod.maxTeams > 0 ? mod.maxTeams : 'Ilimitado'}
-                            </TableCell>
-                            <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">
-                              {mod.maxEventsPerAthlete}
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })
-                    )}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {currentModalities.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={8} className="h-32 text-center text-muted-foreground text-lg">
+                            Nenhuma modalidade encontrada.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        currentModalities.map((mod) => {
+                          const isSelected = selected.includes(mod.id);
+                          return (
+                            <TableRow
+                              key={mod.id}
+                              className={cn(
+                                "transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group",
+                                isSelected ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-primary/5"
+                              )}
+                            >
+                              <TableCell className="h-12 py-0">
+                                <Checkbox
+                                  checked={isSelected}
+                                  onCheckedChange={() => toggle(mod.id)}
+                                  className="translate-y-[2px]"
+                                />
+                              </TableCell>
+                              <TableCell className="font-medium h-12 py-0">
+                                <div className="flex flex-col justify-center h-full">
+                                  <span className={cn("text-sm transition-colors leading-tight", isSelected && "text-primary font-bold")}>{mod.name}</span>
+                                  {mod.eventCategory && <span className="text-[10px] text-muted-foreground font-light leading-tight">{mod.eventCategory}</span>}
+                                </div>
+                              </TableCell>
+                              <TableCell className="capitalize text-muted-foreground h-12 py-0 text-center text-sm">{mod.type}</TableCell>
+                              <TableCell className="capitalize text-muted-foreground h-12 py-0 text-center text-sm">{mod.gender}</TableCell>
+                              <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">{mod.minAge} - {mod.maxAge} anos</TableCell>
+                              <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">{mod.minAthletes} - {mod.maxAthletes}</TableCell>
+                              <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">
+                                {mod.maxTeams > 0 ? mod.maxTeams : 'Ilimitado'}
+                              </TableCell>
+                              <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">
+                                {mod.maxEventsPerAthlete}
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+              {/* Pagination Footer in Table */}
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground pt-4 shrink-0">
+                <div className="flex items-center gap-2">
+                  <span>Mostrando</span>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={500}
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      if (!isNaN(val) && val > 0) {
+                        setItemsPerPage(val);
+                        setCurrentPage(1);
+                      }
+                    }}
+                    className="h-8 w-10 text-center p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <span>registros por página</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>Página {currentPage} de {totalPages || 1}</span>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages || totalPages === 0}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
-            {/* Pagination Footer in Table */}
-            <div className="pt-4 flex items-center justify-between text-sm text-muted-foreground shrink-0">
-              <div>
-                Página {currentPage} de {totalPages || 1}
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages || totalPages === 0}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
       </div>
       {/* Fixed Footer Actions */}

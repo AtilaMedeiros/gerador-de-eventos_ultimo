@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Check, ChevronRight, Layout, List, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import EventForm from './EventForm'
@@ -29,16 +29,34 @@ const steps = [
 
 export default function EventWizard() {
     const navigate = useNavigate()
-    const [currentStep, setCurrentStep] = useState(1)
-    const [eventId, setEventId] = useState<string | undefined>(undefined)
+    const [searchParams, setSearchParams] = useSearchParams()
+
+    const currentStep = Number(searchParams.get('step')) || 1
+    const eventId = searchParams.get('eventId') || undefined
+    const [localEventId, setLocalEventId] = useState<string | undefined>(eventId)
+
+    // Sync local state with URL param
+    useEffect(() => {
+        if (eventId) setLocalEventId(eventId)
+    }, [eventId])
 
     const handleNextStep = (id?: string) => {
-        if (id) setEventId(id)
-        setCurrentStep((prev) => Math.min(prev + 1, steps.length))
+        const nextId = id || localEventId
+        const nextStep = Math.min(currentStep + 1, steps.length)
+
+        if (nextId) setLocalEventId(nextId)
+
+        const params: any = { step: nextStep.toString() }
+        if (nextId) params.eventId = nextId
+        setSearchParams(params)
     }
 
     const handlePrevStep = () => {
-        setCurrentStep((prev) => Math.max(prev - 1, 1))
+        const prevStep = Math.max(currentStep - 1, 1)
+
+        const params: any = { step: prevStep.toString() }
+        if (localEventId) params.eventId = localEventId
+        setSearchParams(params)
     }
 
     const handleFinish = () => {
@@ -46,7 +64,7 @@ export default function EventWizard() {
     }
 
     return (
-        <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col bg-background/50">
+        <div className="max-w-full mx-auto h-[calc(100vh-10rem)] flex flex-col bg-background/50 rounded-lg border shadow-sm overflow-hidden">
             {/* Minimal Stepper Header */}
             {/* Wizard Header */}
             <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 shrink-0">
@@ -121,7 +139,7 @@ export default function EventWizard() {
                     <div className="h-full animate-in fade-in zoom-in-95 duration-300">
                         <EventForm
                             isWizard={true}
-                            eventId={eventId}
+                            eventId={localEventId}
                             onNext={handleNextStep}
                         />
                     </div>
@@ -131,7 +149,7 @@ export default function EventWizard() {
                     <div className="h-full animate-in fade-in zoom-in-95 duration-300">
                         <AssociateModalities
                             isWizard={true}
-                            eventId={eventId}
+                            eventId={localEventId}
                             onNext={() => handleNextStep()}
                             onBack={handlePrevStep}
                         />
@@ -142,7 +160,7 @@ export default function EventWizard() {
                     <div className="h-full animate-in fade-in zoom-in-95 duration-300">
                         <ApplyVisualIdentity
                             isWizard={true}
-                            eventId={eventId}
+                            eventId={localEventId}
                             onFinish={handleFinish}
                             onBack={handlePrevStep}
                         />

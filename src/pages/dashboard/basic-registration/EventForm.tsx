@@ -185,7 +185,7 @@ export default function EventForm({
       : ''
 
   return (
-    <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col pt-6">
+    <div className={cn("max-w-full mx-auto flex flex-col pt-6", isWizard ? "h-full" : "h-[calc(100vh-5rem)]")}>
       {/* Header */}
       {!isWizard && (
         <div className="flex items-center justify-between mb-8 shrink-0 px-1">

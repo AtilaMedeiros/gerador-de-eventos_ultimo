@@ -1,3 +1,4 @@
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { useFormContext } from 'react-hook-form'
 import {
   FormControl,
@@ -85,10 +86,10 @@ export function EventBasicInfo() {
               Texto Institucional
             </FormLabel>
             <FormControl>
-              <Textarea
-                placeholder="Descreva o regulamento, história e detalhes importantes..."
-                className="min-h-[200px] resize-y p-4 leading-relaxed"
-                {...field}
+              <RichTextEditor
+                value={field.value}
+                onChange={field.onChange}
+                className="min-h-[200px]"
               />
             </FormControl>
             <FormDescription>

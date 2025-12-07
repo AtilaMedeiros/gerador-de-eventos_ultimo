@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useModality } from '@/contexts/ModalityContext'
 import { useEffect } from 'react'
 import {
@@ -39,6 +39,7 @@ import {
   CardDescription,
 } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
 
 const formSchema = z.object({
   type: z.enum(['coletiva', 'individual'], {
@@ -78,9 +79,17 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
-export default function ModalityForm() {
+interface ModalityFormProps {
+  onSuccess?: () => void
+  onCancel?: () => void
+  isModal?: boolean
+}
+
+export default function ModalityForm({ onSuccess, onCancel, isModal = false }: ModalityFormProps) {
   const navigate = useNavigate()
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
   const { addModality, updateModality, getModalityById } = useModality()
 
   const isEditing = id && id !== 'nova'
@@ -125,25 +134,37 @@ export default function ModalityForm() {
 
   function onSubmit(values: FormValues) {
     if (isEditing && id) {
-      updateModality(id, values)
+      updateModality(id, values as any)
     } else {
-      addModality(values)
+      addModality(values as any)
     }
-    navigate('/area-do-produtor/modalidades')
+
+    if (onSuccess) {
+      onSuccess()
+      return
+    }
+
+    if (returnTo) {
+      navigate(returnTo)
+    } else {
+      navigate('/area-do-produtor/modalidades')
+    }
   }
 
   return (
-    <div className="max-w-5xl mx-auto pb-20 animate-fade-in">
+    <div className={cn("max-w-5xl mx-auto animate-fade-in", isModal ? "pb-6" : "pb-20")}>
       <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() =>
-            navigate('/area-do-produtor/modalidades')
-          }
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+        {!isModal && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() =>
+              returnTo ? navigate(returnTo) : navigate('/area-do-produtor/modalidades')
+            }
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        )}
         <div>
           <h2 className="text-2xl font-bold tracking-tight">
             {isEditing ? 'Editar Modalidade' : 'Nova Modalidade'}
@@ -424,9 +445,13 @@ export default function ModalityForm() {
               type="button"
               variant="outline"
               size="lg"
-              onClick={() =>
-                navigate('/area-do-produtor/modalidades')
-              }
+              onClick={() => {
+                if (onCancel) {
+                  onCancel()
+                  return
+                }
+                returnTo ? navigate(returnTo) : navigate('/area-do-produtor/modalidades')
+              }}
             >
               Cancelar
             </Button>

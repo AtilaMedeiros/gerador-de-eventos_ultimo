@@ -26,7 +26,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import {
   ArrowLeft,
@@ -141,6 +141,9 @@ const FONTS = ['Inter', 'Roboto', 'Open Sans', 'Poppins', 'Playfair Display']
 export default function VisualIdentityForm() {
   const navigate = useNavigate()
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
+
   const isEditing = id && id !== 'novo'
   const { addTheme, updateTheme, getThemeById } = useTheme()
   const [showAllColors, setShowAllColors] = useState(false)
@@ -208,7 +211,12 @@ export default function VisualIdentityForm() {
     } else {
       addTheme(values)
     }
-    navigate('/area-do-produtor/identidade-visual')
+
+    if (returnTo) {
+      navigate(returnTo)
+    } else {
+      navigate('/area-do-produtor/identidade-visual')
+    }
   }
 
   return (
@@ -219,7 +227,7 @@ export default function VisualIdentityForm() {
             variant="ghost"
             size="sm"
             onClick={() =>
-              navigate('/area-do-produtor/identidade-visual')
+              returnTo ? navigate(returnTo) : navigate('/area-do-produtor/identidade-visual')
             }
           >
             <ArrowLeft className="h-4 w-4" />
@@ -237,7 +245,7 @@ export default function VisualIdentityForm() {
           <Button
             variant="outline"
             onClick={() =>
-              navigate('/area-do-produtor/identidade-visual')
+              returnTo ? navigate(returnTo) : navigate('/area-do-produtor/identidade-visual')
             }
           >
             <X className="mr-2 h-4 w-4" /> Cancelar

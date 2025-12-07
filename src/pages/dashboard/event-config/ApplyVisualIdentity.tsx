@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useSearchParams, useNavigate, useParams } from 'react-router-dom'
+import { useSearchParams, useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useEvent } from '@/contexts/EventContext'
 import { useTheme, Theme } from '@/contexts/ThemeContext'
 import { Button } from '@/components/ui/button'
@@ -167,7 +167,7 @@ export default function ApplyVisualIdentity({
   }
 
   return (
-    <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col pt-6">
+    <div className={cn("max-w-full mx-auto flex flex-col pt-6", isWizard ? "h-full" : "h-[calc(100vh-5rem)]")}>
       {/* Header */}
       {!isWizard && (
         <div className="flex items-center justify-between mb-8 shrink-0 px-1">
@@ -256,7 +256,9 @@ export default function ApplyVisualIdentity({
                 className="w-full text-muted-foreground hover:text-primary"
                 onClick={() =>
                   navigate(
-                    '/area-do-produtor/identidade-visual/novo',
+                    `/area-do-produtor/identidade-visual/novo?returnTo=${encodeURIComponent(
+                      location.pathname + location.search,
+                    )}`,
                   )
                 }
               >
@@ -335,6 +337,21 @@ export default function ApplyVisualIdentity({
           )}
         </Button>
       </div>
+
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-[95vw] w-full h-[95vh] p-0 overflow-hidden bg-background">
+          {selectedEvent && (
+            <EventPreview
+              data={selectedEvent}
+              onClose={() => setShowPreview(false)}
+              onPublish={() => {
+                setShowPreview(false)
+                handleSave()
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
