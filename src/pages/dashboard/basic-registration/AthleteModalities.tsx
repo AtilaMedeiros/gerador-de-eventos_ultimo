@@ -257,7 +257,7 @@ export default function AthleteModalities() {
                             )}
 
                             <div className="pt-2">
-                                <Button type="submit" className="w-full md:w-auto bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:scale-[1.02]">
+                                <Button type="submit" className="w-full md:w-auto bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]">
                                     <Save className="mr-2 h-4 w-4" />
                                     Salvar Vinculação
                                 </Button>
@@ -275,16 +275,16 @@ export default function AthleteModalities() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden">
-                        <Table>
+                    <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden overflow-x-auto">
+                        <Table style={{ tableLayout: 'fixed', minWidth: '100%' }}>
                             <TableHeader className="bg-primary/5">
                                 <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
-                                    <TableHead className="font-semibold text-primary/80 h-12">Tipo</TableHead>
-                                    <TableHead className="font-semibold text-primary/80 h-12">Modalidade</TableHead>
-                                    <TableHead className="font-semibold text-primary/80 h-12">Prova</TableHead>
-                                    <TableHead className="font-semibold text-primary/80 h-12">Naipe</TableHead>
-                                    <TableHead className="font-semibold text-primary/80 h-12">Faixa de Idade</TableHead>
-                                    <TableHead className="text-right font-semibold text-primary/80 h-12">Ações</TableHead>
+                                    <TableHead className="font-semibold text-primary/80 h-12 w-[120px]">Tipo</TableHead>
+                                    <TableHead className="font-semibold text-primary/80 h-12 w-[200px]">Modalidade</TableHead>
+                                    <TableHead className="font-semibold text-primary/80 h-12 w-[200px]">Prova</TableHead>
+                                    <TableHead className="font-semibold text-primary/80 h-12 w-[120px] text-center">Naipe</TableHead>
+                                    <TableHead className="font-semibold text-primary/80 h-12 w-[140px] text-center">Faixa de Idade</TableHead>
+                                    <TableHead className="text-right font-semibold text-primary/80 h-12 w-[80px]">Ações</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -293,11 +293,13 @@ export default function AthleteModalities() {
                                         <TableRow key={item.id} className="hover:bg-primary/5 transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group">
                                             <TableCell className="font-medium h-12 py-0">
                                                 <div className="flex items-center h-full">
-                                                    {item.type}
+                                                    <span className="text-sm group-hover:text-primary transition-colors leading-tight">
+                                                        {item.type}
+                                                    </span>
                                                 </div>
                                             </TableCell>
                                             <TableCell className="h-12 py-0">
-                                                <div className="flex items-center h-full text-muted-foreground">
+                                                <div className="flex items-center h-full text-muted-foreground font-medium">
                                                     {item.modality}
                                                 </div>
                                             </TableCell>
@@ -306,31 +308,34 @@ export default function AthleteModalities() {
                                                     {item.prova}
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="h-12 py-0">
-                                                <div className="flex items-center h-full text-muted-foreground">
+                                            <TableCell className="h-12 py-0 text-center">
+                                                <div className="flex items-center justify-center h-full text-muted-foreground">
                                                     {item.sex}
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="h-12 py-0">
-                                                <div className="flex items-center h-full text-muted-foreground">
+                                            <TableCell className="h-12 py-0 text-center">
+                                                <div className="flex items-center justify-center h-full text-muted-foreground">
                                                     {item.ageRange}
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-right h-12 py-0">
-                                                <Button
-                                                    variant="destructive"
-                                                    size="sm"
-                                                    className="h-7 text-xs"
-                                                    onClick={() => handleDelete(item.id)}
-                                                >
-                                                    Excluir
-                                                </Button>
+                                                <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity h-full items-center">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                                                        onClick={() => handleDelete(item.id)}
+                                                        title="Excluir"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                        <TableCell colSpan={6} className="h-32 text-center text-muted-foreground text-lg">
                                             Nenhuma modalidade vinculada a este atleta.
                                         </TableCell>
                                     </TableRow>
