@@ -28,6 +28,7 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { EventPreview } from '@/components/EventPreview'
+import VisualIdentityForm from '../basic-registration/VisualIdentityForm'
 
 export default function ApplyVisualIdentity({
   eventId: propEventId,
@@ -54,6 +55,8 @@ export default function ApplyVisualIdentity({
   )
   const [selectedThemeId, setSelectedThemeId] = useState<string>('')
   const [showPreview, setShowPreview] = useState(false)
+  const [showThemeModal, setShowThemeModal] = useState(false)
+  const [editingThemeId, setEditingThemeId] = useState<string | null>(null)
 
   // Sync URL param with state
   useEffect(() => {
@@ -219,31 +222,8 @@ export default function ApplyVisualIdentity({
                   )}
                   onClick={() => setSelectedThemeId(theme.id)}
                 >
-                  <div className="flex items-start justify-between mb-3 min-h-[24px]">
-                    <span className="font-semibold pt-0.5 pr-2 max-w-[calc(100%-80px)] leading-tight">{theme.name}</span>
-
-                    <div className={cn("flex items-center shrink-0", selectedThemeId === theme.id && "mr-20")}>
-                      <div
-                        className="h-6 w-6 rounded-full border-2 border-background shadow-sm"
-                        style={{ backgroundColor: theme.colors.primary }}
-                        title="Primária"
-                      />
-                      <div
-                        className="h-6 w-6 rounded-full border-2 border-background shadow-sm -ml-3"
-                        style={{ backgroundColor: theme.colors.secondary }}
-                        title="Secundária"
-                      />
-                      <div
-                        className="h-6 w-6 rounded-full border-2 border-background shadow-sm -ml-3"
-                        style={{ backgroundColor: theme.colors.background }}
-                        title="Fundo"
-                      />
-                      <div
-                        className="h-6 w-6 rounded-full border-2 border-background shadow-sm -ml-3"
-                        style={{ backgroundColor: theme.colors.text }}
-                        title="Texto"
-                      />
-                    </div>
+                  <div className="flex items-start justify-between mb-2 min-h-[24px]">
+                    <span className="font-semibold pt-0.5 pr-8 leading-tight">{theme.name}</span>
 
                     {selectedThemeId === theme.id && (
                       <Badge className="bg-primary text-primary-foreground absolute top-0 right-0 rounded-none rounded-bl-xl px-3 shadow-sm z-10">
@@ -252,36 +232,65 @@ export default function ApplyVisualIdentity({
                     )}
                   </div>
 
-                  <p className="text-xs text-muted-foreground line-clamp-2">
+                  <p className="text-xs text-muted-foreground line-clamp-2 mb-4">
                     {theme.description || 'Sem descrição.'}
                   </p>
-                  <div className="flex items-center justify-end gap-1 mt-2 -mb-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-primary"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        navigate(`/area-do-produtor/identidade-visual/${theme.id}`)
-                      }}
-                      title="Editar"
-                    >
-                      <Edit className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        if (confirm('Tem certeza que deseja excluir este tema?')) {
-                          deleteTheme(theme.id)
-                        }
-                      }}
-                      title="Excluir"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+
+                  <div className="flex items-end justify-between mt-auto">
+                    {/* Colors - Bottom Left */}
+                    <div className="flex items-center pl-1">
+                      <div
+                        className="h-5 w-5 rounded-full border-2 border-background shadow-sm"
+                        style={{ backgroundColor: theme.colors.primary }}
+                        title="Primária"
+                      />
+                      <div
+                        className="h-5 w-5 rounded-full border-2 border-background shadow-sm -ml-2"
+                        style={{ backgroundColor: theme.colors.secondary }}
+                        title="Secundária"
+                      />
+                      <div
+                        className="h-5 w-5 rounded-full border-2 border-background shadow-sm -ml-2"
+                        style={{ backgroundColor: theme.colors.background }}
+                        title="Fundo"
+                      />
+                      <div
+                        className="h-5 w-5 rounded-full border-2 border-background shadow-sm -ml-2"
+                        style={{ backgroundColor: theme.colors.text }}
+                        title="Texto"
+                      />
+                    </div>
+
+                    {/* Actions - Bottom Right */}
+                    <div className="flex items-center justify-end gap-1 -mr-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-primary"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditingThemeId(theme.id)
+                          setShowThemeModal(true)
+                        }}
+                        title="Editar"
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (confirm('Tem certeza que deseja excluir este tema?')) {
+                            deleteTheme(theme.id)
+                          }
+                        }}
+                        title="Excluir"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -305,10 +314,10 @@ export default function ApplyVisualIdentity({
         </div>
 
         {/* Right Column: Preview */}
-        <div className="lg:col-span-8 h-full flex flex-col min-h-0 bg-background/50 rounded-xl border shadow-sm p-1">
-          <div className="flex-1 rounded-lg overflow-hidden relative bg-muted/10">
+        <div className="lg:col-span-8 flex flex-col bg-background/50 rounded-xl border shadow-sm p-1">
+          <div className="rounded-lg overflow-hidden relative bg-muted/10">
             {currentTheme ? (
-              <div className="h-full overflow-y-auto scrollbar-thin">
+              <div>
                 <ThemePreview values={currentTheme} />
               </div>
             ) : (
@@ -388,6 +397,27 @@ export default function ApplyVisualIdentity({
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={showThemeModal} onOpenChange={setShowThemeModal}>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
+          <div className="flex-1 overflow-hidden p-1">
+            <VisualIdentityForm
+              isModal
+              themeId={editingThemeId || undefined}
+              onSuccess={() => {
+                setShowThemeModal(false)
+                setEditingThemeId(null)
+                // Optionally refresh themes or select the updated one
+              }}
+              onCancel={() => {
+                setShowThemeModal(false)
+                setEditingThemeId(null)
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
+

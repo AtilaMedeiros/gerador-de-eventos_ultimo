@@ -138,13 +138,27 @@ type FormValues = z.infer<typeof formSchema>
 
 const FONTS = ['Inter', 'Roboto', 'Open Sans', 'Poppins', 'Playfair Display']
 
-export default function VisualIdentityForm() {
+// --- Props ---
+export interface VisualIdentityFormProps {
+  isModal?: boolean
+  themeId?: string
+  onSuccess?: () => void
+  onCancel?: () => void
+}
+
+export default function VisualIdentityForm({
+  isModal = false,
+  themeId: propThemeId,
+  onSuccess,
+  onCancel,
+}: VisualIdentityFormProps) {
   const navigate = useNavigate()
-  const { id } = useParams()
+  const { id: paramId } = useParams()
   const [searchParams] = useSearchParams()
   const returnTo = searchParams.get('returnTo')
 
-  const isEditing = id && id !== 'novo'
+  const id = isModal ? propThemeId : paramId
+  const isEditing = !!id && id !== 'novo'
   const { addTheme, updateTheme, getThemeById } = useTheme()
   const [showAllColors, setShowAllColors] = useState(false)
 
@@ -207,9 +221,14 @@ export default function VisualIdentityForm() {
 
   function onSubmit(values: FormValues) {
     if (isEditing && id) {
-      updateTheme(id, values)
+      updateTheme(id, values as any)
     } else {
-      addTheme(values)
+      addTheme(values as any)
+    }
+
+    if (onSuccess) {
+      onSuccess()
+      return
     }
 
     if (returnTo) {
@@ -220,20 +239,25 @@ export default function VisualIdentityForm() {
   }
 
   return (
-    <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col">
-      <div className="flex items-center justify-between mb-6 shrink-0">
+    <div className={cn(
+      "max-w-full mx-auto flex flex-col",
+      isModal ? "h-full" : "h-[calc(100vh-5rem)]"
+    )}>
+      <div className={cn("flex items-center justify-between mb-6 shrink-0", isModal && "px-1")}>
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              returnTo ? navigate(returnTo) : navigate('/area-do-produtor/identidade-visual')
-            }
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+          {!isModal && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                returnTo ? navigate(returnTo) : navigate('/area-do-produtor/identidade-visual')
+              }
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">
+            <h2 className={cn("font-bold tracking-tight", isModal ? "text-xl" : "text-2xl")}>
               {isEditing ? 'Editar Tema' : 'Criar Novo Tema'}
             </h2>
             <p className="text-muted-foreground text-sm">
@@ -244,9 +268,13 @@ export default function VisualIdentityForm() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() =>
-              returnTo ? navigate(returnTo) : navigate('/area-do-produtor/identidade-visual')
-            }
+            onClick={() => {
+              if (onCancel) {
+                onCancel()
+              } else {
+                returnTo ? navigate(returnTo) : navigate('/area-do-produtor/identidade-visual')
+              }
+            }}
           >
             <X className="mr-2 h-4 w-4" /> Cancelar
           </Button>
