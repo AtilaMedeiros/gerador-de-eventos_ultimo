@@ -197,7 +197,7 @@ export default function ApplyVisualIdentity({
 
         {/* Left Column: Theme Selection */}
         <div className="lg:col-span-4 flex flex-col">
-          <Card className="flex flex-col shadow-sm border-0 bg-background/50">
+          <Card className="flex flex-col shadow-md border bg-card rounded-xl overflow-hidden">
             <CardHeader className="shrink-0 pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Palette className="h-5 w-5 text-primary" />
@@ -207,7 +207,7 @@ export default function ApplyVisualIdentity({
                 Selecione um tema abaixo para visualizar.
               </CardDescription>
             </CardHeader>
-            <CardContent className="px-4 pb-4 grid gap-4">
+            <CardContent className="px-4 pb-4 grid gap-4 max-h-[600px] overflow-y-auto scrollbar-thin">
               {themes.map((theme) => (
                 <div
                   key={theme.id}
