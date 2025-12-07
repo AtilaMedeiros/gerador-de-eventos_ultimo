@@ -167,7 +167,7 @@ export default function ApplyVisualIdentity({
   }
 
   return (
-    <div className={cn("max-w-full mx-auto flex flex-col pt-6", isWizard ? "h-full" : "h-[calc(100vh-5rem)]")}>
+    <div className={cn("w-full max-w-[1600px] mx-auto flex flex-col pt-6 px-4 lg:px-8", isWizard ? "h-full" : "h-[calc(100vh-5rem)]")}>
       {/* Header */}
       {!isWizard && (
         <div className="flex items-center justify-between mb-8 shrink-0 px-1">
@@ -219,34 +219,42 @@ export default function ApplyVisualIdentity({
                   )}
                   onClick={() => setSelectedThemeId(theme.id)}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold">{theme.name}</span>
+                  <div className="flex items-start justify-between mb-3 min-h-[24px]">
+                    <span className="font-semibold pt-0.5 pr-2 max-w-[calc(100%-80px)] leading-tight">{theme.name}</span>
+
+                    <div className={cn("flex items-center shrink-0", selectedThemeId === theme.id && "mr-20")}>
+                      <div
+                        className="h-6 w-6 rounded-full border-2 border-background shadow-sm"
+                        style={{ backgroundColor: theme.colors.primary }}
+                        title="Primária"
+                      />
+                      <div
+                        className="h-6 w-6 rounded-full border-2 border-background shadow-sm -ml-3"
+                        style={{ backgroundColor: theme.colors.secondary }}
+                        title="Secundária"
+                      />
+                      <div
+                        className="h-6 w-6 rounded-full border-2 border-background shadow-sm -ml-3"
+                        style={{ backgroundColor: theme.colors.background }}
+                        title="Fundo"
+                      />
+                      <div
+                        className="h-6 w-6 rounded-full border-2 border-background shadow-sm -ml-3"
+                        style={{ backgroundColor: theme.colors.text }}
+                        title="Texto"
+                      />
+                    </div>
+
                     {selectedThemeId === theme.id && (
-                      <Badge className="bg-primary text-primary-foreground absolute top-0 right-0 rounded-none rounded-bl-xl px-3">
+                      <Badge className="bg-primary text-primary-foreground absolute top-0 right-0 rounded-none rounded-bl-xl px-3 shadow-sm z-10">
                         <Check className="h-3 w-3 mr-1" /> Ativo
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
+
+                  <p className="text-xs text-muted-foreground line-clamp-2">
                     {theme.description || 'Sem descrição.'}
                   </p>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="h-6 w-6 rounded-full border-2 border-background shadow-sm"
-                      style={{ backgroundColor: theme.colors.primary }}
-                      title="Primária"
-                    />
-                    <div
-                      className="h-6 w-6 rounded-full border-2 border-background shadow-sm -ml-3"
-                      style={{ backgroundColor: theme.colors.secondary }}
-                      title="Secundária"
-                    />
-                    <div
-                      className="h-6 w-6 rounded-full border-2 border-background shadow-sm -ml-3"
-                      style={{ backgroundColor: theme.colors.background }}
-                      title="Fundo"
-                    />
-                  </div>
                 </div>
               ))}
             </CardContent>
