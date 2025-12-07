@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, Palette, Check, ArrowLeft, Save, Layout, Eye, Rocket, X } from 'lucide-react'
+import { Search, Palette, Check, ArrowLeft, Save, Layout, Eye, Rocket, X, Edit, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
@@ -47,7 +47,7 @@ export default function ApplyVisualIdentity({
   const urlEventId = propEventId || paramEventId || searchParams.get('eventId')
 
   const { events, updateEvent, getEventById } = useEvent()
-  const { themes } = useTheme()
+  const { themes, deleteTheme } = useTheme()
 
   const [selectedEventId, setSelectedEventId] = useState<string>(
     urlEventId || '',
@@ -255,6 +255,34 @@ export default function ApplyVisualIdentity({
                   <p className="text-xs text-muted-foreground line-clamp-2">
                     {theme.description || 'Sem descrição.'}
                   </p>
+                  <div className="flex items-center justify-end gap-1 mt-2 -mb-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-primary"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/area-do-produtor/identidade-visual/${theme.id}`)
+                      }}
+                      title="Editar"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (confirm('Tem certeza que deseja excluir este tema?')) {
+                          deleteTheme(theme.id)
+                        }
+                      }}
+                      title="Excluir"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </CardContent>
