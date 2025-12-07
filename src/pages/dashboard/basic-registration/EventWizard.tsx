@@ -134,7 +134,7 @@ export default function EventWizard() {
             </div>
 
             {/* Content Content - Full Height */}
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-y-auto">
                 {currentStep === 1 && (
                     <div className="h-full animate-in fade-in zoom-in-95 duration-300">
                         <EventForm

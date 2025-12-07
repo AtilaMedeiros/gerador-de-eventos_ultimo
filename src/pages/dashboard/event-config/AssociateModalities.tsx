@@ -250,7 +250,7 @@ export default function AssociateModalities({
   }
 
   return (
-    <div className={cn("container mx-auto px-4 lg:px-8 flex flex-col pt-6", isWizard ? "h-full" : "h-[calc(100vh-5rem)]")}>
+    <div className={cn("container mx-auto px-4 lg:px-8 flex flex-col pt-6", isWizard ? "min-h-full" : "h-[calc(100vh-5rem)]")}>
       {/* Header */}
       {!isWizard && (
         <div className="flex items-center justify-between mb-10 shrink-0 px-1">
@@ -275,15 +275,15 @@ export default function AssociateModalities({
       )}
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto pr-2 lg:pr-4 scrollbar-thin pb-24 flex flex-col lg:flex-row gap-6 px-1 pt-1">
+      <div className="flex-1 pr-2 lg:pr-4 pb-24 flex flex-col lg:flex-row gap-6 px-1 pt-1">
 
         {/* Left Column: List */}
-        <Card className="flex-1 flex flex-col min-h-0 shadow-md border bg-card">
-          <CardContent className="flex-1 flex flex-col min-h-0 p-4 space-y-4">
+        <Card className="flex-1 flex flex-col shadow-md border bg-card">
+          <CardContent className="flex-1 flex flex-col p-4 space-y-4">
             <div className="flex justify-end">
               <Button
                 className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
-                onClick={() => navigate(`/area-do-produtor/modalidades/novo?returnTo=${encodeURIComponent(location.pathname + location.search)}`)}
+                onClick={() => setShowNewModalityModal(true)}
               >
                 <Plus className="mr-2 h-4 w-4" /> Nova Modalidade
               </Button>
@@ -519,6 +519,19 @@ export default function AssociateModalities({
         </Card>
 
       </div>
+
+      <Dialog open={showNewModalityModal} onOpenChange={setShowNewModalityModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-full">
+          <ModalityForm
+            isModal
+            onSuccess={() => {
+              setShowNewModalityModal(false)
+              toast.success("Modalidade criada com sucesso!")
+            }}
+            onCancel={() => setShowNewModalityModal(false)}
+          />
+        </DialogContent>
+      </Dialog>
       {/* Fixed Footer Actions */}
       <div className="fixed bottom-0 right-0 p-4 border-t bg-white/80 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-end gap-2 w-full lg:w-[calc(100%-16rem)] transition-all duration-300">
         {!isWizard && (
