@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Search, ArrowLeft, X, Save, Layers, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Activity, Users, Trophy, Plus } from 'lucide-react'
+import { Search, ArrowLeft, X, Save, Layers, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Activity, Users, Trophy, Plus, Edit, Copy, Trash2 } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useNavigate, useSearchParams, useParams, useLocation } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -20,6 +20,17 @@ import {
 } from '@/components/ui/table'
 import { Filters, type Filter as FilterType, type FilterFieldConfig } from '@/components/ui/filters'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import ModalityForm from '../basic-registration/ModalityForm'
 
 const filterFields: FilterFieldConfig[] = [
@@ -66,8 +77,9 @@ export default function AssociateModalities({
 
   const [selected, setSelected] = useState<string[]>([])
   const [showNewModalityModal, setShowNewModalityModal] = useState(false)
+  const [editingModalityId, setEditingModalityId] = useState<string | null>(null)
   const { getEventById, getEventModalities, setEventModalities } = useEvent()
-  const { modalities } = useModality()
+  const { modalities, deleteModality, addModality } = useModality()
 
   // Filtering & Sorting State
   const [searchTerm, setSearchTerm] = useState('')
@@ -79,13 +91,13 @@ export default function AssociateModalities({
   const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
     const saved = localStorage.getItem('ge_associate_modalities_col_widths')
     return saved ? JSON.parse(saved) : {
-      name: 250,
-      type: 150,
-      gender: 150,
-      minAge: 180,
-      minAthletes: 180,
-      maxTeams: 150,
-      maxEventsPerAthlete: 150
+      name: 200,
+      type: 120,
+      gender: 120,
+      minAge: 140,
+      minAthletes: 140,
+      maxTeams: 120,
+      maxEventsPerAthlete: 120
     }
   })
 
@@ -132,6 +144,12 @@ export default function AssociateModalities({
   const [itemsPerPage, setItemsPerPage] = useState(50)
 
   const event = eventId ? getEventById(eventId) : undefined
+
+  const handleDuplicate = (modality: any) => {
+    const { id: _, ...rest } = modality
+    addModality({ ...rest, name: `${rest.name} (Cópia)` })
+    toast.success("Modalidade duplicada com sucesso!")
+  }
 
   useEffect(() => {
     if (!eventId) {
@@ -231,6 +249,8 @@ export default function AssociateModalities({
       <ArrowDown className="ml-2 h-4 w-4 text-primary" />
   }
 
+  const totalTableWidth = useMemo(() => Object.values(colWidths).reduce((acc, width) => acc + width, 0) + 150, [colWidths])
+
   const handleSave = () => {
     if (eventId) {
       setEventModalities(eventId, selected)
@@ -250,7 +270,7 @@ export default function AssociateModalities({
   }
 
   return (
-    <div className={cn("container mx-auto px-4 lg:px-8 flex flex-col pt-6", isWizard ? "min-h-full" : "h-[calc(100vh-5rem)]")}>
+    <div className={cn("w-full max-w-[1200px] mx-auto px-4 lg:px-6 flex flex-col pt-6", isWizard ? "min-h-full" : "h-[calc(100vh-5rem)]")}>
       {/* Header */}
       {!isWizard && (
         <div className="flex items-center justify-between mb-10 shrink-0 px-1">
@@ -339,7 +359,7 @@ export default function AssociateModalities({
             <div className="flex-1 flex flex-col">
               <div className="flex-1">
                 <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden overflow-x-auto border-collapse">
-                  <Table style={{ tableLayout: 'auto', minWidth: '100%' }}>
+                  <Table style={{ tableLayout: 'fixed', minWidth: `${totalTableWidth}px` }}>
                     <TableHeader className="bg-primary/5">
                       <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
                         <TableHead className="w-[50px] relative font-semibold text-primary/80 h-12">
@@ -419,6 +439,9 @@ export default function AssociateModalities({
                             className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                           />
                         </TableHead>
+                        <TableHead className="px-4 align-middle relative text-right font-semibold text-primary/80 h-12">
+                          Ações
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -461,6 +484,75 @@ export default function AssociateModalities({
                               </TableCell>
                               <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">
                                 {mod.maxEventsPerAthlete}
+                              </TableCell>
+                              <TableCell className="text-right h-12 py-0">
+                                <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity h-full items-center">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                                    title="Editar"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingModalityId(mod.id);
+                                      setShowNewModalityModal(true);
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="hover:bg-secondary/20 hover:text-secondary-foreground rounded-full transition-colors"
+                                    title="Copiar"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDuplicate(mod);
+                                    }}
+                                  >
+                                    <Copy className="h-4 w-4" />
+                                  </Button>
+
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Excluir"
+                                        className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className="rounded-2xl border-primary/10 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>
+                                          Tem certeza absoluta?
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Essa ação não pode ser desfeita. Isso excluirá
+                                          permanentemente a modalidade
+                                          <strong> {mod.name}</strong>.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel className="rounded-xl">
+                                          Cancelar
+                                        </AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            deleteModality(mod.id);
+                                          }}
+                                          className="bg-destructive hover:bg-destructive/90 rounded-xl shadow-lg shadow-destructive/20"
+                                        >
+                                          Excluir
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
                               </TableCell>
                             </TableRow>
                           )
@@ -520,15 +612,23 @@ export default function AssociateModalities({
 
       </div>
 
-      <Dialog open={showNewModalityModal} onOpenChange={setShowNewModalityModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-full">
+      <Dialog open={showNewModalityModal} onOpenChange={(open) => {
+        setShowNewModalityModal(open);
+        if (!open) setEditingModalityId(null);
+      }}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto w-full">
           <ModalityForm
             isModal
+            modalityId={editingModalityId}
             onSuccess={() => {
               setShowNewModalityModal(false)
-              toast.success("Modalidade criada com sucesso!")
+              setEditingModalityId(null)
+              toast.success(editingModalityId ? "Modalidade atualizada!" : "Modalidade criada!")
             }}
-            onCancel={() => setShowNewModalityModal(false)}
+            onCancel={() => {
+              setShowNewModalityModal(false)
+              setEditingModalityId(null)
+            }}
           />
         </DialogContent>
       </Dialog>

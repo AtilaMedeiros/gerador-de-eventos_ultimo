@@ -83,11 +83,13 @@ interface ModalityFormProps {
   onSuccess?: () => void
   onCancel?: () => void
   isModal?: boolean
+  modalityId?: string | null
 }
 
-export default function ModalityForm({ onSuccess, onCancel, isModal = false }: ModalityFormProps) {
+export default function ModalityForm({ onSuccess, onCancel, isModal = false, modalityId }: ModalityFormProps) {
   const navigate = useNavigate()
-  const { id } = useParams()
+  const params = useParams()
+  const id = modalityId || params.id
   const [searchParams] = useSearchParams()
   const returnTo = searchParams.get('returnTo')
   const { addModality, updateModality, getModalityById } = useModality()
