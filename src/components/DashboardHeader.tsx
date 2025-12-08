@@ -41,7 +41,7 @@ export function DashboardHeader() {
     if (path.includes('/area-do-produtor/usuarios'))
       return 'Gestão de Usuários'
     if (path.includes('/area-do-produtor/publicacoes'))
-      return 'Comunicação e Avisos'
+      return 'Publicações'
     if (path.includes('/area-do-produtor/configurar-evento'))
       return 'Configuração do Evento'
     if (path.includes('/area-do-produtor/relatorios'))
@@ -61,6 +61,9 @@ export function DashboardHeader() {
       if (path.includes('/publicacoes')) return 'Avisos e Boletins'
       return 'Painel do Evento'
     }
+
+    if (path.includes('/area-do-produtor/escolas')) return 'Escolas'
+    if (path.includes('/area-do-produtor/atletas')) return 'Atletas'
 
     return 'Área do Produtor'
   }

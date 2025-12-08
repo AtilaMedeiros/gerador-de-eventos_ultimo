@@ -62,10 +62,10 @@ export default function Communication() {
             <div className="p-2 bg-primary/10 rounded-lg">
               <Megaphone className="h-6 w-6 text-primary" />
             </div>
-            Central de Comunicação
+            Central de Publicações
           </h2>
           <p className="text-muted-foreground max-w-xl">
-            Gerencie avisos, boletins, resultados e regulamentos dos seus eventos em um só lugar.
+            Gerencie todas as publicações dos seus eventos em um só lugar.
           </p>
         </div>
 
