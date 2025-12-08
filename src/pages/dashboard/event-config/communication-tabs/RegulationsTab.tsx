@@ -287,7 +287,16 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
               </div>
 
               <div className="flex items-start justify-between mb-4">
-                <div className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold border bg-secondary text-secondary-foreground border-border transition-colors">
+                <div
+                  className={cn(
+                    'inline-flex items-center rounded-[5px] px-2.5 py-0.5 text-xs font-semibold border transition-colors',
+                    reg.category === 'Código de Justiça'
+                      ? 'bg-red-100 text-red-800 border-red-200'
+                      : reg.category === 'Edital'
+                        ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                        : 'bg-blue-100 text-blue-800 border-blue-200',
+                  )}
+                >
                   {reg.category}
                 </div>
                 <div className="flex items-center gap-1 text-muted-foreground group-hover:text-red-500 transition-colors">

@@ -251,7 +251,7 @@ export function NoticesTab({ eventId }: NoticesTabProps) {
               <div className="flex items-start justify-between mb-4">
                 <div
                   className={cn(
-                    'inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold border transition-colors',
+                    'inline-flex items-center rounded-[5px] px-2.5 py-0.5 text-xs font-semibold border transition-colors',
                     notice.category === 'Urgente'
                       ? 'bg-red-100 text-red-800 border-red-200'
                       : notice.category === 'Plantão'
