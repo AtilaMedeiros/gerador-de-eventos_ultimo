@@ -1,26 +1,36 @@
 import { useState } from 'react'
-import { Trophy, Plus, Trash2, Medal, Search, Tag, ChevronLeft, ChevronRight } from 'lucide-react'
-import { toast } from 'sonner'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import {
+  Trophy,
+  Filter as FilterIcon,
+  Plus,
+  Trash2,
+  Edit,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Medal,
+  Tag,
+  CheckCircle2,
+  Clock
+} from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Filters, type Filter, type FilterFieldConfig } from '@/components/ui/filters'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -28,8 +38,24 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { useCommunication, Result } from '@/contexts/CommunicationContext'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+
+import { cn } from '@/lib/utils'
+import { useCommunication } from '@/contexts/CommunicationContext'
+
+const resultSchema = z.object({
+  categoryName: z.string().min(3, 'O nome da modalidade deve ter pelo menos 3 caracteres'),
+  champion: z.string().optional(),
+})
+
+type ResultFormValues = z.infer<typeof resultSchema>
 
 interface ResultsTabProps {
   eventId: string
@@ -38,10 +64,10 @@ interface ResultsTabProps {
 const filterFields: FilterFieldConfig[] = [
   {
     key: 'categoryName',
-    label: 'Categoria',
+    label: 'Modalidade',
     icon: <Tag className="size-3.5" />,
     type: 'text',
-    placeholder: 'Buscar por categoria...',
+    placeholder: 'Buscar por modalidade...',
   },
   {
     key: 'champion',
@@ -49,13 +75,13 @@ const filterFields: FilterFieldConfig[] = [
     icon: <Trophy className="size-3.5" />,
     type: 'text',
     placeholder: 'Buscar por campeão...',
-  }
+  },
 ]
 
 export function ResultsTab({ eventId }: ResultsTabProps) {
   const { results, addResult, updateResult, deleteResult } = useCommunication()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [newCategoryName, setNewCategoryName] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<Filter[]>([])
 
@@ -87,6 +113,11 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
     })
   })
 
+  const [selectedResult, setSelectedResult] = useState<any | null>(null)
+
+  // Result to Delete State
+  const [resultToDelete, setResultToDelete] = useState<string | null>(null)
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | string>(12)
@@ -102,24 +133,34 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
     setCurrentPage(1)
   }
 
-  const handleChampionChange = (id: string, value: string) => {
-    updateResult(id, { champion: value })
-  }
+  const form = useForm<ResultFormValues>({
+    resolver: zodResolver(resultSchema),
+    defaultValues: {
+      categoryName: '',
+      champion: '',
+    },
+  })
 
-  const handleAddCategory = () => {
-    if (!newCategoryName.trim()) {
-      toast.error('O nome da modalidade é obrigatório.')
-      return
+  const onSubmit = (data: ResultFormValues) => {
+    if (editingId) {
+      updateResult(editingId, {
+        categoryName: data.categoryName,
+        champion: data.champion || '',
+      })
+      setEditingId(null)
+    } else {
+      addResult({
+        eventId,
+        categoryName: data.categoryName,
+        champion: data.champion || '',
+      })
     }
 
-    addResult({
-      eventId,
-      categoryName: newCategoryName,
+    setIsDialogOpen(false)
+    form.reset({
+      categoryName: '',
       champion: '',
     })
-
-    setNewCategoryName('')
-    setIsDialogOpen(false)
   }
 
   return (
@@ -131,36 +172,72 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
             Registre os vencedores de cada modalidade para exibir no site.
           </p>
         </div>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open)
+            if (!open) {
+              setEditingId(null)
+              form.reset({
+                categoryName: '',
+                champion: '',
+              })
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" /> Adicionar Modalidade
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Novo Resultado
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Adicionar Categoria/Modalidade</DialogTitle>
+              <DialogTitle>{editingId ? 'Editar Resultado' : 'Criar Novo Resultado'}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Nome da Categoria</Label>
-                <Input
-                  placeholder="Ex: Futsal Masculino Sub-17"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={form.control}
+                  name="categoryName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Modalidade / Categoria</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Futsal Masculino" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="flex justify-end">
-                <Button onClick={handleAddCategory}>Adicionar</Button>
-              </div>
-            </div>
+
+                <FormField
+                  control={form.control}
+                  name="champion"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Campeão</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nome do atleta ou equipe campeã" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end pt-4">
+                  <Button type="submit">Salvar Resultado</Button>
+                </div>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
 
       {/* Search and Advanced Filters */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3 flex-1 min-w-[200px] relative group">
           <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
             <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -195,6 +272,90 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
             />
           </div>
         </div>
+      </div>
+
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {filteredResults.length === 0 ? (
+          <div className="col-span-full text-center py-10 bg-muted/20 rounded-lg border border-dashed">
+            <Trophy className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+            <p className="text-muted-foreground">
+              Nenhum resultado encontrado.
+            </p>
+          </div>
+        ) : (
+          currentResults.map((result) => (
+            <div
+              key={result.id}
+              onClick={() => setSelectedResult(result)}
+              className="aspect-square h-full flex flex-col rounded-xl bg-card p-6 text-card-foreground shadow-sm border hover:border-primary/50 hover:shadow-md transition-all duration-300 group relative overflow-hidden cursor-pointer"
+            >
+
+              <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-primary bg-white/80 backdrop-blur-sm dark:bg-black/50"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setEditingId(result.id)
+                    form.reset({
+                      categoryName: result.categoryName,
+                      champion: result.champion,
+                    })
+                    setIsDialogOpen(true)
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive bg-white/80 backdrop-blur-sm dark:bg-black/50"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setResultToDelete(result.id)
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="flex items-start justify-between mb-4">
+                <div
+                  className={cn(
+                    'inline-flex items-center rounded-[5px] px-2.5 py-0.5 text-xs font-semibold border transition-colors',
+                    result.champion
+                      ? 'bg-green-100 text-green-800 border-green-200'
+                      : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                  )}
+                >
+                  {result.champion ? 'Definido' : 'Pendente'}
+                </div>
+
+              </div>
+
+              <h3 className="font-semibold tracking-tight text-[16px] mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                {result.categoryName}
+              </h3>
+
+              <p className="text-muted-foreground text-[13px] line-clamp-2 mb-4 flex-grow">
+                {result.champion ? `Campeão: ${result.champion}` : 'Aguardando definição do campeão para esta modalidade.'}
+              </p>
+
+              <div className="flex flex-col gap-2 pt-4 border-t border-border mt-auto">
+                <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
+                  <Medal className="w-4 h-4 text-primary" />
+                  <span>{result.champion || '—'}</span>
+                </div>
+                {/* No second row since we don't have author/date, using just one row for now to keep spacing somewhat consistent or just leave it simpler */}
+                <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  <span>{result.champion ? 'Finalizado' : 'Em andamento'}</span>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Pagination Controls */}
@@ -250,96 +411,86 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-warning" />
-            Resultados por Modalidade
-          </CardTitle>
-          <CardDescription>
-            Preencha o nome da equipe ou atleta campeão de cada categoria.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[300px]">
-                  Modalidade / Categoria
-                </TableHead>
-                <TableHead>Campeão</TableHead>
-                <TableHead className="w-[100px] text-center">Status</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentResults.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className="text-center h-24 text-muted-foreground"
-                  >
-                    Nenhum resultado encontrado.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                currentResults.map((result) => (
-                  <TableRow key={result.id}>
-                    <TableCell className="font-medium">
-                      {result.categoryName}
-                    </TableCell>
-                    <TableCell>
-                      <div className="relative max-w-md">
-                        <Medal className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-warning" />
-                        <Input
-                          value={result.champion}
-                          onChange={(e) =>
-                            handleChampionChange(result.id, e.target.value)
-                          }
-                          placeholder="Digite o nome do campeão..."
-                          className="pl-9"
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {result.champion ? (
-                        <Badge className="bg-success hover:bg-success/80">
-                          Definido
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="outline"
-                          className="text-muted-foreground"
-                        >
-                          Pendente
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        onClick={() => deleteResult(result.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      {/* Detail Modal */}
+      <Dialog open={!!selectedResult} onOpenChange={(open) => !open && setSelectedResult(null)}>
+        <DialogContent className="p-0 border-none bg-transparent shadow-none max-w-[550px] w-full [&>button]:hidden">
+          {selectedResult && (
+            <div className="w-[550px] h-[550px] flex flex-col rounded-xl bg-white text-card-foreground shadow-2xl border-2 border-orange-100 overflow-hidden text-left relative animate-in zoom-in-95 duration-300">
 
-      {eventResults.length > 0 && (
-        <div className="flex justify-end">
-          <p className="text-sm text-muted-foreground">
-            As alterações são salvas automaticamente.
-          </p>
-        </div>
-      )}
+              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
+                <div className="pr-8">
+                  <div className={cn(
+                    "inline-flex items-center rounded-[5px] px-2.5 py-0.5 text-xs font-semibold border mb-3",
+                    selectedResult.champion
+                      ? 'bg-green-100 text-green-800 border-green-200'
+                      : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                  )}>
+                    {selectedResult.champion ? 'Definido' : 'Pendente'}
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-900 leading-tight">
+                    {selectedResult.categoryName}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setSelectedResult(null)}
+                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-all"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="flex-grow overflow-y-auto text-base text-muted-foreground leading-relaxed whitespace-pre-wrap p-6">
+                {selectedResult.champion ? (
+                  <div className="flex flex-col items-center justify-center h-full gap-4">
+                    <Trophy className="w-16 h-16 text-yellow-500" />
+                    <div className="text-center">
+                      <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1">Grande Campeão</p>
+                      <p className="text-3xl font-bold text-foreground">{selectedResult.champion}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
+                    <Clock className="w-16 h-16 text-muted-foreground/30" />
+                    <p>O campeão desta modalidade ainda não foi definido.</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-3 px-6 pb-6 pt-4 border-t border-border mt-auto bg-gray-50/30">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Tag className="w-5 h-5 text-primary" />
+                  <span className="text-base">{selectedResult.categoryName}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!resultToDelete} onOpenChange={() => setResultToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza absoluta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação não pode ser desfeita. Isso excluirá permanentemente este resultado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                if (resultToDelete) {
+                  deleteResult(resultToDelete)
+                  setResultToDelete(null)
+                }
+              }}
+            >
+              Apagar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

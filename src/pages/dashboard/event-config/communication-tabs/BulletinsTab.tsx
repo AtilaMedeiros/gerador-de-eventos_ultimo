@@ -317,7 +317,6 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
                               <SelectValue placeholder="Selecione" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
                             <SelectItem value="Boletim Diário">
                               Boletim Diário
                             </SelectItem>
@@ -330,6 +329,15 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
                             <SelectItem value="Nota Oficial">
                               Nota Oficial
                             </SelectItem>
+                            <SelectItem value="Retificação">
+                              Retificação
+                            </SelectItem>
+                            <SelectItem value="Regular">
+                              Regular
+                            </SelectItem>
+                            <SelectItem value="Geral">
+                              Geral
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -337,71 +345,71 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="author"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Registro de quem criou</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Nome do autor" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-
-
                 <FormField
                   control={form.control}
-                  name="description"
+                  name="author"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Descrição</FormLabel>
+                      <FormLabel>Registro de quem criou</FormLabel>
                       <FormControl>
-                        <Textarea
-                          placeholder="Resumo do conteúdo do boletim..."
-                          className="resize-none"
-                          rows={3}
-                          {...field}
-                        />
+                        <Input {...field} placeholder="Nome do autor" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+              </div>
 
-                <FormField
-                  control={form.control}
-                  name="files"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FileUpload
-                        label="Anexo PDF"
-                        description="Selecione o arquivo do boletim (PDF)."
-                        accept="application/pdf"
-                        maxSizeMB={10}
-                        value={field.value}
-                        onChange={field.onChange}
-                        error={form.formState.errors.files?.message as string}
+
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrição</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Resumo do conteúdo do boletim..."
+                        className="resize-none"
+                        rows={3}
+                        {...field}
                       />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <div className="flex justify-end pt-4">
-                  <Button type="submit">Salvar Boletim</Button>
-                </div>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-      </div>
+              <FormField
+                control={form.control}
+                name="files"
+                render={({ field }) => (
+                  <FormItem>
+                    <FileUpload
+                      label="Anexo PDF"
+                      description="Selecione o arquivo do boletim (PDF)."
+                      accept="application/pdf"
+                      maxSizeMB={10}
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={form.formState.errors.files?.message as string}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-      {/* Search and Advanced Filters */}
+              <div className="flex justify-end pt-4">
+                <Button type="submit">Salvar Boletim</Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </div>
+
+      {/* Search and Advanced Filters */ }
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3 flex-1 min-w-[200px] relative group">
           <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
@@ -528,60 +536,60 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
         )}
       </div>
 
-      {/* Pagination Controls */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground mt-6">
-        <div className="flex items-center gap-2">
-          <span>Monstrando</span>
-          <Input
-            type="number"
-            min={1}
-            max={500}
-            value={itemsPerPage}
-            onChange={(e) => {
-              const val = e.target.value
-              if (val === '') {
-                setItemsPerPage('')
-                return
-              }
-              let num = parseInt(val)
-              if (isNaN(num)) return
-              if (num > 500) num = 500
-              setItemsPerPage(num)
-              setCurrentPage(1)
-            }}
-            className="h-8 w-12 text-center p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-          />
-          <span>registros por página</span>
-        </div>
+  {/* Pagination Controls */ }
+  <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground mt-6">
+    <div className="flex items-center gap-2">
+      <span>Monstrando</span>
+      <Input
+        type="number"
+        min={1}
+        max={500}
+        value={itemsPerPage}
+        onChange={(e) => {
+          const val = e.target.value
+          if (val === '') {
+            setItemsPerPage('')
+            return
+          }
+          let num = parseInt(val)
+          if (isNaN(num)) return
+          if (num > 500) num = 500
+          setItemsPerPage(num)
+          setCurrentPage(1)
+        }}
+        className="h-8 w-12 text-center p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+      />
+      <span>registros por página</span>
+    </div>
 
-        <div className="flex items-center gap-2">
-          <span>
-            Página {currentPage} de {totalPages || 1}
-          </span>
-          <div className="flex gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages || totalPages === 0}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+    <div className="flex items-center gap-2">
+      <span>
+        Página {currentPage} de {totalPages || 1}
+      </span>
+      <div className="flex gap-1">
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+          disabled={currentPage === 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+          disabled={currentPage === totalPages || totalPages === 0}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
+    </div>
+  </div>
 
-      {/* Detail Modal */}
+  {/* Detail Modal */ }
       <Dialog open={!!selectedBulletin} onOpenChange={(open) => !open && setSelectedBulletin(null)}>
         <DialogContent className="p-0 border-none bg-transparent shadow-none max-w-[550px] w-full [&>button]:hidden">
           {selectedBulletin && (
@@ -647,6 +655,6 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </div >
   )
 }
