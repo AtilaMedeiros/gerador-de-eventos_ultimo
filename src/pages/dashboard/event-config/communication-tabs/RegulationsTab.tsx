@@ -499,7 +499,7 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
                 {reg.title}
               </h3>
 
-              <p className="text-muted-foreground text-[13px] line-clamp-3 mb-4 flex-grow">
+              <p className="text-muted-foreground text-[13px] line-clamp-2 mb-4 flex-grow">
                 {reg.description}
               </p>
 

@@ -507,7 +507,7 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
                 {bulletin.title}
               </h3>
 
-              <p className="text-muted-foreground text-[13px] line-clamp-3 mb-4 flex-grow">
+              <p className="text-muted-foreground text-[13px] line-clamp-2 mb-4 flex-grow">
                 {bulletin.description}
               </p>
 
