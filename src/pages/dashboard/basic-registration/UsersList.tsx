@@ -9,6 +9,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 import { Filters, type Filter, type FilterFieldConfig } from '@/components/ui/filters'
 import {
   Search,
@@ -25,14 +34,19 @@ import {
   ArrowDown,
   ChevronLeft,
   ChevronRight,
+  RotateCcwKey,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { FaWhatsapp } from 'react-icons/fa'
+import { TbUserPause, TbUserCheck } from 'react-icons/tb'
 
 const MOCK_USERS = [
   {
     id: 1,
     name: 'Ana Silva',
+    cpf: '123.456.789-00',
+    phone: '(11) 98765-4321',
     email: 'ana.silva@email.com',
     role: 'Administrador',
     status: 'active',
@@ -41,6 +55,8 @@ const MOCK_USERS = [
   {
     id: 2,
     name: 'Carlos Oliveira',
+    cpf: '234.567.890-11',
+    phone: '(21) 99876-5432',
     email: 'carlos.o@email.com',
     role: 'Produtor',
     status: 'active',
@@ -49,6 +65,8 @@ const MOCK_USERS = [
   {
     id: 3,
     name: 'Marcos Santos',
+    cpf: '345.678.901-22',
+    phone: '(31) 91234-5678',
     email: 'marcos.s@email.com',
     role: 'Participante',
     status: 'inactive',
@@ -92,8 +110,16 @@ export default function UsersList() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<Filter[]>([])
 
+  const [users, setUsers] = useState(MOCK_USERS)
+
+  // Password Reset State
+  const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false)
+  const [selectedUserForReset, setSelectedUserForReset] = useState<typeof MOCK_USERS[0] | null>(null)
+  const [newPassword, setNewPassword] = useState('')
+
+
   // Apply Filters
-  const filteredUsers = MOCK_USERS.filter(user => {
+  const filteredUsers = users.filter(user => {
     // Global Search
     const searchLower = searchTerm.toLowerCase()
     const matchesSearch =
@@ -185,6 +211,34 @@ export default function UsersList() {
     toast.info(`Ação ${action} simulada com sucesso.`)
   }
 
+  const toggleUserStatus = (userId: number) => {
+    setUsers(prevUsers => prevUsers.map(user => {
+      if (user.id === userId) {
+        const newStatus = user.status === 'active' ? 'inactive' : 'active'
+        toast.success(`Usuário ${newStatus === 'active' ? 'ativado' : 'pausado'} com sucesso.`)
+        return { ...user, status: newStatus }
+      }
+      return user
+    }))
+  }
+
+  const handleOpenResetDialog = (user: typeof MOCK_USERS[0]) => {
+    setSelectedUserForReset(user)
+    setNewPassword(`@Sme${new Date().getFullYear()}`)
+    setResetPasswordDialogOpen(true)
+  }
+
+  const handleConfirmReset = () => {
+    if (!selectedUserForReset) return
+
+    // Simulate API call
+    console.log(`Resetting password for user ${selectedUserForReset.id} to ${newPassword}`)
+
+    toast.success(`Senha para ${selectedUserForReset.name} alterada com sucesso!`)
+    setResetPasswordDialogOpen(false)
+    setSelectedUserForReset(null)
+  }
+
   return (
     <div className="space-y-8 animate-fade-in relative">
       {/* Background Gradients */}
@@ -264,6 +318,16 @@ export default function UsersList() {
                   Nome {getSortIcon('name')}
                 </div>
               </TableHead>
+              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('cpf')}>
+                <div className="flex items-center">
+                  CPF {getSortIcon('cpf')}
+                </div>
+              </TableHead>
+              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('phone')}>
+                <div className="flex items-center">
+                  Telefone {getSortIcon('phone')}
+                </div>
+              </TableHead>
               <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('email')}>
                 <div className="flex items-center">
                   Email {getSortIcon('email')}
@@ -272,16 +336,6 @@ export default function UsersList() {
               <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('role')}>
                 <div className="flex items-center">
                   Tipo de Acesso {getSortIcon('role')}
-                </div>
-              </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('status')}>
-                <div className="flex items-center">
-                  Status {getSortIcon('status')}
-                </div>
-              </TableHead>
-              <TableHead className="font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('lastAccess')}>
-                <div className="flex items-center">
-                  Último Acesso {getSortIcon('lastAccess')}
                 </div>
               </TableHead>
               <TableHead className="text-right font-semibold text-primary/80 h-12">Ações</TableHead>
@@ -294,11 +348,35 @@ export default function UsersList() {
                   key={user.id}
                   className="hover:bg-primary/5 transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group"
                 >
-                  <TableCell className="font-medium h-12 py-0">
-                    <div className="flex items-center h-full">
+                  <TableCell className="font-medium h-12 py-2">
+                    <div className="flex flex-col justify-center h-full">
                       <span className="text-sm group-hover:text-primary transition-colors leading-tight">
                         {user.name}
                       </span>
+                      <span className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                        {user.status === 'active' ? (
+                          <>
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                            Ativo
+                          </>
+                        ) : (
+                          <>
+                            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50 inline-block" />
+                            Inativo
+                          </>
+                        )}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="h-12 py-0">
+                    <div className="flex items-center h-full text-muted-foreground">
+                      {user.cpf}
+                    </div>
+                  </TableCell>
+                  <TableCell className="h-12 py-0">
+                    <div className="flex items-center h-full text-muted-foreground gap-2">
+                      <FaWhatsapp className="h-4 w-4 text-green-500" />
+                      {user.phone}
                     </div>
                   </TableCell>
                   <TableCell className="h-12 py-0">
@@ -311,28 +389,33 @@ export default function UsersList() {
                       {user.role}
                     </div>
                   </TableCell>
-                  <TableCell className="h-12 py-0">
-                    <div className="flex items-center h-full">
-                      {user.status === 'active' ? (
-                        <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-medium">
-                          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          Ativo
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />
-                          Inativo
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm h-12 py-0">
-                    <div className="flex items-center h-full">
-                      {user.lastAccess}
-                    </div>
-                  </TableCell>
                   <TableCell className="text-right h-12 py-0">
                     <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity h-full items-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={`rounded-full transition-colors ${user.status === 'active'
+                          ? "hover:bg-warning/10 hover:text-yellow-600"
+                          : "hover:bg-emerald-500/10 hover:text-emerald-600 text-muted-foreground"
+                          }`}
+                        onClick={() => toggleUserStatus(user.id)}
+                        title={user.status === 'active' ? "Pausar Usuário" : "Ativar Usuário"}
+                      >
+                        {user.status === 'active' ? (
+                          <TbUserPause className="h-6 w-6" />
+                        ) : (
+                          <TbUserCheck className="h-6 w-6" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                        onClick={() => handleOpenResetDialog(user)}
+                        title="Resetar Senha"
+                      >
+                        <RotateCcwKey className="h-5 w-5" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -416,6 +499,32 @@ export default function UsersList() {
           </div>
         </div>
       </div>
-    </div>
+
+      <Dialog open={resetPasswordDialogOpen} onOpenChange={setResetPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Resetar Senha</DialogTitle>
+            <DialogDescription>
+              Defina a senha temporária. No primeiro acesso, o sistema solicitará a troca obrigatória da senha.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="new-password">Nova Senha</Label>
+              <Input
+                id="new-password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Digite a nova senha"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetPasswordDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleConfirmReset}>Confirmar Alteração</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div >
   )
 }

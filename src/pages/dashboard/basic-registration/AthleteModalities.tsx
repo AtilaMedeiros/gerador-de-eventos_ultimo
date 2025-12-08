@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { ArrowLeft, Save, Trash2, Trophy } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, Trophy, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -86,6 +86,90 @@ export default function AthleteModalities() {
     const navigate = useNavigate()
     const [linkedModalities, setLinkedModalities] = useState(MOCK_LINKED_MODALITIES)
 
+    // Sorting Logic
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
+
+    const sortedLinkedModalities = [...linkedModalities].sort((a, b) => {
+        if (!sortConfig) return 0
+
+        const { key, direction } = sortConfig
+        const aValue = a[key as keyof typeof a]
+        const bValue = b[key as keyof typeof b]
+
+        if (aValue < bValue) return direction === 'asc' ? -1 : 1
+        if (aValue > bValue) return direction === 'asc' ? 1 : -1
+        return 0
+    })
+
+    const requestSort = (key: string) => {
+        let direction: 'asc' | 'desc' = 'asc'
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc'
+        }
+        setSortConfig({ key, direction })
+    }
+
+    const getSortIcon = (key: string) => {
+        if (!sortConfig || sortConfig.key !== key) {
+            return <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground/50" />
+        }
+        return sortConfig.direction === 'asc' ?
+            <ArrowUp className="ml-2 h-4 w-4 text-primary" /> :
+            <ArrowDown className="ml-2 h-4 w-4 text-primary" />
+    }
+
+    // Column Resizing Logic
+    const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
+        const saved = localStorage.getItem('ge_athlete_modalities_col_widths')
+        return saved ? JSON.parse(saved) : {
+            type: 120,
+            modality: 200,
+            prova: 200,
+            sex: 120,
+            ageRange: 140,
+            actions: 80
+        }
+    })
+
+    useEffect(() => {
+        localStorage.setItem('ge_athlete_modalities_col_widths', JSON.stringify(colWidths))
+    }, [colWidths])
+
+    const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)
+
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+        if (!resizingRef.current) return
+        const { key, startX, startWidth } = resizingRef.current
+        const diff = e.clientX - startX
+        const newWidth = Math.max(50, startWidth + diff)
+
+        setColWidths(prev => ({
+            ...prev,
+            [key]: newWidth
+        }))
+    }, [])
+
+    const handleMouseUp = useCallback(() => {
+        resizingRef.current = null
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+        document.body.style.cursor = 'default'
+    }, [handleMouseMove])
+
+    const handleMouseDown = useCallback((e: React.MouseEvent, key: string) => {
+        e.preventDefault()
+        e.stopPropagation()
+        resizingRef.current = {
+            key,
+            startX: e.clientX,
+            startWidth: colWidths[key] || 100
+        }
+        document.addEventListener('mousemove', handleMouseMove)
+        document.addEventListener('mouseup', handleMouseUp)
+        document.body.style.cursor = 'col-resize'
+    }, [colWidths, handleMouseMove, handleMouseUp])
+
+    // Existing Form Logic...
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -93,6 +177,8 @@ export default function AthleteModalities() {
             prova: '',
         },
     })
+
+    // ... existing onTypeChange, derived values ...
 
     const selectedType = form.watch('type')
     const selectedModality = form.watch('modality')
@@ -127,7 +213,7 @@ export default function AthleteModalities() {
         setLinkedModalities([...linkedModalities, newModality])
         toast.success('Modalidade vinculada com sucesso!')
         form.reset({
-            type: values.type, // Keep type for easier multiple entries? Or reset all. Let's reset relevant.
+            type: values.type,
             modality: '',
             prova: ''
         })
@@ -279,17 +365,64 @@ export default function AthleteModalities() {
                         <Table style={{ tableLayout: 'fixed', minWidth: '100%' }}>
                             <TableHeader className="bg-primary/5">
                                 <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
-                                    <TableHead className="font-semibold text-primary/80 h-12 w-[120px]">Tipo</TableHead>
-                                    <TableHead className="font-semibold text-primary/80 h-12 w-[200px]">Modalidade</TableHead>
-                                    <TableHead className="font-semibold text-primary/80 h-12 w-[200px]">Prova</TableHead>
-                                    <TableHead className="font-semibold text-primary/80 h-12 w-[120px] text-center">Naipe</TableHead>
-                                    <TableHead className="font-semibold text-primary/80 h-12 w-[140px] text-center">Faixa de Idade</TableHead>
-                                    <TableHead className="text-right font-semibold text-primary/80 h-12 w-[80px]">Ações</TableHead>
+                                    <TableHead style={{ width: colWidths.type }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('type')}>
+                                        <div className="flex items-center overflow-hidden">
+                                            <span className="truncate">Tipo</span> {getSortIcon('type')}
+                                        </div>
+                                        <div
+                                            onMouseDown={(e) => handleMouseDown(e, 'type')}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                        />
+                                    </TableHead>
+                                    <TableHead style={{ width: colWidths.modality }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('modality')}>
+                                        <div className="flex items-center overflow-hidden">
+                                            <span className="truncate">Modalidade</span> {getSortIcon('modality')}
+                                        </div>
+                                        <div
+                                            onMouseDown={(e) => handleMouseDown(e, 'modality')}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                        />
+                                    </TableHead>
+                                    <TableHead style={{ width: colWidths.prova }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('prova')}>
+                                        <div className="flex items-center overflow-hidden">
+                                            <span className="truncate">Prova</span> {getSortIcon('prova')}
+                                        </div>
+                                        <div
+                                            onMouseDown={(e) => handleMouseDown(e, 'prova')}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                        />
+                                    </TableHead>
+                                    <TableHead style={{ width: colWidths.sex }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('sex')}>
+                                        <div className="flex items-center justify-center overflow-hidden">
+                                            <span className="truncate">Naipe</span> {getSortIcon('sex')}
+                                        </div>
+                                        <div
+                                            onMouseDown={(e) => handleMouseDown(e, 'sex')}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                        />
+                                    </TableHead>
+                                    <TableHead style={{ width: colWidths.ageRange }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('ageRange')}>
+                                        <div className="flex items-center justify-center overflow-hidden">
+                                            <span className="truncate">Faixa de Idade</span> {getSortIcon('ageRange')}
+                                        </div>
+                                        <div
+                                            onMouseDown={(e) => handleMouseDown(e, 'ageRange')}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                        />
+                                    </TableHead>
+                                    <TableHead style={{ width: colWidths.actions }} className="relative text-right font-semibold text-primary/80 h-12">
+                                        Ações
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {linkedModalities.length > 0 ? (
-                                    linkedModalities.map((item) => (
+                                {sortedLinkedModalities.length > 0 ? (
+                                    sortedLinkedModalities.map((item) => (
                                         <TableRow key={item.id} className="hover:bg-primary/5 transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group">
                                             <TableCell className="font-medium h-12 py-0">
                                                 <div className="flex items-center h-full">
