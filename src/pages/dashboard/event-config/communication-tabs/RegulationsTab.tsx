@@ -59,8 +59,7 @@ const regulationSchema = z.object({
   description: z
     .string()
     .min(10, 'A descrição deve ter pelo menos 10 caracteres'),
-  date: z.date({ required_error: 'Selecione a data' }),
-  time: z.string().min(1, 'Selecione a hora'),
+
   author: z.string(),
   files: z
     .array(z.instanceof(File))
@@ -87,8 +86,7 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
       title: '',
       category: '',
       description: '',
-      time: format(new Date(), 'HH:mm'),
-      author: user?.name || 'Organizador',
+      author: user?.name || '',
       files: [],
     },
   })
@@ -102,8 +100,8 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
       title: data.title,
       category: data.category,
       description: data.description,
-      date: data.date,
-      time: data.time,
+      date: new Date(),
+      time: format(new Date(), 'HH:mm'),
       author: data.author,
       fileName: fileName,
       eventId,
@@ -114,9 +112,7 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
       title: '',
       category: '',
       description: '',
-      date: undefined,
-      time: format(new Date(), 'HH:mm'),
-      author: user?.name || 'Organizador',
+      author: user?.name || '',
       files: [],
     })
   }
@@ -205,7 +201,7 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
                       <FormItem>
                         <FormLabel>Registro de quem criou</FormLabel>
                         <FormControl>
-                          <Input {...field} readOnly className="bg-muted" />
+                          <Input {...field} placeholder="Nome do autor" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -213,60 +209,7 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Data de Publicação</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  'w-full pl-3 text-left font-normal',
-                                  !field.value && 'text-muted-foreground',
-                                )}
-                              >
-                                {field.value ? (
-                                  format(field.value, 'P', { locale: ptBR })
-                                ) : (
-                                  <span>Selecione a data</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
 
-                  <FormField
-                    control={form.control}
-                    name="time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Hora</FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
 
                 <FormField
                   control={form.control}
@@ -327,7 +270,7 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
           eventRegulations.map((reg) => (
             <div
               key={reg.id}
-              className="group flex flex-col h-full rounded-xl bg-card p-6 text-card-foreground shadow-sm border-2 border-border hover:border-primary/50 hover:shadow-xl transition-all duration-300 relative"
+              className="aspect-square h-full flex flex-col rounded-xl bg-card p-6 text-card-foreground shadow-sm border hover:border-primary/50 hover:shadow-md transition-all duration-300 group relative overflow-hidden"
             >
               <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button
@@ -353,22 +296,22 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
                 </div>
               </div>
 
-              <h3 className="font-semibold tracking-tight text-xl mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-2">
+              <h3 className="font-semibold tracking-tight text-[16px] mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-2">
                 {reg.title}
               </h3>
 
-              <p className="text-muted-foreground text-base line-clamp-3 mb-4 flex-grow">
+              <p className="text-muted-foreground text-[13px] line-clamp-3 mb-4 flex-grow">
                 {reg.description}
               </p>
 
               <div className="flex flex-col gap-2 pt-4 border-t border-border mt-auto">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
                   <CalendarIcon className="w-4 h-4 text-primary" />
                   <span>
                     {format(reg.date, "dd 'de' MMM yyyy", { locale: ptBR })}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground group/file cursor-pointer hover:text-primary transition-colors">
+                <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground group/file cursor-pointer hover:text-primary transition-colors">
                   <FileText className="w-4 h-4 text-primary" />
                   <span className="truncate">{reg.fileName}</span>
                 </div>
