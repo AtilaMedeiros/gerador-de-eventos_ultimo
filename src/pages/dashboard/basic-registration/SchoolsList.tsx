@@ -113,7 +113,7 @@ const filterFields: FilterFieldConfig[] = [
     },
     {
         key: 'isEventActive',
-        label: 'Evento Ativo',
+        label: 'Eventos Publicados',
         activeLabel: '',
         icon: <CalendarHeart className="size-5" />,
         type: 'boolean',

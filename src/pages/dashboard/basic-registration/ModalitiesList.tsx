@@ -168,21 +168,21 @@ export default function ModalitiesList() {
 
   // Column Resizing Logic
   const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
-    const saved = localStorage.getItem('ge_modalities_col_widths')
+    const saved = localStorage.getItem('ge_modalities_col_widths_v2')
     return saved ? JSON.parse(saved) : {
-      name: 250,
-      type: 150,
-      gender: 150,
-      minAge: 180,
-      minAthletes: 180,
-      maxTeams: 150,
-      maxEventsPerAthlete: 150,
-      actions: 100
+      name: 200,
+      type: 120,
+      gender: 100,
+      minAge: 120,
+      minAthletes: 120,
+      maxTeams: 100,
+      maxEventsPerAthlete: 100,
+      actions: 80
     }
   })
 
   useEffect(() => {
-    localStorage.setItem('ge_modalities_col_widths', JSON.stringify(colWidths))
+    localStorage.setItem('ge_modalities_col_widths_v2', JSON.stringify(colWidths))
   }, [colWidths])
 
   const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)
@@ -325,7 +325,7 @@ export default function ModalitiesList() {
               </TableHead>
               <TableHead style={{ width: colWidths.minAge }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap text-center" onClick={() => requestSort('minAge')}>
                 <div className="flex items-center justify-center overflow-hidden">
-                  <span className="truncate">Idade (Min-Max)</span> {getSortIcon('minAge')}
+                  <span className="truncate">Idade</span> {getSortIcon('minAge')}
                 </div>
                 <div
                   onMouseDown={(e) => handleMouseDown(e, 'minAge')}
@@ -335,7 +335,7 @@ export default function ModalitiesList() {
               </TableHead>
               <TableHead style={{ width: colWidths.minAthletes }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors whitespace-nowrap text-center" onClick={() => requestSort('minAthletes')}>
                 <div className="flex items-center justify-center overflow-hidden">
-                  <span className="truncate">Atletas (Min-Max)</span> {getSortIcon('minAthletes')}
+                  <span className="truncate">Atletas</span> {getSortIcon('minAthletes')}
                 </div>
                 <div
                   onMouseDown={(e) => handleMouseDown(e, 'minAthletes')}

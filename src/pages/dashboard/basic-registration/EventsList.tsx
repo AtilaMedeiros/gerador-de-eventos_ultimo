@@ -112,7 +112,7 @@ const filterFields: FilterFieldConfig[] = [
   },
   {
     key: 'isActive',
-    label: 'Evento Ativo',
+    label: 'Eventos Publicados',
     activeLabel: '',
     icon: <CalendarHeart className="size-5" />,
     type: 'boolean',
@@ -178,20 +178,10 @@ export default function EventsList() {
         case 'producerName':
           return event.producerName?.toLowerCase().includes(value) ?? false
         case 'isActive': {
-          // Specific logic for Active/Inactive
-          if (filter.value === 'false') return true // "Inactive" or "All"? Usually boolean filter is true/false. 
-          // If boolean filter is 'true', we want only active events.
-          // If boolean filter is 'false', we usually want inactive. 
-          // BUT the previous logic was "Active Only" toggle.
-          // SchoolsList logic for boolean:
-          // const boolValue = value === 'true' || value === true
-          // return school.isEventActive === boolValue
-
-          // Based on previous logic:
-          const isClosed = event.status === 'closed' || event.status === 'deleted' || event.status === 'ended'
-          if (value === 'true') return !isClosed
-          if (value === 'false') return isClosed
-          return true
+          // If 'false' (unchecked), show all events.
+          if (value === 'false') return true
+          // If 'true' (checked), show only published events.
+          return event.status === 'published'
         }
         default:
           return true
