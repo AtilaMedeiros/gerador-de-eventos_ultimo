@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import {
   Trophy,
   Filter as FilterIcon,
@@ -15,7 +17,10 @@ import {
   Medal,
   Tag,
   CheckCircle2,
-  Clock
+  Clock,
+  FileText,
+  User,
+  Calendar as CalendarIcon
 } from 'lucide-react'
 import {
   AlertDialog,
@@ -31,6 +36,7 @@ import { Filters, type Filter, type FilterFieldConfig } from '@/components/ui/fi
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
@@ -46,13 +52,30 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 import { cn } from '@/lib/utils'
 import { useCommunication } from '@/contexts/CommunicationContext'
+import { FileUpload } from '@/components/FileUpload'
+import { useAuth } from '@/contexts/AuthContext'
 
 const resultSchema = z.object({
-  categoryName: z.string().min(3, 'O nome da modalidade deve ter pelo menos 3 caracteres'),
-  champion: z.string().optional(),
+  title: z.string().min(3, 'O título deve ter pelo menos 3 caracteres'),
+  category: z.string().min(1, 'Selecione uma categoria'),
+  description: z
+    .string()
+    .min(10, 'A descrição deve ter pelo menos 10 caracteres'),
+
+  author: z.string(),
+  files: z
+    .array(z.instanceof(File))
+    .min(1, 'É necessário anexar um arquivo PDF'),
 })
 
 type ResultFormValues = z.infer<typeof resultSchema>
@@ -63,22 +86,23 @@ interface ResultsTabProps {
 
 const filterFields: FilterFieldConfig[] = [
   {
-    key: 'categoryName',
-    label: 'Modalidade',
+    key: 'title',
+    label: 'Título',
     icon: <Tag className="size-3.5" />,
     type: 'text',
-    placeholder: 'Buscar por modalidade...',
+    placeholder: 'Buscar por título...',
   },
   {
-    key: 'champion',
-    label: 'Campeão',
-    icon: <Trophy className="size-3.5" />,
+    key: 'category',
+    label: 'Categoria',
+    icon: <Tag className="size-3.5" />,
     type: 'text',
-    placeholder: 'Buscar por campeão...',
+    placeholder: 'Filtrar por categoria...',
   },
 ]
 
 export function ResultsTab({ eventId }: ResultsTabProps) {
+  const { user } = useAuth()
   const { results, addResult, updateResult, deleteResult } = useCommunication()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -91,8 +115,8 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
   const filteredResults = eventResults.filter((result) => {
     // Global Search
     const searchLower = searchTerm.toLowerCase()
-    const matchesSearch = result.categoryName.toLowerCase().includes(searchLower) ||
-      (result.champion && result.champion.toLowerCase().includes(searchLower))
+    const matchesSearch = result.title.toLowerCase().includes(searchLower) ||
+      result.description.toLowerCase().includes(searchLower)
 
     if (!matchesSearch) return false
 
@@ -103,11 +127,11 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
       const value = filter.value?.toString().toLowerCase() || ''
       if (value === '') return true
 
-      if (filter.field === 'categoryName') {
-        return result.categoryName.toLowerCase().includes(value)
+      if (filter.field === 'title') {
+        return result.title.toLowerCase().includes(value)
       }
-      if (filter.field === 'champion') {
-        return result.champion && result.champion.toLowerCase().includes(value)
+      if (filter.field === 'category') {
+        return result.category.toLowerCase().includes(value)
       }
       return true
     })
@@ -136,30 +160,48 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
   const form = useForm<ResultFormValues>({
     resolver: zodResolver(resultSchema),
     defaultValues: {
-      categoryName: '',
-      champion: '',
+      title: '',
+      category: '',
+      description: '',
+      author: user?.name || '',
+      files: [],
     },
   })
 
   const onSubmit = (data: ResultFormValues) => {
     if (editingId) {
       updateResult(editingId, {
-        categoryName: data.categoryName,
-        champion: data.champion || '',
+        title: data.title,
+        category: data.category,
+        description: data.description,
+        author: data.author,
+        // Handling files update typically involves more complex logic
       })
       setEditingId(null)
     } else {
+      const fileName = data.files[0]
+        ? data.files[0].name
+        : 'arquivo_desconhecido.pdf'
+
       addResult({
         eventId,
-        categoryName: data.categoryName,
-        champion: data.champion || '',
+        title: data.title,
+        category: data.category,
+        description: data.description,
+        author: data.author,
+        fileName: fileName,
+        date: new Date(),
+        time: format(new Date(), 'HH:mm'),
       })
     }
 
     setIsDialogOpen(false)
     form.reset({
-      categoryName: '',
-      champion: '',
+      title: '',
+      category: '',
+      description: '',
+      author: user?.name || '',
+      files: [],
     })
   }
 
@@ -167,9 +209,9 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-medium">Galeria de Campeões</h3>
+          <h3 className="text-lg font-medium">Galeria de Resultados</h3>
           <p className="text-sm text-muted-foreground">
-            Registre os vencedores de cada modalidade para exibir no site.
+            Publique os resultados oficiais das competições.
           </p>
         </div>
         <Dialog
@@ -179,8 +221,11 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
             if (!open) {
               setEditingId(null)
               form.reset({
-                categoryName: '',
-                champion: '',
+                title: '',
+                category: '',
+                description: '',
+                author: user?.name || '',
+                files: [],
               })
             }
           }}
@@ -190,23 +235,96 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
               <Plus className="mr-2 h-4 w-4" /> Novo Resultado
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle>{editingId ? 'Editar Resultado' : 'Criar Novo Resultado'}</DialogTitle>
+              <DialogTitle>{editingId ? 'Editar Resultado' : 'Publicar Novo Resultado'}</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-4"
               >
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Título</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Ex: Resultado Futsal - Final"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Categoria</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Resultado Geral">
+                              Resultado Geral
+                            </SelectItem>
+                            <SelectItem value="Por Modalidade">
+                              Por Modalidade
+                            </SelectItem>
+                            <SelectItem value="Classificação">
+                              Classificação
+                            </SelectItem>
+                            <SelectItem value="Ranking">
+                              Ranking
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="author"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Registro de quem criou</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Nome do autor" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <FormField
                   control={form.control}
-                  name="categoryName"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Modalidade / Categoria</FormLabel>
+                      <FormLabel>Descrição</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Futsal Masculino" {...field} />
+                        <Textarea
+                          placeholder="Resumo do resultado..."
+                          className="resize-none"
+                          rows={3}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -215,13 +333,18 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
 
                 <FormField
                   control={form.control}
-                  name="champion"
+                  name="files"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Campeão</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nome do atleta ou equipe campeã" {...field} />
-                      </FormControl>
+                      <FileUpload
+                        label="Anexo PDF"
+                        description="Selecione o arquivo do resultado (PDF)."
+                        accept="application/pdf"
+                        maxSizeMB={10}
+                        value={field.value}
+                        onChange={field.onChange}
+                        error={form.formState.errors.files?.message as string}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -299,8 +422,11 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
                     e.stopPropagation()
                     setEditingId(result.id)
                     form.reset({
-                      categoryName: result.categoryName,
-                      champion: result.champion,
+                      title: result.title,
+                      category: result.category,
+                      description: result.description,
+                      author: result.author,
+                      files: [],
                     })
                     setIsDialogOpen(true)
                   }}
@@ -324,33 +450,32 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
                 <div
                   className={cn(
                     'inline-flex items-center rounded-[5px] px-2.5 py-0.5 text-xs font-semibold border transition-colors',
-                    result.champion
-                      ? 'bg-green-100 text-green-800 border-green-200'
-                      : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                    result.category === 'Resultado Geral'
+                      ? 'bg-blue-100 text-blue-800 border-blue-200'
+                      : 'bg-green-100 text-green-800 border-green-200'
                   )}
                 >
-                  {result.champion ? 'Definido' : 'Pendente'}
+                  {result.category}
                 </div>
 
               </div>
 
               <h3 className="font-semibold tracking-tight text-[16px] mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                {result.categoryName}
+                {result.title}
               </h3>
 
               <p className="text-muted-foreground text-[13px] line-clamp-2 mb-4 flex-grow">
-                {result.champion ? `Campeão: ${result.champion}` : 'Aguardando definição do campeão para esta modalidade.'}
+                {result.description}
               </p>
 
               <div className="flex flex-col gap-2 pt-4 border-t border-border mt-auto">
                 <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
-                  <Medal className="w-4 h-4 text-primary" />
-                  <span>{result.champion || '—'}</span>
+                  <CalendarIcon className="w-4 h-4 text-primary" />
+                  <span>{format(new Date(result.date), "dd 'de' MMM yyyy", { locale: ptBR })}</span>
                 </div>
-                {/* No second row since we don't have author/date, using just one row for now to keep spacing somewhat consistent or just leave it simpler */}
                 <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
-                  <CheckCircle2 className="w-4 h-4 text-primary" />
-                  <span>{result.champion ? 'Finalizado' : 'Em andamento'}</span>
+                  <User className="w-4 h-4 text-primary" />
+                  <span>{result.author}</span>
                 </div>
               </div>
             </div>
@@ -420,15 +545,12 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
               <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
                 <div className="pr-8">
                   <div className={cn(
-                    "inline-flex items-center rounded-[5px] px-2.5 py-0.5 text-xs font-semibold border mb-3",
-                    selectedResult.champion
-                      ? 'bg-green-100 text-green-800 border-green-200'
-                      : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                    "inline-flex items-center rounded-[5px] px-2.5 py-0.5 text-xs font-semibold border mb-3 bg-purple-100 text-purple-800 border-purple-200"
                   )}>
-                    {selectedResult.champion ? 'Definido' : 'Pendente'}
+                    {selectedResult.category}
                   </div>
                   <h2 className="text-xl font-bold text-gray-900 leading-tight">
-                    {selectedResult.categoryName}
+                    {selectedResult.title}
                   </h2>
                 </div>
                 <button
@@ -440,26 +562,17 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
               </div>
 
               <div className="flex-grow overflow-y-auto text-base text-muted-foreground leading-relaxed whitespace-pre-wrap p-6">
-                {selectedResult.champion ? (
-                  <div className="flex flex-col items-center justify-center h-full gap-4">
-                    <Trophy className="w-16 h-16 text-yellow-500" />
-                    <div className="text-center">
-                      <p className="text-sm uppercase tracking-wide text-muted-foreground mb-1">Grande Campeão</p>
-                      <p className="text-3xl font-bold text-foreground">{selectedResult.champion}</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-                    <Clock className="w-16 h-16 text-muted-foreground/30" />
-                    <p>O campeão desta modalidade ainda não foi definido.</p>
-                  </div>
-                )}
+                {selectedResult.description}
               </div>
 
               <div className="flex flex-col gap-3 px-6 pb-6 pt-4 border-t border-border mt-auto bg-gray-50/30">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Tag className="w-5 h-5 text-primary" />
-                  <span className="text-base">{selectedResult.categoryName}</span>
+                  <CalendarIcon className="w-5 h-5 text-primary" />
+                  <span className="text-base">{format(new Date(selectedResult.date), "dd 'de' MMM yyyy", { locale: ptBR })}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="w-5 h-5 text-primary" />
+                  <span className="text-base">{selectedResult.author}</span>
                 </div>
               </div>
             </div>

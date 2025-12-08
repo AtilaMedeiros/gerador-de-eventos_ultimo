@@ -30,8 +30,14 @@ export interface Bulletin {
 export interface Result {
   id: string
   eventId: string
-  categoryName: string
-  champion: string
+  title: string
+  category: string
+  description: string
+  author: string
+  fileName: string
+  createdAt: Date
+  date: Date
+  time: string
 }
 
 export interface Regulation {
@@ -58,7 +64,7 @@ interface CommunicationContextType {
   addBulletin: (bulletin: Omit<Bulletin, 'id' | 'createdAt'>) => void
   updateBulletin: (id: string, bulletin: Partial<Omit<Bulletin, 'id' | 'createdAt'>>) => void
   deleteBulletin: (id: string) => void
-  addResult: (result: Omit<Result, 'id'>) => void
+  addResult: (result: Omit<Result, 'id' | 'createdAt'>) => void
   updateResult: (id: string, result: Partial<Result>) => void
   deleteResult: (id: string) => void
   addRegulation: (regulation: Omit<Regulation, 'id' | 'createdAt'>) => void
@@ -455,18 +461,23 @@ export function CommunicationProvider({
   }
 
   // Result Actions
-  const addResult = (data: Omit<Result, 'id'>) => {
+  const addResult = (resultData: Omit<Result, 'id' | 'createdAt'>) => {
     const newResult: Result = {
-      ...data,
+      ...resultData,
       id: crypto.randomUUID(),
+      createdAt: new Date(),
     }
-    setResults((prev) => [...prev, newResult])
-    toast.success('Categoria adicionada aos resultados.')
+    setResults((prev) => [newResult, ...prev])
+    toast.success('Resultado publicado com sucesso!')
   }
 
-  const updateResult = (id: string, data: Partial<Result>) => {
-    setResults((prev) => prev.map((r) => (r.id === id ? { ...r, ...data } : r)))
-    // Toast handled in component typically, or here if generic
+  const updateResult = (id: string, resultData: Partial<Omit<Result, 'id' | 'createdAt'>>) => {
+    setResults((prev) =>
+      prev.map((result) =>
+        result.id === id ? { ...result, ...resultData } : result
+      )
+    )
+    toast.success('Resultado atualizado com sucesso!')
   }
 
   const deleteResult = (id: string) => {
