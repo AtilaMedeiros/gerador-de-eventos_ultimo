@@ -19,6 +19,11 @@ interface CommunicationContentProps {
 
 export function CommunicationContent({ eventId, events, onEventSelect }: CommunicationContentProps) {
     const [activeTab, setActiveTab] = useState('avisos')
+    const [isActive, setIsActive] = useState(true)
+
+    const filteredEvents = isActive
+        ? events.filter(e => e.status === 'published')
+        : events
 
     return (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
@@ -43,18 +48,18 @@ export function CommunicationContent({ eventId, events, onEventSelect }: Communi
                     <Filters
                         fields={[
                             {
-                                key: 'active',
-                                label: 'Evento Ativo',
-                                type: 'boolean',
-                                icon: <CalendarHeart className="h-4 w-4" />,
-                                activeLabel: ''
-                            },
-                            {
                                 key: 'eventId',
                                 label: 'Evento',
                                 type: 'select',
                                 icon: <Calendar className="h-4 w-4" />,
-                                options: events.map(e => ({ label: e.name, value: e.id }))
+                                options: filteredEvents.map(e => ({ label: e.name, value: e.id }))
+                            },
+                            {
+                                key: 'active',
+                                label: 'Eventos Publicados',
+                                type: 'boolean',
+                                icon: <CalendarHeart className="h-4 w-4" />,
+                                activeLabel: ''
                             }
                         ]}
                         filters={[
@@ -68,15 +73,16 @@ export function CommunicationContent({ eventId, events, onEventSelect }: Communi
                                 id: 'active-filter',
                                 field: 'active',
                                 operator: 'eq',
-                                value: 'true'
+                                value: isActive ? 'true' : 'false'
                             }
                         ]}
                         onChange={(newFilters) => {
                             const eventFilter = newFilters.find(f => f.field === 'eventId')
-                            // Always keep 'active' filter true or respect user toggle?
-                            // User said "por padrao fica setado".
-                            // If user removes 'active', we let it go? 
-                            // For visual consistency, I'll mainly listen to 'eventId'.
+                            const activeFilter = newFilters.find(f => f.field === 'active')
+
+                            // Update active state
+                            setIsActive(activeFilter ? activeFilter.value === 'true' : false)
+
                             if (eventFilter && eventFilter.value !== eventId) {
                                 onEventSelect(eventFilter.value)
                             } else if (!eventFilter && eventId) {

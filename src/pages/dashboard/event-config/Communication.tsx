@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Megaphone, Calendar, Search } from 'lucide-react'
 import { CommunicationContent } from './CommunicationContent'
 import {
@@ -27,6 +27,23 @@ export default function Communication() {
       setSelectedEventId(urlEventId)
     }
   }, [urlEventId])
+
+  // Auto-select most recent active event on mount if no ID provided
+  const hasAutoSelected = useRef(false)
+  useEffect(() => {
+    if (events.length > 0 && !urlEventId && !selectedEventId && !hasAutoSelected.current) {
+      const activeEvents = events.filter(e => e.status === 'published')
+      // If active events exist, sort by date desc
+      if (activeEvents.length > 0) {
+        const sorted = [...activeEvents].sort((a, b) =>
+          new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+        )
+        const mostRecent = sorted[0]
+        setSelectedEventId(mostRecent.id)
+        hasAutoSelected.current = true
+      }
+    }
+  }, [events, urlEventId, selectedEventId])
 
   const handleEventSelect = (value: string) => {
     setSelectedEventId(value)
