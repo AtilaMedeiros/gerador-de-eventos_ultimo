@@ -418,7 +418,7 @@ export default function EventsList() {
                       className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-primary/10 hover:text-primary"
                       onClick={(e) => {
                         e.stopPropagation()
-                        navigate(`/area-do-produtor/evento/${event.id}/participantes`)
+                        navigate(`/area-do-produtor/evento/${event.id}/produtor`)
                       }}
                     >
                       <UserPlus className="h-5 w-5" />

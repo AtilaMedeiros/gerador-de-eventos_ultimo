@@ -11,6 +11,7 @@ import {
   Clock,
   Trash2,
   User,
+  Heart,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -274,9 +275,9 @@ export function NoticesTab({ eventId }: NoticesTabProps) {
         </Dialog>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {eventNotices.length === 0 ? (
-          <div className="text-center py-10 bg-muted/20 rounded-lg border border-dashed">
+          <div className="col-span-full text-center py-10 bg-muted/20 rounded-lg border border-dashed">
             <Megaphone className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
             <p className="text-muted-foreground">
               Nenhum aviso publicado para este evento.
@@ -284,52 +285,66 @@ export function NoticesTab({ eventId }: NoticesTabProps) {
           </div>
         ) : (
           eventNotices.map((notice) => (
-            <Card key={notice.id}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={cn(
-                          'text-xs font-semibold px-2 py-0.5 rounded-full',
-                          notice.category === 'Urgente'
-                            ? 'bg-red-100 text-red-700'
-                            : notice.category === 'Plantão'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : notice.category === 'Últimas Notícias'
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-blue-100 text-blue-700',
-                        )}
-                      >
-                        {notice.category}
-                      </span>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {format(notice.date, 'dd/MM/yyyy')} às {notice.time}
-                      </span>
-                    </div>
-                    <CardTitle className="text-lg">{notice.title}</CardTitle>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground hover:text-destructive"
-                    onClick={() => deleteNotice(notice.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+            <div
+              key={notice.id}
+              className="group flex flex-col h-full rounded-xl bg-card p-6 text-card-foreground shadow-sm border-2 border-border hover:border-primary/50 hover:shadow-xl transition-all duration-300 relative"
+            >
+              <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive bg-white/80 backdrop-blur-sm dark:bg-black/50"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    deleteNotice(notice.id)
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="flex items-start justify-between mb-4">
+                <div
+                  className={cn(
+                    'inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold border transition-colors',
+                    notice.category === 'Urgente'
+                      ? 'bg-red-100 text-red-800 border-red-200'
+                      : notice.category === 'Plantão'
+                        ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                        : notice.category === 'Últimas Notícias'
+                          ? 'bg-green-100 text-green-800 border-green-200'
+                          : 'bg-blue-100 text-blue-800 border-blue-200',
+                  )}
+                >
+                  {notice.category}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-foreground/80">
-                  {notice.description}
-                </CardDescription>
-                <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-                  <User className="h-3 w-3" />
-                  Criado por: {notice.author}
+                <div className="flex items-center gap-1 text-muted-foreground group-hover:text-red-500 transition-colors">
+                  <Heart className="w-4 h-4" />
+                  <span className="text-sm font-medium">24</span>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              <h3 className="font-semibold tracking-tight text-xl mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                {notice.title}
+              </h3>
+
+              <p className="text-muted-foreground text-base line-clamp-3 mb-4 flex-grow">
+                {notice.description}
+              </p>
+
+              <div className="flex flex-col gap-2 pt-4 border-t border-border mt-auto">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarIcon className="w-4 h-4 text-primary" />
+                  <span>
+                    {format(notice.date, "dd 'de' MMM yyyy", { locale: ptBR })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="w-4 h-4 text-primary" />
+                  <span className="truncate">{notice.author}</span>
+                </div>
+              </div>
+            </div>
           ))
         )}
       </div>

@@ -13,6 +13,7 @@ import {
   User,
   Download,
   FileText,
+  Heart,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -314,9 +315,9 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
         </Dialog>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {eventRegulations.length === 0 ? (
-          <div className="text-center py-10 bg-muted/20 rounded-lg border border-dashed">
+          <div className="col-span-full text-center py-10 bg-muted/20 rounded-lg border border-dashed">
             <Scale className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
             <p className="text-muted-foreground">
               Nenhum regulamento publicado para este evento.
@@ -324,56 +325,55 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
           </div>
         ) : (
           eventRegulations.map((reg) => (
-            <Card key={reg.id}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="bg-secondary text-secondary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
-                        {reg.category}
-                      </span>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {format(reg.date, 'dd/MM/yyyy')} às {reg.time}
-                      </span>
-                    </div>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Scale className="h-5 w-5 text-primary" />
-                      {reg.title}
-                    </CardTitle>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Download className="h-4 w-4" />
-                      <span className="hidden sm:inline">Baixar PDF</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={() => deleteRegulation(reg.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+            <div
+              key={reg.id}
+              className="group flex flex-col h-full rounded-xl bg-card p-6 text-card-foreground shadow-sm border-2 border-border hover:border-primary/50 hover:shadow-xl transition-all duration-300 relative"
+            >
+              <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive bg-white/80 backdrop-blur-sm dark:bg-black/50"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    deleteRegulation(reg.id)
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="flex items-start justify-between mb-4">
+                <div className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold border bg-secondary text-secondary-foreground border-border transition-colors">
+                  {reg.category}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-foreground/80 mb-3">
-                  {reg.description}
-                </p>
-                <div className="flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
-                  <div className="flex items-center gap-2">
-                    <User className="h-3 w-3" />
-                    Publicado por: {reg.author}
-                  </div>
-                  <div className="font-mono flex items-center gap-1">
-                    <FileText className="h-3 w-3" />
-                    {reg.fileName}
-                  </div>
+                <div className="flex items-center gap-1 text-muted-foreground group-hover:text-red-500 transition-colors">
+                  <Heart className="w-4 h-4" />
+                  <span className="text-sm font-medium">12</span>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              <h3 className="font-semibold tracking-tight text-xl mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                {reg.title}
+              </h3>
+
+              <p className="text-muted-foreground text-base line-clamp-3 mb-4 flex-grow">
+                {reg.description}
+              </p>
+
+              <div className="flex flex-col gap-2 pt-4 border-t border-border mt-auto">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarIcon className="w-4 h-4 text-primary" />
+                  <span>
+                    {format(reg.date, "dd 'de' MMM yyyy", { locale: ptBR })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground group/file cursor-pointer hover:text-primary transition-colors">
+                  <FileText className="w-4 h-4 text-primary" />
+                  <span className="truncate">{reg.fileName}</span>
+                </div>
+              </div>
+            </div>
           ))
         )}
       </div>
