@@ -148,11 +148,10 @@ export function Filters({ fields, filters, onChange, addButton, className }: Fil
                 <DropdownMenuTrigger asChild>
                     {addButton || (
                         <Button
-                            size="sm"
-                            className="h-9 gap-2 rounded-md px-4 bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-dashed border-blue-200 dark:border-blue-800 text-primary hover:bg-primary/5 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
+                            size="icon"
+                            className="h-10 w-10 p-0 rounded-md bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-blue-200 dark:border-blue-800 text-primary hover:bg-primary/5 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
                         >
-                            <FilterIcon className="h-3.5 w-3.5" />
-                            Filtrar por
+                            <FilterIcon className="h-5 w-5 text-blue-400" />
                         </Button>
                     )}
                 </DropdownMenuTrigger>

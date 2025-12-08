@@ -6,14 +6,8 @@ import { BulletinsTab } from './communication-tabs/BulletinsTab'
 import { ResultsTab } from './communication-tabs/ResultsTab'
 import { RegulationsTab } from './communication-tabs/RegulationsTab'
 
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
-import { Calendar } from 'lucide-react'
+import { Filters, FilterFieldConfig, Filter } from '@/components/ui/filters'
+import { Calendar, CalendarHeart } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Event } from '@/contexts/EventContext'
@@ -45,32 +39,53 @@ export function CommunicationContent({ eventId, events, onEventSelect }: Communi
                     </TabsTrigger>
                 </TabsList>
 
-                <div className="hidden md:block w-[300px]">
-                    <Select
-                        value={eventId}
-                        onValueChange={onEventSelect}
-                    >
-                        <SelectTrigger className="h-10 bg-background/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 focus:ring-primary/20 shadow-sm transition-all text-xs">
-                            <div className="flex items-center gap-2 truncate">
-                                <span className="text-muted-foreground uppercase font-bold text-[10px] tracking-wider shrink-0">Evento Ativo:</span>
-                                <span className="truncate font-medium flex-1 text-left">
-                                    {events.find(e => e.id === eventId)?.name || "Selecione..."}
-                                </span>
-                            </div>
-                        </SelectTrigger>
-                        <SelectContent align="end">
-                            {events.map((event) => (
-                                <SelectItem key={event.id} value={event.id} className="cursor-pointer">
-                                    <div className="flex flex-col gap-0.5 py-1">
-                                        <span className="font-medium">{event.name}</span>
-                                        <span className="text-xs text-muted-foreground">
-                                            {format(new Date(event.startDate), "d 'de' MMM, yyyy", { locale: ptBR })}
-                                        </span>
-                                    </div>
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                <div className="hidden md:block">
+                    <Filters
+                        fields={[
+                            {
+                                key: 'active',
+                                label: 'Evento Ativo',
+                                type: 'boolean',
+                                icon: <CalendarHeart className="h-4 w-4" />,
+                                activeLabel: ''
+                            },
+                            {
+                                key: 'eventId',
+                                label: 'Evento',
+                                type: 'select',
+                                icon: <Calendar className="h-4 w-4" />,
+                                options: events.map(e => ({ label: e.name, value: e.id }))
+                            }
+                        ]}
+                        filters={[
+                            {
+                                id: 'event-filter',
+                                field: 'eventId',
+                                operator: 'eq',
+                                value: eventId || ''
+                            },
+                            {
+                                id: 'active-filter',
+                                field: 'active',
+                                operator: 'eq',
+                                value: 'true'
+                            }
+                        ]}
+                        onChange={(newFilters) => {
+                            const eventFilter = newFilters.find(f => f.field === 'eventId')
+                            // Always keep 'active' filter true or respect user toggle?
+                            // User said "por padrao fica setado".
+                            // If user removes 'active', we let it go? 
+                            // For visual consistency, I'll mainly listen to 'eventId'.
+                            if (eventFilter && eventFilter.value !== eventId) {
+                                onEventSelect(eventFilter.value)
+                            } else if (!eventFilter && eventId) {
+                                // Event filter removed
+                                onEventSelect('')
+                            }
+                        }}
+                        className="justify-end"
+                    />
                 </div>
             </div>
 
