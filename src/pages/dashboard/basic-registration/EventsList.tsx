@@ -21,6 +21,7 @@ import {
   User,
   Activity,
   Building,
+  CalendarHeart,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -111,8 +112,8 @@ const filterFields: FilterFieldConfig[] = [
   {
     key: 'isActive',
     label: 'Evento Ativo',
-    activeLabel: 'Evento',
-    icon: <Activity className="size-3.5" />,
+    activeLabel: '',
+    icon: <CalendarHeart className="size-5" />,
     type: 'boolean',
   },
 ]

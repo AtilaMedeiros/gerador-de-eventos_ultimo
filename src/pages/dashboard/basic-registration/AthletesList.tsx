@@ -26,7 +26,8 @@ import {
     ArrowDown,
     ChevronLeft,
     ChevronRight,
-    MapPin
+    MapPin,
+    CalendarHeart
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
@@ -122,8 +123,8 @@ const filterFields: FilterFieldConfig[] = [
     {
         key: 'isEventActive',
         label: 'Evento Ativo',
-        activeLabel: 'Evento',
-        icon: <Activity className="size-3.5" />,
+        activeLabel: '',
+        icon: <CalendarHeart className="size-5" />,
         type: 'boolean',
     },
 ]

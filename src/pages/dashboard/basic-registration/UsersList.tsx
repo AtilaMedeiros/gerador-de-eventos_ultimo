@@ -125,7 +125,10 @@ export default function UsersList() {
     const matchesSearch =
       user.name.toLowerCase().includes(searchLower) ||
       user.email.toLowerCase().includes(searchLower) ||
-      user.role.toLowerCase().includes(searchLower)
+      user.role.toLowerCase().includes(searchLower) ||
+      user.cpf.includes(searchLower) ||
+      user.phone.includes(searchLower) ||
+      (user.status === 'active' ? 'ativo' : 'inativo').includes(searchLower)
 
     if (!matchesSearch) return false
 
@@ -279,7 +282,7 @@ export default function UsersList() {
             <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
           </div>
           <Input
-            placeholder="Pesquisar por nome ou email..."
+            placeholder="Pesquisar por nome, cpf, telefone ou email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"

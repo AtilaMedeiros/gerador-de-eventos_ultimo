@@ -7,7 +7,7 @@ import {
   User,
   Users,
   LogOut,
-  PartyPopper,
+  CalendarHeart,
   Palette,
   ChevronRight,
   School,
@@ -97,7 +97,7 @@ export function DashboardSidebar() {
           />
           <NavItem
             to="/area-do-produtor/evento"
-            icon={PartyPopper}
+            icon={CalendarHeart}
             label="Eventos"
             active={isChildActive('/area-do-produtor/evento')}
             iconClassName="h-6 w-6"
