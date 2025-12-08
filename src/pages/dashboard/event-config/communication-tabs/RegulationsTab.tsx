@@ -17,6 +17,8 @@ import {
   Search,
   Type,
   Tag,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { Filters, type Filter, type FilterFieldConfig } from '@/components/ui/filters'
 
@@ -159,6 +161,21 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
       return true
     })
   })
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState<number | string>(12)
+
+  // Pagination Logic
+  const pageSize = Number(itemsPerPage) > 0 ? Number(itemsPerPage) : 12
+  const totalPages = Math.ceil(filteredRegulations.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const currentRegulations = filteredRegulations.slice(startIndex, endIndex)
+
+  if (currentPage > totalPages && totalPages > 0) {
+    setCurrentPage(1)
+  }
 
   const form = useForm<RegulationFormValues>({
     resolver: zodResolver(regulationSchema),
@@ -385,7 +402,7 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
             </p>
           </div>
         ) : (
-          filteredRegulations.map((reg) => (
+          currentRegulations.map((reg) => (
             <div
               key={reg.id}
               className="aspect-square h-full flex flex-col rounded-xl bg-card p-6 text-card-foreground shadow-sm border hover:border-primary/50 hover:shadow-md transition-all duration-300 group relative overflow-hidden"
@@ -450,6 +467,59 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
             </div>
           ))
         )}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground mt-6">
+        <div className="flex items-center gap-2">
+          <span>Monstrando</span>
+          <Input
+            type="number"
+            min={1}
+            max={500}
+            value={itemsPerPage}
+            onChange={(e) => {
+              const val = e.target.value
+              if (val === '') {
+                setItemsPerPage('')
+                return
+              }
+              let num = parseInt(val)
+              if (isNaN(num)) return
+              if (num > 500) num = 500
+              setItemsPerPage(num)
+              setCurrentPage(1)
+            }}
+            className="h-8 w-12 text-center p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+          <span>registros por página</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span>
+            Página {currentPage} de {totalPages || 1}
+          </span>
+          <div className="flex gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )
