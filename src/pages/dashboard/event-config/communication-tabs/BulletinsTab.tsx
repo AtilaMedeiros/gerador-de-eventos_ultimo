@@ -18,7 +18,19 @@ import {
   Tag,
   ChevronLeft,
   ChevronRight,
+  X,
+  Edit,
 } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Filters, type Filter, type FilterFieldConfig } from '@/components/ui/filters'
 
 import { Button } from '@/components/ui/button'
@@ -117,8 +129,9 @@ const filterFields: FilterFieldConfig[] = [
 
 export function BulletinsTab({ eventId }: BulletinsTabProps) {
   const { user } = useAuth()
-  const { bulletins, addBulletin, deleteBulletin } = useCommunication()
+  const { bulletins, addBulletin, updateBulletin, deleteBulletin } = useCommunication()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<Filter[]>([])
 
@@ -161,6 +174,12 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
     })
   })
 
+  // Selected Bulletin State
+  const [selectedBulletin, setSelectedBulletin] = useState<any | null>(null)
+
+  // Bulletin to Delete State
+  const [bulletinToDelete, setBulletinToDelete] = useState<string | null>(null)
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | string>(12)
@@ -190,20 +209,31 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
   const onSubmit = (data: BulletinFormValues) => {
     // In a real app, we would upload the file here.
     // For this demo, we just save the metadata.
-    const fileName = data.files[0]
-      ? data.files[0].name
-      : 'arquivo_desconhecido.pdf'
+    if (editingId) {
+      updateBulletin(editingId, {
+        ...data,
+        // Assuming file handling for edit might be more complex or not directly through `files` array for existing files
+        // For now, just passing the data as is.
+      })
+      setEditingId(null)
+    } else {
+      // In a real app, we would upload the file here.
+      // For this demo, we just save the metadata.
+      const fileName = data.files[0]
+        ? data.files[0].name
+        : 'arquivo_desconhecido.pdf'
 
-    addBulletin({
-      title: data.title,
-      category: data.category,
-      description: data.description,
-      date: new Date(),
-      time: format(new Date(), 'HH:mm'),
-      author: data.author,
-      fileName: fileName,
-      eventId,
-    })
+      addBulletin({
+        title: data.title,
+        category: data.category,
+        description: data.description,
+        date: new Date(),
+        time: format(new Date(), 'HH:mm'),
+        author: data.author,
+        fileName: fileName,
+        eventId,
+      })
+    }
 
     setIsDialogOpen(false)
     form.reset({
@@ -224,7 +254,22 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
             Divulgue documentos oficiais e programação em PDF.
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open)
+            if (!open) {
+              setEditingId(null)
+              form.reset({
+                title: '',
+                category: '',
+                description: '',
+                author: user?.name || '',
+                files: [], // Ensure files are reset
+              })
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" /> Novo Boletim
@@ -232,7 +277,7 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle>Publicar Novo Boletim</DialogTitle>
+              <DialogTitle>{editingId ? 'Editar Boletim' : 'Publicar Novo Boletim'}</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form
@@ -404,16 +449,36 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
           currentBulletins.map((bulletin) => (
             <div
               key={bulletin.id}
-              className="aspect-square h-full flex flex-col rounded-xl bg-card p-6 text-card-foreground shadow-sm border hover:border-primary/50 hover:shadow-md transition-all duration-300 group relative overflow-hidden"
+              onClick={() => setSelectedBulletin(bulletin)}
+              className="aspect-square h-full flex flex-col rounded-xl bg-card p-6 text-card-foreground shadow-sm border hover:border-primary/50 hover:shadow-md transition-all duration-300 group relative overflow-hidden cursor-pointer"
             >
-              <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+
+              <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-primary bg-white/80 backdrop-blur-sm dark:bg-black/50"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setEditingId(bulletin.id)
+                    form.reset({
+                      title: bulletin.title,
+                      category: bulletin.category,
+                      description: bulletin.description,
+                      author: bulletin.author,
+                    })
+                    setIsDialogOpen(true)
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-muted-foreground hover:text-destructive bg-white/80 backdrop-blur-sm dark:bg-black/50"
                   onClick={(e) => {
                     e.stopPropagation()
-                    deleteBulletin(bulletin.id)
+                    setBulletinToDelete(bulletin.id)
                   }}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -435,10 +500,7 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
                 >
                   {bulletin.category}
                 </div>
-                <div className="flex items-center gap-1 text-muted-foreground group-hover:text-red-500 transition-colors">
-                  <Heart className="w-4 h-4" />
-                  <span className="text-sm font-medium">18</span>
-                </div>
+
               </div>
 
               <h3 className="font-semibold tracking-tight text-[16px] mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-2">
@@ -453,12 +515,12 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
                 <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
                   <CalendarIcon className="w-4 h-4 text-primary" />
                   <span>
-                    {format(bulletin.date, "dd 'de' MMM yyyy", { locale: ptBR })}
+                    {format(new Date(bulletin.date), "dd 'de' MMM yyyy", { locale: ptBR })}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground group/file cursor-pointer hover:text-primary transition-colors">
-                  <Download className="w-4 h-4 text-primary" />
-                  <span className="truncate">{bulletin.fileName}</span>
+                <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
+                  <User className="w-4 h-4 text-primary" />
+                  <span className="truncate">{bulletin.author}</span>
                 </div>
               </div>
             </div>
@@ -518,6 +580,73 @@ export function BulletinsTab({ eventId }: BulletinsTabProps) {
           </div>
         </div>
       </div>
+
+      {/* Detail Modal */}
+      <Dialog open={!!selectedBulletin} onOpenChange={(open) => !open && setSelectedBulletin(null)}>
+        <DialogContent className="p-0 border-none bg-transparent shadow-none max-w-[550px] w-full [&>button]:hidden">
+          {selectedBulletin && (
+            <div className="w-[550px] h-[550px] flex flex-col rounded-xl bg-white text-card-foreground shadow-2xl border-2 border-orange-100 overflow-hidden text-left relative animate-in zoom-in-95 duration-300">
+
+              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
+                <div className="pr-8">
+                  <div className="inline-flex items-center rounded-[5px] px-2.5 py-0.5 text-xs font-semibold border mb-3 bg-purple-100 text-purple-800 border-purple-200">
+                    {selectedBulletin.category}
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-900 leading-tight">
+                    {selectedBulletin.title}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setSelectedBulletin(null)}
+                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-all"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="flex-grow overflow-y-auto text-base text-muted-foreground leading-relaxed whitespace-pre-wrap p-6">
+                {selectedBulletin.description}
+              </div>
+
+              <div className="flex flex-col gap-3 px-6 pb-6 pt-4 border-t border-border mt-auto bg-gray-50/30">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarIcon className="w-5 h-5 text-primary" />
+                  <span className="text-base">{format(new Date(selectedBulletin.date), "dd 'de' MMM yyyy", { locale: ptBR })}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="w-5 h-5 text-primary" />
+                  <span className="text-base">{selectedBulletin.author}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!bulletinToDelete} onOpenChange={() => setBulletinToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza absoluta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação não pode ser desfeita. Isso excluirá permanentemente este boletim.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                if (bulletinToDelete) {
+                  deleteBulletin(bulletinToDelete)
+                  setBulletinToDelete(null)
+                }
+              }}
+            >
+              Apagar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

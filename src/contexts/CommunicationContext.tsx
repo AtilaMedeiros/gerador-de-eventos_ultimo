@@ -53,13 +53,16 @@ interface CommunicationContextType {
   results: Result[]
   regulations: Regulation[]
   addNotice: (notice: Omit<Notice, 'id' | 'createdAt'>) => void
+  updateNotice: (id: string, notice: Partial<Omit<Notice, 'id' | 'createdAt'>>) => void
   deleteNotice: (id: string) => void
   addBulletin: (bulletin: Omit<Bulletin, 'id' | 'createdAt'>) => void
+  updateBulletin: (id: string, bulletin: Partial<Omit<Bulletin, 'id' | 'createdAt'>>) => void
   deleteBulletin: (id: string) => void
   addResult: (result: Omit<Result, 'id'>) => void
   updateResult: (id: string, result: Partial<Result>) => void
   deleteResult: (id: string) => void
   addRegulation: (regulation: Omit<Regulation, 'id' | 'createdAt'>) => void
+  updateRegulation: (id: string, regulation: Partial<Omit<Regulation, 'id' | 'createdAt'>>) => void
   deleteRegulation: (id: string) => void
 }
 
@@ -402,14 +405,23 @@ export function CommunicationProvider({
   }, [regulations])
 
   // Notice Actions
-  const addNotice = (data: Omit<Notice, 'id' | 'createdAt'>) => {
+  const addNotice = (noticeData: Omit<Notice, 'id' | 'createdAt'>) => {
     const newNotice: Notice = {
-      ...data,
+      ...noticeData,
       id: crypto.randomUUID(),
       createdAt: new Date(),
     }
     setNotices((prev) => [newNotice, ...prev])
-    toast.success('Aviso publicado com sucesso!')
+    toast.success('Aviso criado com sucesso!')
+  }
+
+  const updateNotice = (id: string, noticeData: Partial<Omit<Notice, 'id' | 'createdAt'>>) => {
+    setNotices((prev) =>
+      prev.map((notice) =>
+        notice.id === id ? { ...notice, ...noticeData } : notice
+      )
+    )
+    toast.success('Aviso atualizado com sucesso!')
   }
 
   const deleteNotice = (id: string) => {
@@ -418,14 +430,23 @@ export function CommunicationProvider({
   }
 
   // Bulletin Actions
-  const addBulletin = (data: Omit<Bulletin, 'id' | 'createdAt'>) => {
+  const addBulletin = (bulletinData: Omit<Bulletin, 'id' | 'createdAt'>) => {
     const newBulletin: Bulletin = {
-      ...data,
+      ...bulletinData,
       id: crypto.randomUUID(),
       createdAt: new Date(),
     }
     setBulletins((prev) => [newBulletin, ...prev])
     toast.success('Boletim publicado com sucesso!')
+  }
+
+  const updateBulletin = (id: string, bulletinData: Partial<Omit<Bulletin, 'id' | 'createdAt'>>) => {
+    setBulletins((prev) =>
+      prev.map((bulletin) =>
+        bulletin.id === id ? { ...bulletin, ...bulletinData } : bulletin
+      )
+    )
+    toast.success('Boletim atualizado com sucesso!')
   }
 
   const deleteBulletin = (id: string) => {
@@ -454,14 +475,23 @@ export function CommunicationProvider({
   }
 
   // Regulation Actions
-  const addRegulation = (data: Omit<Regulation, 'id' | 'createdAt'>) => {
+  const addRegulation = (regulationData: Omit<Regulation, 'id' | 'createdAt'>) => {
     const newRegulation: Regulation = {
-      ...data,
+      ...regulationData,
       id: crypto.randomUUID(),
       createdAt: new Date(),
     }
     setRegulations((prev) => [newRegulation, ...prev])
     toast.success('Regulamento publicado com sucesso!')
+  }
+
+  const updateRegulation = (id: string, regulationData: Partial<Omit<Regulation, 'id' | 'createdAt'>>) => {
+    setRegulations((prev) =>
+      prev.map((regulation) =>
+        regulation.id === id ? { ...regulation, ...regulationData } : regulation
+      )
+    )
+    toast.success('Regulamento atualizado com sucesso!')
   }
 
   const deleteRegulation = (id: string) => {
@@ -478,13 +508,16 @@ export function CommunicationProvider({
         results,
         regulations,
         addNotice,
+        updateNotice,
         deleteNotice,
         addBulletin,
+        updateBulletin,
         deleteBulletin,
         addResult,
         updateResult,
         deleteResult,
         addRegulation,
+        updateRegulation,
         deleteRegulation,
       },
     },

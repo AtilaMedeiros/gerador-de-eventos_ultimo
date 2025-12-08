@@ -5,20 +5,35 @@ import * as z from 'zod'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
-  Megaphone,
-  Plus,
   Calendar as CalendarIcon,
-  Clock,
+  Filter as FilterIcon,
+  Megaphone,
+  MoreVertical,
+  Plus,
   Trash2,
+  Trash,
   User,
-  Heart,
-  Search,
-  Type,
+  MapPin,
+  Phone,
+  Edit,
   Tag,
   FileText,
   ChevronLeft,
   ChevronRight,
+  X,
+  Type,
+  Search,
 } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Filters, type Filter, type FilterFieldConfig } from '@/components/ui/filters'
 
 import { Button } from '@/components/ui/button'
@@ -119,8 +134,9 @@ const filterFields: FilterFieldConfig[] = [
 
 export function NoticesTab({ eventId }: NoticesTabProps) {
   const { user } = useAuth()
-  const { notices, addNotice, deleteNotice } = useCommunication()
+  const { notices, addNotice, updateNotice, deleteNotice } = useCommunication()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<Filter[]>([])
 
@@ -164,6 +180,11 @@ export function NoticesTab({ eventId }: NoticesTabProps) {
     })
   })
 
+  const [selectedNotice, setSelectedNotice] = useState<any | null>(null)
+
+  // Notice to Delete State
+  const [noticeToDelete, setNoticeToDelete] = useState<string | null>(null)
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | string>(12)
@@ -190,12 +211,19 @@ export function NoticesTab({ eventId }: NoticesTabProps) {
   })
 
   const onSubmit = (data: NoticeFormValues) => {
-    addNotice({
-      ...data,
-      date: new Date(),
-      time: format(new Date(), 'HH:mm'),
-      eventId,
-    })
+    if (editingId) {
+      updateNotice(editingId, {
+        ...data,
+      })
+      setEditingId(null)
+    } else {
+      addNotice({
+        ...data,
+        date: new Date(),
+        time: format(new Date(), 'HH:mm'),
+        eventId,
+      })
+    }
 
     setIsDialogOpen(false)
     form.reset({
@@ -215,7 +243,21 @@ export function NoticesTab({ eventId }: NoticesTabProps) {
             Publique atualizações rápidas para os participantes do evento.
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open)
+            if (!open) {
+              setEditingId(null)
+              form.reset({
+                title: '',
+                category: '',
+                description: '',
+                author: user?.name || '',
+              })
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" /> Novo Aviso
@@ -223,7 +265,7 @@ export function NoticesTab({ eventId }: NoticesTabProps) {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Criar Novo Aviso</DialogTitle>
+              <DialogTitle>{editingId ? 'Editar Aviso' : 'Criar Novo Aviso'}</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form
@@ -367,19 +409,38 @@ export function NoticesTab({ eventId }: NoticesTabProps) {
           </div>
         ) : (
           currentNotices.map((notice) => (
-
             <div
               key={notice.id}
-              className="aspect-square h-full flex flex-col rounded-xl bg-card p-6 text-card-foreground shadow-sm border hover:border-primary/50 hover:shadow-md transition-all duration-300 group relative overflow-hidden"
+              onClick={() => setSelectedNotice(notice)}
+              className="aspect-square h-full flex flex-col rounded-xl bg-card p-6 text-card-foreground shadow-sm border hover:border-primary/50 hover:shadow-md transition-all duration-300 group relative overflow-hidden cursor-pointer"
             >
-              <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+
+              <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-primary bg-white/80 backdrop-blur-sm dark:bg-black/50"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setEditingId(notice.id)
+                    form.reset({
+                      title: notice.title,
+                      category: notice.category,
+                      description: notice.description,
+                      author: notice.author,
+                    })
+                    setIsDialogOpen(true)
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-muted-foreground hover:text-destructive bg-white/80 backdrop-blur-sm dark:bg-black/50"
                   onClick={(e) => {
                     e.stopPropagation()
-                    deleteNotice(notice.id)
+                    setNoticeToDelete(notice.id)
                   }}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -401,10 +462,7 @@ export function NoticesTab({ eventId }: NoticesTabProps) {
                 >
                   {notice.category}
                 </div>
-                <div className="flex items-center gap-1 text-muted-foreground group-hover:text-red-500 transition-colors">
-                  <Heart className="w-4 h-4" />
-                  <span className="text-sm font-medium">24</span>
-                </div>
+
               </div>
 
               <h3 className="font-semibold tracking-tight text-[16px] mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-2">
@@ -484,6 +542,73 @@ export function NoticesTab({ eventId }: NoticesTabProps) {
           </div>
         </div>
       </div>
+
+      {/* Detail Modal */}
+      <Dialog open={!!selectedNotice} onOpenChange={(open) => !open && setSelectedNotice(null)}>
+        <DialogContent className="p-0 border-none bg-transparent shadow-none max-w-[550px] w-full [&>button]:hidden">
+          {selectedNotice && (
+            <div className="w-[550px] h-[550px] flex flex-col rounded-xl bg-white text-card-foreground shadow-2xl border-2 border-orange-100 overflow-hidden text-left relative animate-in zoom-in-95 duration-300">
+
+              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
+                <div className="pr-8">
+                  <div className="inline-flex items-center rounded-[5px] px-2.5 py-0.5 text-xs font-semibold border mb-3 bg-purple-100 text-purple-800 border-purple-200">
+                    {selectedNotice.category}
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-900 leading-tight">
+                    {selectedNotice.title}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setSelectedNotice(null)}
+                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-all"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="flex-grow overflow-y-auto text-base text-muted-foreground leading-relaxed whitespace-pre-wrap p-6">
+                {selectedNotice.description}
+              </div>
+
+              <div className="flex flex-col gap-3 px-6 pb-6 pt-4 border-t border-border mt-auto bg-gray-50/30">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarIcon className="w-5 h-5 text-primary" />
+                  <span className="text-base">{format(new Date(selectedNotice.date), "dd 'de' MMM yyyy", { locale: ptBR })}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="w-5 h-5 text-primary" />
+                  <span className="text-base">{selectedNotice.author}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!noticeToDelete} onOpenChange={() => setNoticeToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza absoluta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação não pode ser desfeita. Isso excluirá permanentemente este aviso.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                if (noticeToDelete) {
+                  deleteNotice(noticeToDelete)
+                  setNoticeToDelete(null)
+                }
+              }}
+            >
+              Apagar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
