@@ -22,6 +22,7 @@ import {
   Activity,
   Building,
   CalendarHeart,
+  Megaphone,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -485,6 +486,7 @@ export default function EventsList() {
           ))
         )}
       </div>
-    </div>
+
+    </div >
   )
 }

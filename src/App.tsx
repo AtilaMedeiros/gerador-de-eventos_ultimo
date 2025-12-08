@@ -31,6 +31,7 @@ import AthleteModalities from './pages/dashboard/basic-registration/AthleteModal
 import AssociateModalities from './pages/dashboard/event-config/AssociateModalities'
 import ApplyVisualIdentity from './pages/dashboard/event-config/ApplyVisualIdentity'
 import Communication from './pages/dashboard/event-config/Communication'
+import EventCommunication from './pages/dashboard/event-config/EventCommunication'
 import Reports from './pages/dashboard/Reports'
 import Profile from './pages/dashboard/Profile'
 import Settings from './pages/dashboard/Settings'
@@ -149,6 +150,7 @@ const App = () => (
 
                       <Route path="evento" element={<EventsList />} />
                       <Route path="evento/novo" element={<EventWizard />} />
+                      <Route path="evento/:id/comunicacao" element={<EventCommunication />} />
                       <Route path="evento/:id" element={<EventForm />} />
                       <Route
                         path="identidade-visual"
