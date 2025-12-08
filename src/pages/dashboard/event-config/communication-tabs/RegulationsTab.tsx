@@ -14,7 +14,11 @@ import {
   Download,
   FileText,
   Heart,
+  Search,
+  Type,
+  Tag,
 } from 'lucide-react'
+import { Filters, type Filter, type FilterFieldConfig } from '@/components/ui/filters'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -72,13 +76,89 @@ interface RegulationsTabProps {
   eventId: string
 }
 
+const filterFields: FilterFieldConfig[] = [
+  {
+    key: 'title',
+    label: 'Título',
+    icon: <Type className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Buscar por título...',
+  },
+  {
+    key: 'category',
+    label: 'Categoria',
+    icon: <Tag className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Filtrar por categoria...',
+  },
+  {
+    key: 'description',
+    label: 'Descrição',
+    icon: <FileText className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Buscar na descrição...',
+  },
+  {
+    key: 'author',
+    label: 'Autor',
+    icon: <User className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Buscar por autor...',
+  },
+  {
+    key: 'date',
+    label: 'Data de Criação',
+    icon: <CalendarIcon className="size-3.5" />,
+    type: 'date',
+    placeholder: 'Selecione a data...',
+  }
+]
+
 export function RegulationsTab({ eventId }: RegulationsTabProps) {
   const { user } = useAuth()
   const { regulations, addRegulation, deleteRegulation } = useCommunication()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filters, setFilters] = useState<Filter[]>([])
 
   // Filter regulations for current event
   const eventRegulations = regulations.filter((r) => r.eventId === eventId)
+
+  const filteredRegulations = eventRegulations.filter((reg) => {
+    // Global Search (Search bar)
+    const searchLower = searchTerm.toLowerCase()
+    const matchesSearch = reg.title.toLowerCase().includes(searchLower) ||
+      reg.description.toLowerCase().includes(searchLower)
+
+    if (!matchesSearch) return false
+
+    // Specific Filters
+    if (filters.length === 0) return true
+
+    return filters.every(filter => {
+      const value = filter.value?.toString().toLowerCase() || ''
+      if (value === '') return true
+
+      if (filter.field === 'title') {
+        return reg.title.toLowerCase().includes(value)
+      }
+      if (filter.field === 'category') {
+        return reg.category.toLowerCase().includes(value)
+      }
+      if (filter.field === 'description') {
+        return reg.description.toLowerCase().includes(value)
+      }
+      if (filter.field === 'author') {
+        return reg.author.toLowerCase().includes(value)
+      }
+      if (filter.field === 'date') {
+        if (!value) return true
+        const regDate = format(reg.date, 'yyyy-MM-dd')
+        return regDate === value
+      }
+      return true
+    })
+  })
 
   const form = useForm<RegulationFormValues>({
     resolver: zodResolver(regulationSchema),
@@ -258,16 +338,54 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
         </Dialog>
       </div>
 
+      {/* Search and Advanced Filters */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3 flex-1 min-w-[200px] relative group">
+          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
+            <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          </div>
+          <Input
+            placeholder="Pesquisar..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
+          />
+        </div>
+
+        <div className="flex bg-white/0 items-center gap-4">
+          <div className="flex-1">
+            <Filters
+              fields={filterFields}
+              filters={filters}
+              onChange={(newFilters) => setFilters(newFilters)}
+              addButton={
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-10 w-10 p-0 rounded-md bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-blue-200 dark:border-blue-800 hover:bg-primary/5 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-blue-400" aria-hidden="true">
+                    <path d="M13.354 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14v6a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341l1.218-1.348"></path>
+                    <path d="M16 6h6"></path>
+                    <path d="M19 3v6"></path>
+                  </svg>
+                </Button>
+              }
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {eventRegulations.length === 0 ? (
+        {filteredRegulations.length === 0 ? (
           <div className="col-span-full text-center py-10 bg-muted/20 rounded-lg border border-dashed">
             <Scale className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
             <p className="text-muted-foreground">
-              Nenhum regulamento publicado para este evento.
+              Nenhum regulamento encontrado.
             </p>
           </div>
         ) : (
-          eventRegulations.map((reg) => (
+          filteredRegulations.map((reg) => (
             <div
               key={reg.id}
               className="aspect-square h-full flex flex-col rounded-xl bg-card p-6 text-card-foreground shadow-sm border hover:border-primary/50 hover:shadow-md transition-all duration-300 group relative overflow-hidden"

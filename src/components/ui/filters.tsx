@@ -86,6 +86,14 @@ export function Filters({ fields, filters, onChange, addButton, className }: Fil
                                 placeholder={field.placeholder || "Digite..."}
                                 autoFocus
                             />
+                        ) : field.type === 'date' ? (
+                            <input
+                                type="date"
+                                className="bg-transparent border-none outline-none w-auto text-foreground text-sm font-medium focus:ring-0 cursor-pointer"
+                                value={filter.value}
+                                onChange={(e) => updateFilter(filter.id, e.target.value)}
+                                autoFocus
+                            />
                         ) : field.type === 'select' ? (
                             <select
                                 className="bg-transparent border-none outline-none text-foreground text-sm font-medium focus:ring-0 cursor-pointer py-0 pl-1 pr-2"

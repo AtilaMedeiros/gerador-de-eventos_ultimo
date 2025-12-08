@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Trophy, Plus, Trash2, Medal } from 'lucide-react'
+import { Trophy, Plus, Trash2, Medal, Search, Tag } from 'lucide-react'
 import { toast } from 'sonner'
+import { Filters, type Filter, type FilterFieldConfig } from '@/components/ui/filters'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,13 +35,57 @@ interface ResultsTabProps {
   eventId: string
 }
 
+const filterFields: FilterFieldConfig[] = [
+  {
+    key: 'categoryName',
+    label: 'Categoria',
+    icon: <Tag className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Buscar por categoria...',
+  },
+  {
+    key: 'champion',
+    label: 'Campeão',
+    icon: <Trophy className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Buscar por campeão...',
+  }
+]
+
 export function ResultsTab({ eventId }: ResultsTabProps) {
   const { results, addResult, updateResult, deleteResult } = useCommunication()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filters, setFilters] = useState<Filter[]>([])
 
   // Filter results for current event
   const eventResults = results.filter((r) => r.eventId === eventId)
+
+  const filteredResults = eventResults.filter((result) => {
+    // Global Search
+    const searchLower = searchTerm.toLowerCase()
+    const matchesSearch = result.categoryName.toLowerCase().includes(searchLower) ||
+      (result.champion && result.champion.toLowerCase().includes(searchLower))
+
+    if (!matchesSearch) return false
+
+    // Specific Filters
+    if (filters.length === 0) return true
+
+    return filters.every(filter => {
+      const value = filter.value?.toString().toLowerCase() || ''
+      if (value === '') return true
+
+      if (filter.field === 'categoryName') {
+        return result.categoryName.toLowerCase().includes(value)
+      }
+      if (filter.field === 'champion') {
+        return result.champion && result.champion.toLowerCase().includes(value)
+      }
+      return true
+    })
+  })
 
   const handleChampionChange = (id: string, value: string) => {
     updateResult(id, { champion: value })
@@ -99,6 +144,44 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
         </Dialog>
       </div>
 
+      {/* Search and Advanced Filters */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-1 min-w-[200px] relative group">
+          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
+            <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          </div>
+          <Input
+            placeholder="Pesquisar..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
+          />
+        </div>
+
+        <div className="flex bg-white/0 items-center gap-4">
+          <div className="flex-1">
+            <Filters
+              fields={filterFields}
+              filters={filters}
+              onChange={(newFilters) => setFilters(newFilters)}
+              addButton={
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-10 w-10 p-0 rounded-md bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-blue-200 dark:border-blue-800 hover:bg-primary/5 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-blue-400" aria-hidden="true">
+                    <path d="M13.354 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14v6a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341l1.218-1.348"></path>
+                    <path d="M16 6h6"></path>
+                    <path d="M19 3v6"></path>
+                  </svg>
+                </Button>
+              }
+            />
+          </div>
+        </div>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -122,18 +205,17 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {eventResults.length === 0 ? (
+              {filteredResults.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={4}
                     className="text-center h-24 text-muted-foreground"
                   >
-                    Nenhuma modalidade cadastrada. Adicione uma para registrar
-                    resultados.
+                    Nenhum resultado encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
-                eventResults.map((result) => (
+                filteredResults.map((result) => (
                   <TableRow key={result.id}>
                     <TableCell className="font-medium">
                       {result.categoryName}
