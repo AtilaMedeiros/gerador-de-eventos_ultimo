@@ -9,6 +9,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 export type FilterType = 'text' | 'number' | 'date' | 'email' | 'url' | 'boolean' | 'multiselect' | 'select'
 
@@ -95,19 +102,21 @@ export function Filters({ fields, filters, onChange, addButton, className }: Fil
                                 autoFocus
                             />
                         ) : field.type === 'select' ? (
-                            <select
-                                className="bg-transparent border-none outline-none text-foreground text-sm font-medium focus:ring-0 cursor-pointer py-0 pl-1 pr-2"
+                            <Select
                                 value={filter.value}
-                                onChange={(e) => updateFilter(filter.id, e.target.value)}
-                                autoFocus
+                                onValueChange={(val) => updateFilter(filter.id, val)}
                             >
-                                <option value="" disabled className="text-muted-foreground bg-white dark:bg-slate-900">Selecione...</option>
-                                {field.options?.map(option => (
-                                    <option key={option.value} value={option.value} className="bg-white dark:bg-slate-900 text-foreground">
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
+                                <SelectTrigger className="h-auto w-auto border-none bg-transparent hover:bg-transparent p-0 px-1 text-foreground focus:ring-0 focus:ring-offset-0 shadow-none gap-1">
+                                    <SelectValue placeholder="Selecione..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {field.options?.map(option => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         ) : field.type === 'boolean' ? (
                             <div className="flex items-center gap-2">
                                 <button
