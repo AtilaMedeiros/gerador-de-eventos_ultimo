@@ -167,6 +167,14 @@ const App = () => (
                         element={<VisualIdentityForm />}
                       />
                       <Route
+                        path="identidade-visual-2"
+                        element={<ApplyVisualIdentity />}
+                      />
+                      <Route
+                        path="identidade-visual-2/novo"
+                        element={<VisualIdentityForm />}
+                      />
+                      <Route
                         path="modalidades"
                         element={<ModalitiesList />}
                       />
@@ -177,7 +185,7 @@ const App = () => (
                       <Route path="usuarios" element={<UsersList />} />
                       <Route path="usuarios/novo" element={<UserForm />} />
                       <Route path="usuarios/:id" element={<UserForm />} />
-                      <Route path="comunicacao" element={<Communication />} />
+                      <Route path="publicacoes" element={<Communication />} />
 
                       {/* Configurar Evento (Global/Legacy) */}
                       <Route path="configurar-evento">

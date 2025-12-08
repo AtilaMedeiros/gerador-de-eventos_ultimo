@@ -40,7 +40,7 @@ export function DashboardHeader() {
       return 'Temas & Identidade'
     if (path.includes('/area-do-produtor/usuarios'))
       return 'Gestão de Usuários'
-    if (path.includes('/area-do-produtor/comunicacao'))
+    if (path.includes('/area-do-produtor/publicacoes'))
       return 'Comunicação e Avisos'
     if (path.includes('/area-do-produtor/configurar-evento'))
       return 'Configuração do Evento'
@@ -58,7 +58,7 @@ export function DashboardHeader() {
       if (path.includes('/atletas')) return 'Atletas'
       if (path.includes('/modalidades')) return 'Modalidades'
       if (path.includes('/tema')) return 'Tema Aplicado'
-      if (path.includes('/comunicacao')) return 'Avisos e Boletins'
+      if (path.includes('/publicacoes')) return 'Avisos e Boletins'
       return 'Painel do Evento'
     }
 

@@ -73,7 +73,7 @@ export function DashboardSidebar() {
 
   return (
     <aside className="hidden w-72 flex-col border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 text-sidebar-foreground md:flex min-h-screen sticky top-0 h-screen overflow-y-auto z-40 shadow-subtle">
-      <div className="p-6 border-b border-border/50 flex items-center gap-3">
+      <Link to="/area-do-produtor/inicio" className="p-6 border-b border-border/50 flex items-center gap-3 hover:opacity-80 transition-opacity">
         <div className="bg-primary text-primary-foreground p-1.5 rounded-lg shadow-lg shadow-primary/20">
           <LayoutDashboard className="h-5 w-5" />
         </div>
@@ -85,7 +85,7 @@ export function DashboardSidebar() {
             Eventos
           </span>
         </div>
-      </div>
+      </Link>
 
       <div className="flex-1 py-6 px-4 space-y-8">
         <div className="space-y-1">
@@ -112,7 +112,13 @@ export function DashboardSidebar() {
             to="/area-do-produtor/identidade-visual"
             icon={Palette}
             label="Identidade Visual"
-            active={isChildActive('/area-do-produtor/identidade-visual')}
+            active={isChildActive('/area-do-produtor/identidade-visual') && !location.pathname.includes('identidade-visual-2')}
+          />
+          <NavItem
+            to="/area-do-produtor/identidade-visual-2"
+            icon={Palette}
+            label="Identidade Visual 2"
+            active={isChildActive('/area-do-produtor/identidade-visual-2')}
           />
           <NavItem
             to="/area-do-produtor/escolas"
@@ -128,10 +134,10 @@ export function DashboardSidebar() {
             iconClassName="h-6 w-6"
           />
           <NavItem
-            to="/area-do-produtor/comunicacao"
+            to="/area-do-produtor/publicacoes"
             icon={Megaphone}
             label="Publicações"
-            active={isChildActive('/area-do-produtor/comunicacao')}
+            active={isChildActive('/area-do-produtor/publicacoes')}
           />
         </div>
 

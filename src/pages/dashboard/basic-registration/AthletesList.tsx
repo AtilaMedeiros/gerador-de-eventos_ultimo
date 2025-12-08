@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -32,6 +32,7 @@ import {
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { GiSoccerKick } from 'react-icons/gi'
+import { useEvent } from '@/contexts/EventContext'
 
 const MOCK_ATHLETES = [
     {
@@ -131,13 +132,28 @@ const filterFields: FilterFieldConfig[] = [
 
 export default function AthletesList() {
     const navigate = useNavigate()
+    const { events } = useEvent()
     const [searchTerm, setSearchTerm] = useState('')
     const [filters, setFilters] = useState<Filter[]>([
         createFilter('isEventActive', 'equals', 'true')
     ])
 
+    // Derived state merging mock athletes with real events
+    const athletes = useMemo(() => {
+        if (!events || events.length === 0) return MOCK_ATHLETES
+
+        return MOCK_ATHLETES.map((athlete, index) => {
+            const assignedEvent = events[index % events.length]
+            return {
+                ...athlete,
+                event: assignedEvent.name,
+                status: assignedEvent.status
+            }
+        })
+    }, [events])
+
     // Apply Filters
-    const filteredAthletes = MOCK_ATHLETES.filter(athlete => {
+    const filteredAthletes = athletes.filter(athlete => {
         // Global Search
         const searchLower = searchTerm.toLowerCase()
         const matchesSearch =

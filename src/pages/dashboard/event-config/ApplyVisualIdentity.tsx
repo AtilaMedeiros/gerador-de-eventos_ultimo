@@ -58,24 +58,29 @@ export default function ApplyVisualIdentity({
   const [showThemeModal, setShowThemeModal] = useState(false)
   const [editingThemeId, setEditingThemeId] = useState<string | null>(null)
 
-  // Sync URL param with state
+  // Sync URL param with state and set default theme
   useEffect(() => {
     if (urlEventId) {
       setSelectedEventId(urlEventId)
       const event = getEventById(urlEventId)
       if (event && event.themeId) {
         setSelectedThemeId(event.themeId)
-      } else if (themes.length > 0) {
-        // Default to "Institucional" theme
-        const defaultTheme = themes.find((t) =>
-          t.name.toLowerCase().includes('institucional'),
-        )
-        if (defaultTheme) {
-          setSelectedThemeId(defaultTheme.id)
-        }
+        return
       }
     }
-  }, [urlEventId, getEventById, themes])
+
+    // Set default theme if none selected
+    if (!selectedThemeId && themes.length > 0) {
+      const defaultTheme = themes.find((t) =>
+        t.name.toLowerCase().includes('institucional'),
+      )
+      if (defaultTheme) {
+        setSelectedThemeId(defaultTheme.id)
+      } else {
+        setSelectedThemeId(themes[0].id)
+      }
+    }
+  }, [urlEventId, getEventById, themes, selectedThemeId])
 
   const handleEventSelect = (value: string) => {
     setSelectedEventId(value)
@@ -127,47 +132,7 @@ export default function ApplyVisualIdentity({
   const selectedEvent = events.find((e) => e.id === selectedEventId)
   const currentTheme = themes.find((t) => t.id === selectedThemeId)
 
-  if (!selectedEventId) {
-    return (
-      <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-10 flex flex-col justify-center h-[calc(100vh-10rem)]">
-        <div className="space-y-2 text-center">
-          <h2 className="text-3xl font-bold tracking-tight">
-            Configuração de Identidade Visual
-          </h2>
-          <p className="text-muted-foreground max-w-lg mx-auto">
-            Selecione um evento para aplicar e visualizar um tema personalizado.
-          </p>
-        </div>
 
-        <Card className="max-w-md mx-auto shadow-md w-full">
-          <CardContent className="p-8 space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">
-                Selecione o Evento
-              </label>
-              <Select onValueChange={handleEventSelect}>
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Selecione..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {events.map((event) => (
-                    <SelectItem key={event.id} value={event.id}>
-                      {event.name} (
-                      {format(event.startDate, 'dd/MM/yyyy', { locale: ptBR })})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="bg-muted/30 p-4 rounded-lg text-sm text-muted-foreground flex gap-3 items-start">
-              <Search className="h-5 w-5 shrink-0 mt-0.5" />
-              <p>As opções de temas serão exibidas após a seleção do evento.</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
 
   return (
     <div className={cn("w-full max-w-[1600px] mx-auto flex flex-col pt-6 px-4 lg:px-8", isWizard ? "h-full" : "h-[calc(100vh-5rem)]")}>
@@ -301,7 +266,7 @@ export default function ApplyVisualIdentity({
                 className="w-full text-muted-foreground hover:text-primary"
                 onClick={() =>
                   navigate(
-                    `/area-do-produtor/identidade-visual/novo?returnTo=${encodeURIComponent(
+                    `/area-do-produtor/identidade-visual-2/novo?returnTo=${encodeURIComponent(
                       location.pathname + location.search,
                     )}`,
                   )
@@ -376,7 +341,7 @@ export default function ApplyVisualIdentity({
           className="bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]"
         >
           {isWizard ? (
-            <>Concluir <Check className="ml-2 h-4 w-4" /></>
+            <>Publicar <Rocket className="ml-2 h-4 w-4" /></>
           ) : (
             <><Rocket className="mr-2 h-4 w-4" /> Publicar</>
           )}

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -36,6 +36,7 @@ import {
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { FaWhatsapp } from 'react-icons/fa'
+import { useEvent } from '@/contexts/EventContext'
 
 const MOCK_SCHOOLS = [
     {
@@ -129,13 +130,28 @@ const filterFields: FilterFieldConfig[] = [
 
 export default function SchoolsList() {
     const navigate = useNavigate()
+    const { events } = useEvent()
     const [searchTerm, setSearchTerm] = useState('')
     const [filters, setFilters] = useState<Filter[]>([
         createFilter('isEventActive', 'equals', 'true')
     ])
 
+    // Derived state merging mock schools with real events
+    const schools = useMemo(() => {
+        if (!events || events.length === 0) return MOCK_SCHOOLS
+
+        return MOCK_SCHOOLS.map((school, index) => {
+            const assignedEvent = events[index % events.length]
+            return {
+                ...school,
+                event: assignedEvent.name,
+                status: assignedEvent.status
+            }
+        })
+    }, [events])
+
     // Apply Filters
-    const filteredSchools = MOCK_SCHOOLS.filter(school => {
+    const filteredSchools = schools.filter(school => {
         // Global Search
         const searchLower = searchTerm.toLowerCase()
         const matchesSearch =

@@ -73,7 +73,7 @@ export default function EventWizard() {
                         {/* Title Section */}
                         <div className="min-w-[240px]">
                             <h2 className="text-2xl font-bold tracking-tight">
-                                {currentStep === 1 && "Cadastrar Evento"}
+                                {currentStep === 1 && (eventId ? "Editar Evento" : "Cadastrar Evento")}
                                 {currentStep === 2 && "Associar Modalidades"}
                                 {currentStep === 3 && "Identidade Visual"}
                             </h2>

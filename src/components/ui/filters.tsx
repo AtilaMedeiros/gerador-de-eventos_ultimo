@@ -53,7 +53,11 @@ export function Filters({ fields, filters, onChange, addButton, className }: Fil
     const addFilter = (fieldKey: string) => {
         const field = fields.find(f => f.key === fieldKey)
         if (!field) return
-        const newFilter = createFilter(fieldKey, 'contains', '')
+
+        let initialValue: any = ''
+        if (field.type === 'boolean') initialValue = 'true'
+
+        const newFilter = createFilter(fieldKey, 'contains', initialValue)
         onChange([newFilter, ...filters])
     }
 

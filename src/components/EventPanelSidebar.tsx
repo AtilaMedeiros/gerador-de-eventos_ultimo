@@ -156,10 +156,10 @@ export function EventPanelSidebar() {
             Comunicação
           </p>
           <NavItem
-            to={`/area-do-produtor/comunicacao?eventId=${eventId}`}
+            to={`/area-do-produtor/publicacoes?eventId=${eventId}`}
             icon={Megaphone}
             label="Avisos e Boletins"
-            active={location.pathname === '/area-do-produtor/comunicacao' && location.search.includes(`eventId=${eventId}`)}
+            active={location.pathname === '/area-do-produtor/publicacoes' && location.search.includes(`eventId=${eventId}`)}
           />
         </div>
       </div>

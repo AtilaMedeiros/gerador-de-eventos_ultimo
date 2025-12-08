@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Megaphone, FileText, Trophy, Scale, Search } from 'lucide-react'
 import { NoticesTab } from './communication-tabs/NoticesTab'
@@ -20,6 +20,12 @@ interface CommunicationContentProps {
 export function CommunicationContent({ eventId, events, onEventSelect }: CommunicationContentProps) {
     const [activeTab, setActiveTab] = useState('avisos')
     const [isActive, setIsActive] = useState(true)
+    const [showEventFilter, setShowEventFilter] = useState(!!eventId)
+
+    // Keep visibility in sync with external props
+    useEffect(() => {
+        if (eventId) setShowEventFilter(true)
+    }, [eventId])
 
     const filteredEvents = isActive
         ? events.filter(e => e.status === 'published')
@@ -63,18 +69,18 @@ export function CommunicationContent({ eventId, events, onEventSelect }: Communi
                             }
                         ]}
                         filters={[
-                            {
+                            ...(showEventFilter || eventId ? [{
                                 id: 'event-filter',
                                 field: 'eventId',
                                 operator: 'eq',
                                 value: eventId || ''
-                            },
-                            {
+                            }] : []),
+                            ...(isActive ? [{
                                 id: 'active-filter',
                                 field: 'active',
                                 operator: 'eq',
-                                value: isActive ? 'true' : 'false'
-                            }
+                                value: 'true'
+                            }] : [])
                         ]}
                         onChange={(newFilters) => {
                             const eventFilter = newFilters.find(f => f.field === 'eventId')
@@ -82,6 +88,9 @@ export function CommunicationContent({ eventId, events, onEventSelect }: Communi
 
                             // Update active state
                             setIsActive(activeFilter ? activeFilter.value === 'true' : false)
+
+                            // Update visibility state
+                            setShowEventFilter(!!eventFilter)
 
                             if (eventFilter && eventFilter.value !== eventId) {
                                 onEventSelect(eventFilter.value)
