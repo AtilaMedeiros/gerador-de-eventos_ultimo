@@ -48,7 +48,7 @@ const MOCK_SCHOOLS = [
         email: 'contato@esportes.sp.gov.br',
         responsible: 'João Silva',
         event: 'Tech Summit 2025',
-        isEventActive: true,
+        status: 'published',
         inep: '11223344',
         athletesList: ['Pedro Santos', 'Maria Oliveira', 'Carlos Souza']
     },
@@ -62,7 +62,7 @@ const MOCK_SCHOOLS = [
         email: 'direcao@saber.rj.gov.br',
         responsible: 'Maria Santos',
         event: 'Jogos Estudantis 2025',
-        isEventActive: false,
+        status: 'closed',
         inep: '55667788',
         athletesList: ['Ana Lima', 'Beatriz Costa', 'Daniel Rocha']
     },
@@ -76,7 +76,7 @@ const MOCK_SCHOOLS = [
         email: 'admin@institutoatletico.com.br',
         responsible: 'Pedro Costa',
         event: 'Tech Summit 2025',
-        isEventActive: true,
+        status: 'published',
         inep: '99001122',
         athletesList: ['Lucas Pereira', 'Fernanda Alves', 'Gabriel Dias']
     },
@@ -164,11 +164,14 @@ export default function SchoolsList() {
                 case 'event':
                     return school.event?.toLowerCase().includes(value)
                 case 'isEventActive': {
-                    // If 'true' (checked), show only active events.
-                    // If 'false' (unchecked), show all events (return true).
+                    // If 'true' (checked), show only published events.
+                    // If 'false' (unchecked), show all events.
                     if (value === 'false') return true
-                    const boolValue = value === 'true' || value === true
-                    return school.isEventActive === boolValue
+                    // Check if mock school has 'published' status
+                    // Note: MOCK_SCHOOLS now uses 'status'.
+                    // We cast school to any because TS might expect isEventActive if defined in interface elsewhere, 
+                    // but here it is inferred from MOCK_SCHOOLS which we just updated.
+                    return (school as any).status === 'published'
                 }
                 case 'inep':
                     return school.inep?.includes(value)
@@ -233,21 +236,21 @@ export default function SchoolsList() {
 
     // Column Resizing Logic
     const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
-        const saved = localStorage.getItem('ge_schools_col_widths')
+        const saved = localStorage.getItem('ge_schools_col_widths_v2')
         return saved ? JSON.parse(saved) : {
-            name: 250,
-            type: 120,
-            director: 180,
-            phone: 160,
-            email: 200,
-            responsible: 180,
-            event: 200,
-            actions: 100
+            name: 200,
+            type: 80,
+            director: 120,
+            phone: 120,
+            email: 150,
+            responsible: 120,
+            event: 120,
+            actions: 80
         }
     })
 
     useEffect(() => {
-        localStorage.setItem('ge_schools_col_widths', JSON.stringify(colWidths))
+        localStorage.setItem('ge_schools_col_widths_v2', JSON.stringify(colWidths))
     }, [colWidths])
 
     const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)
@@ -494,20 +497,34 @@ export default function SchoolsList() {
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
                                         <div className="flex flex-col items-center justify-center h-full">
-                                            <span className="text-muted-foreground leading-tight">
+                                            <span className="text-muted-foreground leading-tight text-center">
                                                 {school.event}
                                             </span>
-                                            {school.isEventActive ? (
-                                                <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-medium mt-0.5">
-                                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                    Ativo
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                                                    <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />
-                                                    Encerrado
-                                                </div>
-                                            )}
+                                            {(() => {
+                                                const status = (school as any).status
+                                                if (status === 'published') {
+                                                    return (
+                                                        <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-medium mt-0.5">
+                                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                            Publicado
+                                                        </div>
+                                                    )
+                                                }
+                                                if (status === 'draft') {
+                                                    return (
+                                                        <div className="flex items-center gap-1 text-[10px] text-amber-500 font-medium mt-0.5">
+                                                            <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                                            Rascunho
+                                                        </div>
+                                                    )
+                                                }
+                                                return (
+                                                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+                                                        <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />
+                                                        Encerrado
+                                                    </div>
+                                                )
+                                            })()}
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right h-12 py-0">

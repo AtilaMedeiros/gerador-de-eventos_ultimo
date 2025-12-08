@@ -130,7 +130,7 @@ export function DashboardSidebar() {
           <NavItem
             to="/area-do-produtor/comunicacao"
             icon={Megaphone}
-            label="Avisos e Boletins"
+            label="Publicações"
             active={isChildActive('/area-do-produtor/comunicacao')}
           />
         </div>

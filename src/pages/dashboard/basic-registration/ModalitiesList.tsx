@@ -168,13 +168,13 @@ export default function ModalitiesList() {
 
   // Column Resizing Logic
   const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
-    const saved = localStorage.getItem('ge_modalities_col_widths_v2')
+    const saved = localStorage.getItem('ge_modalities_col_widths_v3')
     return saved ? JSON.parse(saved) : {
       name: 200,
       type: 120,
       gender: 100,
-      minAge: 120,
-      minAthletes: 120,
+      minAge: 100,
+      minAthletes: 100,
       maxTeams: 100,
       maxEventsPerAthlete: 100,
       actions: 80
@@ -182,7 +182,7 @@ export default function ModalitiesList() {
   })
 
   useEffect(() => {
-    localStorage.setItem('ge_modalities_col_widths_v2', JSON.stringify(colWidths))
+    localStorage.setItem('ge_modalities_col_widths_v3', JSON.stringify(colWidths))
   }, [colWidths])
 
   const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)

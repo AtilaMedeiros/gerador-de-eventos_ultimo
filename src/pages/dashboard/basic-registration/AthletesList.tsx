@@ -43,7 +43,7 @@ const MOCK_ATHLETES = [
         school: 'Escola Municipal de Esportes',
         inep: '12345678',
         event: 'Tech Summit 2025',
-        isEventActive: true,
+        status: 'published',
     },
     {
         id: 2,
@@ -54,7 +54,7 @@ const MOCK_ATHLETES = [
         school: 'Colégio Estadual do Saber',
         inep: '87654321',
         event: 'Jogos Estudantis 2025',
-        isEventActive: false,
+        status: 'closed',
     },
     {
         id: 3,
@@ -65,7 +65,7 @@ const MOCK_ATHLETES = [
         school: 'Instituto Atlético',
         inep: '11223344',
         event: 'Tech Summit 2025',
-        isEventActive: true,
+        status: 'published',
     },
     {
         id: 4,
@@ -76,7 +76,7 @@ const MOCK_ATHLETES = [
         school: 'Escola Municipal de Esportes',
         inep: '12345678',
         event: 'Tech Summit 2025',
-        isEventActive: true,
+        status: 'published',
     },
     {
         id: 5,
@@ -87,7 +87,7 @@ const MOCK_ATHLETES = [
         school: 'Escola Particular do Sol',
         inep: '55667788',
         event: 'Jogos Estudantis 2025',
-        isEventActive: false,
+        status: 'closed',
     },
 ]
 
@@ -166,8 +166,7 @@ export default function AthletesList() {
                     return athlete.event.toLowerCase().includes(value)
                 case 'isEventActive':
                     if (value === 'false') return true
-                    const boolValue = value === 'true' || value === true
-                    return athlete.isEventActive === boolValue
+                    return (athlete as any).status === 'published'
                 default:
                     return true
             }
@@ -466,17 +465,31 @@ export default function AthletesList() {
                                             <span className="text-muted-foreground leading-tight">
                                                 {athlete.event}
                                             </span>
-                                            {athlete.isEventActive ? (
-                                                <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-medium mt-0.5">
-                                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                    Ativo
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                                                    <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />
-                                                    Encerrado
-                                                </div>
-                                            )}
+                                            {(() => {
+                                                const status = (athlete as any).status
+                                                if (status === 'published') {
+                                                    return (
+                                                        <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-medium mt-0.5">
+                                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                            Publicado
+                                                        </div>
+                                                    )
+                                                }
+                                                if (status === 'draft') {
+                                                    return (
+                                                        <div className="flex items-center gap-1 text-[10px] text-amber-500 font-medium mt-0.5">
+                                                            <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                                            Rascunho
+                                                        </div>
+                                                    )
+                                                }
+                                                return (
+                                                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+                                                        <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />
+                                                        Encerrado
+                                                    </div>
+                                                )
+                                            })()}
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right h-12 py-0">
