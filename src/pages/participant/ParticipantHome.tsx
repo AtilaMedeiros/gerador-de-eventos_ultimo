@@ -177,108 +177,140 @@ export default function ParticipantHome() {
       )}
 
 
-      {/* Main Content: Events Table */}
-      <Card className="border shadow-sm">
-        <CardHeader className="border-b bg-muted/10 pb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-xl flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-primary" />
-                Campeonatos e Torneios
-              </CardTitle>
-              <CardDescription>
-                Lista de eventos ativos para inscrição.
-              </CardDescription>
-            </div>
-            {activeEvents.length > 3 && (
-              <Button variant="ghost" size="sm" className="text-xs">
-                Ver todos
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {activeEvents.length === 0 ? (
-            <EmptyState text="Nenhum evento com inscrições abertas no momento." />
-          ) : (
-            <Table>
-              <TableHeader className="bg-muted/30">
-                <TableRow>
-                  <TableHead className="pl-6">Evento</TableHead>
-                  <TableHead className="hidden md:table-cell">Período</TableHead>
-                  <TableHead className="hidden md:table-cell">Local</TableHead>
-                  <TableHead>Situação</TableHead>
-                  <TableHead className="text-right pr-6">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {activeEvents.map((event) => {
-                  const status = getInscriptionStatus(event.id)
-                  return (
-                    <TableRow key={event.id} className="hover:bg-muted/5 transition-colors group">
-                      <TableCell className="pl-6 font-medium text-foreground">
-                        <span className="block">{event.name}</span>
-                        <span className="md:hidden text-xs text-muted-foreground">
-                          {format(event.startDate, 'dd/MM', { locale: ptBR })} • {event.location}
-                        </span>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell text-muted-foreground">
-                        {format(event.startDate, 'dd/MM/yyyy', { locale: ptBR })}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell text-muted-foreground">
-                        {event.location}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={status === 'Inscrito' ? 'secondary' : 'outline'}
-                          className={cn(
-                            "transition-colors",
-                            status === 'Inscrito'
-                              ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-200'
-                              : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
-                          )}
-                        >
-                          {status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right pr-6">
-                        <div className="flex justify-end gap-2 opacity-90 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 md:w-auto md:h-9 md:px-3 gap-1 text-muted-foreground"
-                            onClick={() => handleOpenPublicPage(event)}
-                            title="Ver Informações"
-                          >
-                            <ExternalLink className="h-4 w-4" /> <span className="hidden md:inline">Info</span>
-                          </Button>
-                          <Button
-                            size="sm"
-                            className={cn(
-                              "h-8 md:h-9 gap-1 shadow-sm transition-all",
-                              status === 'Inscrito' ? "bg-white border hover:bg-muted text-foreground" : "bg-primary text-white hover:bg-primary/90"
-                            )}
-                            variant={status === 'Inscrito' ? 'outline' : 'default'}
-                            onClick={() => navigate(`/area-do-participante/atletas?eventId=${event.id}`)}
-                          >
-                            {status === 'Inscrito' ? 'Gerenciar' : 'Inscrever-se'}
-                            <ArrowRight className="h-3 w-3 ml-1" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      {/* Main Content: KPIs and Charts */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+
+        {/* Chart: Athletes by Gender */}
+        <Card className="col-span-4 border shadow-sm">
+          <CardHeader>
+            <CardTitle>Distribuição de Atletas</CardTitle>
+            <CardDescription>
+              Total de atletas cadastrados por gênero.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pl-2">
+            <AthletesGenderChart athletes={athletes} />
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity / Additional KPIs */}
+        <Card className="col-span-3 border shadow-sm">
+          <CardHeader>
+            <CardTitle>Inscrições Recentes</CardTitle>
+            <CardDescription>
+              Últimas atualizações de inscrição.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RecentInscriptionsList inscriptions={inscriptions} events={events} />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
 
 // --- Sub-components ---
+
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts'
+
+function AthletesGenderChart({ athletes }: { athletes: any[] }) {
+  const data = useMemo(() => {
+    const male = athletes.filter(a => a.sex === 'Masculino').length
+    const female = athletes.filter(a => a.sex === 'Feminino').length
+    return [
+      { name: 'Masculino', total: male, fill: '#3b82f6' },
+      { name: 'Feminino', total: female, fill: '#ec4899' },
+    ]
+  }, [athletes])
+
+  if (athletes.length === 0) {
+    return <div className="h-[350px] flex items-center justify-center text-muted-foreground">Nenhum atleta cadastrado.</div>
+  }
+
+  return (
+    <div className="h-[350px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
+          <XAxis
+            dataKey="name"
+            stroke="#888888"
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
+          />
+          <YAxis
+            stroke="#888888"
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => `${value}`}
+          />
+          <Tooltip
+            cursor={{ fill: 'transparent' }}
+            content={({ active, payload }) => {
+              if (active && payload && payload.length) {
+                return (
+                  <div className="rounded-lg border bg-background p-2 shadow-sm">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex flex-col">
+                        <span className="text-[0.70rem] uppercase text-muted-foreground">
+                          {payload[0].payload.name}
+                        </span>
+                        <span className="font-bold text-muted-foreground">
+                          {payload[0].value}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+              return null
+            }}
+          />
+          <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.fill} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+function RecentInscriptionsList({ inscriptions, events }: { inscriptions: any[], events: any[] }) {
+  // Mock recent logic or just take last 5
+  // Assuming inscriptions might not have timestamps in this mock context, unshift logic usually puts newest first?
+  // Let's take slice 0-5
+  const recent = inscriptions.slice(0, 5)
+
+  if (recent.length === 0) {
+    return <EmptyState text="Nenhuma inscrição realizada ainda." />
+  }
+
+  return (
+    <div className="space-y-4">
+      {recent.map((insc, i) => {
+        const event = events.find(e => e.id === insc.eventId)
+        return (
+          <div key={i} className="flex items-center">
+            <div className="ml-4 space-y-1">
+              <p className="text-sm font-medium leading-none">{event?.name || 'Evento Desconhecido'}</p>
+              <p className="text-sm text-muted-foreground">
+                Status: {insc.status}
+              </p>
+            </div>
+            <div className={`ml-auto font-medium ${insc.status === 'Confirmada' ? 'text-green-500' : 'text-amber-500'}`}>
+              {insc.status === 'Confirmada' ? 'Confirmado' : 'Pendente'}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 
 function CountdownCard({
   title,
@@ -353,9 +385,9 @@ function CountdownCard({
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-      <div className="p-4 rounded-full bg-muted/30 mb-3">
-        <AlertCircle className="h-8 w-8 text-muted-foreground/50" />
+    <div className="flex flex-col items-center justify-center py-8 text-center">
+      <div className="p-3 rounded-full bg-muted/30 mb-3">
+        <AlertCircle className="h-6 w-6 text-muted-foreground/50" />
       </div>
       <p className="text-sm text-muted-foreground max-w-sm">{text}</p>
     </div>
