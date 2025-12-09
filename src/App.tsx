@@ -41,7 +41,7 @@ import EventCommunicationPage from './pages/public/EventCommunicationPage'
 import AccessDenied from './pages/AccessDenied'
 
 // Event Panel Pages
-import EventPanelLayout from './components/EventPanelLayout'
+
 import EventPanelDashboard from './pages/dashboard/event-panel/EventPanelDashboard'
 
 
@@ -209,7 +209,7 @@ const App = () => (
                       path="/area-do-produtor/evento/:eventId"
                       element={
                         <ProtectedRoute>
-                          <EventPanelLayout />
+                          <Layout />
                         </ProtectedRoute>
                       }
                     >

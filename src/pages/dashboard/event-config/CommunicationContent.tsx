@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Megaphone, FileText, Trophy, Scale, Search } from 'lucide-react'
+import { Megaphone, FileText, FileSearch, Scale, Search } from 'lucide-react'
 import { NoticesTab } from './communication-tabs/NoticesTab'
 import { BulletinsTab } from './communication-tabs/BulletinsTab'
 import { ResultsTab } from './communication-tabs/ResultsTab'
@@ -43,7 +43,7 @@ export function CommunicationContent({ eventId, events, onEventSelect }: Communi
                         <FileText className="h-4 w-4" /> Boletins
                     </TabsTrigger>
                     <TabsTrigger value="resultados" className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm h-10 px-4 gap-2">
-                        <Trophy className="h-4 w-4" /> Resultados
+                        <FileSearch className="h-4 w-4" /> Resultados
                     </TabsTrigger>
                     <TabsTrigger value="regulamentos" className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm h-10 px-4 gap-2">
                         <Scale className="h-4 w-4" /> Regulamentos

@@ -6,6 +6,7 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
   Trophy,
+  FileSearch,
   Filter as FilterIcon,
   Plus,
   Trash2,
@@ -400,7 +401,7 @@ export function ResultsTab({ eventId }: ResultsTabProps) {
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {filteredResults.length === 0 ? (
           <div className="col-span-full text-center py-10 bg-muted/20 rounded-lg border border-dashed">
-            <Trophy className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+            <FileSearch className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
             <p className="text-muted-foreground">
               Nenhum resultado encontrado.
             </p>

@@ -10,6 +10,7 @@ import {
   Trophy,
   Timer,
   AlertCircle,
+  ArrowLeft,
 } from 'lucide-react'
 import {
   formatDistanceToNow,
@@ -107,9 +108,19 @@ export default function EventPanelDashboard() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">
-            Painel do Evento
-          </h2>
+          <div className="flex items-center gap-1 mb-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="-ml-3 h-8 w-8"
+              onClick={() => navigate('/area-do-produtor/evento')}
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">
+              Painel do Evento
+            </h2>
+          </div>
           <p className="text-muted-foreground mt-1">
             Visão geral e métricas de:{' '}
             <span className="font-semibold text-primary">
