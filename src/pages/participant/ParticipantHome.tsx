@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Users,
@@ -11,11 +11,14 @@ import {
   AlertCircle,
   CalendarDays,
   Plus,
+  Search,
 } from 'lucide-react'
 import { format, differenceInDays, differenceInHours, isPast } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Filters, type Filter, type FilterFieldConfig } from '@/components/ui/filters'
 import {
   Card,
   CardContent,
@@ -206,6 +209,9 @@ export default function ParticipantHome() {
           </CardContent>
         </Card>
       </div>
+
+      {/* New Table: Atletas Inscritos por Categoria */}
+      <InscribedAthletesTable inscriptions={inscriptions} events={activeEvents} />
     </div>
   )
 }
@@ -213,6 +219,205 @@ export default function ParticipantHome() {
 // --- Sub-components ---
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts'
+import { useModality } from '@/contexts/ModalityContext'
+
+
+function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[], events: any[] }) {
+  const { modalities } = useModality()
+  const [search, setSearch] = useState('')
+  const [filters, setFilters] = useState<Filter[]>([])
+
+  const filterFields: FilterFieldConfig[] = [
+    {
+      key: 'categoryName',
+      label: 'Categoria',
+      icon: <Trophy className="size-3.5" />,
+      type: 'text',
+      placeholder: 'Ex: Futsal',
+    },
+    {
+      key: 'modalityType',
+      label: 'Tipo',
+      icon: <Activity className="size-3.5" />,
+      type: 'select',
+      options: [
+        { label: 'Coletiva', value: 'Coletiva' },
+        { label: 'Individual', value: 'Individual' },
+      ],
+      placeholder: 'Selecione o tipo',
+    }
+  ]
+
+  const groupedData = useMemo(() => {
+    const groups: Record<string, any> = {}
+
+    inscriptions.forEach(insc => {
+      const mod = modalities.find(m => m.id === insc.modalityId)
+      if (!mod) return
+
+      const key = `${mod.name}-${mod.type}-${mod.gender}-${mod.minAge}-${mod.maxAge}`
+
+      if (!groups[key]) {
+        groups[key] = {
+          modalityType: mod.type === 'coletiva' ? 'Coletiva' : 'Individual',
+          categoryName: mod.name,
+          gender: mod.gender,
+          ageRange: `${mod.minAge} a ${mod.maxAge}`,
+          count: 0
+        }
+      }
+      groups[key].count++
+    })
+
+    return Object.values(groups)
+  }, [inscriptions, modalities])
+
+  const filteredData = groupedData.filter(item => {
+    // Global Search
+    const searchLower = search.toLowerCase()
+    const matchesSearch =
+      item.categoryName.toLowerCase().includes(searchLower) ||
+      item.modalityType.toLowerCase().includes(searchLower)
+
+    if (!matchesSearch) return false
+
+    // Specific Filters
+    if (filters.length === 0) return true
+
+    return filters.every(filter => {
+      const value = filter.value?.toString().toLowerCase() || ''
+      if (value === '') return true
+
+      switch (filter.field) {
+        case 'categoryName':
+          return item.categoryName.toLowerCase().includes(value)
+        case 'modalityType':
+          return item.modalityType.toLowerCase() === value
+        default:
+          return true
+      }
+    })
+  })
+
+  return (
+    <div className="space-y-6 relative rounded-xl border border-blue-100 bg-white/50 dark:bg-black/20 dark:border-blue-900/50 shadow-sm p-6 overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/5 rounded-full blur-3xl -z-10 pointer-events-none" />
+
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h3 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent flex items-center gap-2">
+            <Trophy className="h-6 w-6 text-primary" />
+            Atletas Inscritos por Categoria
+          </h3>
+          <p className="text-muted-foreground mt-1">
+            Visão agrupada das inscrições confirmadas.
+          </p>
+        </div>
+      </div>
+
+      {/* Search and Advanced Filters */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-1 min-w-[200px] relative group">
+          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
+            <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          </div>
+          <Input
+            placeholder="Pesquisar por modalidade ou categoria..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
+          />
+        </div>
+
+        <div className="flex bg-white items-center gap-4">
+          <div className="flex-1">
+            <Filters
+              fields={filterFields}
+              filters={filters}
+              onChange={setFilters}
+              addButton={
+                <Button
+                  size="sm"
+                  className="h-10 w-10 p-0 rounded-md bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-blue-200 dark:border-blue-800 hover:bg-primary/5 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-blue-400" aria-hidden="true">
+                    <path d="M13.354 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14v6a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341l1.218-1.348"></path>
+                    <path d="M16 6h6"></path>
+                    <path d="M19 3v6"></path>
+                  </svg>
+                </Button>
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-blue-200 dark:border-blue-900/50 bg-white/40 dark:bg-black/40 backdrop-blur-md overflow-hidden shadow-inner">
+        <Table>
+          <TableHeader className="bg-primary/5">
+            <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
+              <TableHead className="w-[220px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Modalidade</TableHead>
+              <TableHead className="w-[190px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Categoria</TableHead>
+              <TableHead className="w-[120px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Naipe</TableHead>
+              <TableHead className="w-[120px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Idade</TableHead>
+              <TableHead className="w-[80px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider text-center">Qtd.</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <AlertCircle className="h-8 w-8 text-muted-foreground/30" />
+                    <p>Nenhum registro encontrado.</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredData.map((row, i) => (
+                <TableRow key={i} className="hover:bg-primary/5 transition-all duration-200 border-b border-blue-50 dark:border-blue-900/10 group last:border-0">
+                  <TableCell className="font-medium text-foreground/90">
+                    <Badge variant="outline" className="bg-background/50 border-primary/20 text-primary hover:bg-primary/10 transition-colors">
+                      {row.modalityType}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-semibold text-foreground/80">{row.categoryName}</TableCell>
+                  <TableCell className="capitalize text-muted-foreground">{row.gender}</TableCell>
+                  <TableCell className="text-muted-foreground font-mono text-xs bg-muted/30 px-2 py-1 rounded inline-block w-fit my-2">
+                    {row.ageRange} anos
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-sm shadow-sm group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 transform group-hover:scale-110">
+                        {row.count}
+                      </div>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/5 hover:text-primary transition-colors">
+            Imprimir
+          </Button>
+          <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/5 hover:text-primary transition-colors">
+            Excel
+          </Button>
+        </div>
+        <div>
+          Mostrando {filteredData.length} categorias
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function AthletesGenderChart({ athletes }: { athletes: any[] }) {
   const data = useMemo(() => {

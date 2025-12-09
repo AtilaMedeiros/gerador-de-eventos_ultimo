@@ -108,17 +108,12 @@ export function DashboardSidebar() {
             label="Modalidades"
             active={isChildActive('/area-do-produtor/modalidades')}
           />
+
           <NavItem
             to="/area-do-produtor/identidade-visual"
             icon={Palette}
             label="Identidade Visual"
-            active={isChildActive('/area-do-produtor/identidade-visual') && !location.pathname.includes('identidade-visual-2')}
-          />
-          <NavItem
-            to="/area-do-produtor/identidade-visual-2"
-            icon={Palette}
-            label="Identidade Visual 2"
-            active={isChildActive('/area-do-produtor/identidade-visual-2')}
+            active={isChildActive('/area-do-produtor/identidade-visual')}
           />
           <NavItem
             to="/area-do-produtor/escolas"

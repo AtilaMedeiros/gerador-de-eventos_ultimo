@@ -19,7 +19,7 @@ import EventForm from './pages/dashboard/basic-registration/EventForm'
 import EventWizard from './pages/dashboard/basic-registration/EventWizard'
 import ModalitiesList from './pages/dashboard/basic-registration/ModalitiesList'
 import ModalityForm from './pages/dashboard/basic-registration/ModalityForm'
-import VisualIdentityList from './pages/dashboard/basic-registration/VisualIdentityList'
+
 import VisualIdentityForm from './pages/dashboard/basic-registration/VisualIdentityForm'
 import UsersList from './pages/dashboard/basic-registration/UsersList'
 import UserForm from './pages/dashboard/basic-registration/UserForm'
@@ -159,24 +159,13 @@ const App = () => (
                       <Route path="evento/:id/produtor" element={<EventProducers />} />
                       <Route path="evento/:id/comunicacao" element={<EventCommunication />} />
                       <Route path="evento/:id" element={<EventForm />} />
+
                       <Route
                         path="identidade-visual"
-                        element={<VisualIdentityList />}
-                      />
-                      <Route
-                        path="identidade-visual/novo"
-                        element={<VisualIdentityForm />}
-                      />
-                      <Route
-                        path="identidade-visual/:id"
-                        element={<VisualIdentityForm />}
-                      />
-                      <Route
-                        path="identidade-visual-2"
                         element={<ApplyVisualIdentity />}
                       />
                       <Route
-                        path="identidade-visual-2/novo"
+                        path="identidade-visual/novo"
                         element={<VisualIdentityForm />}
                       />
                       <Route

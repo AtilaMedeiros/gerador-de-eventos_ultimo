@@ -266,7 +266,7 @@ export default function ApplyVisualIdentity({
                 className="w-full text-muted-foreground hover:text-primary"
                 onClick={() =>
                   navigate(
-                    `/area-do-produtor/identidade-visual-2/novo?returnTo=${encodeURIComponent(
+                    `/area-do-produtor/identidade-visual/novo?returnTo=${encodeURIComponent(
                       location.pathname + location.search,
                     )}`,
                   )

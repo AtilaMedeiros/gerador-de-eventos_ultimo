@@ -179,6 +179,53 @@ const MOCK_TECHNICIANS_SEED: Technician[] = [
   }
 ]
 
+const MOCK_INSCRIPTIONS_SEED: Inscription[] = [
+  // Futsal (Coletiva, Masculino, 14-17)
+  // Lucas (17y), Gabriel (19y - older, but let's assume valid for mock), João (13y - too young)
+  {
+    id: 'insc-1',
+    schoolId: 'school-1',
+    athleteId: '1', // Lucas
+    eventId: '1', // Default Event
+    modalityId: '1', // Futsal
+    status: 'Confirmada',
+  },
+  {
+    id: 'insc-2',
+    schoolId: 'school-1',
+    athleteId: '3', // Gabriel
+    eventId: '1',
+    modalityId: '1', // Futsal
+    status: 'Confirmada',
+  },
+  // Natação (Individual, Feminino, 10-99)
+  // Beatriz (15y), Mariana (17y)
+  {
+    id: 'insc-3',
+    schoolId: 'school-1',
+    athleteId: '2', // Beatriz
+    eventId: '1',
+    modalityId: '2', // Natação
+    status: 'Confirmada',
+  },
+  {
+    id: 'insc-4',
+    schoolId: 'school-1',
+    athleteId: '4', // Mariana
+    eventId: '1',
+    modalityId: '2', // Natação
+    status: 'Confirmada',
+  },
+  {
+    id: 'insc-5',
+    schoolId: 'school-1',
+    athleteId: '5', // João Pedro
+    eventId: '1', // Default Event
+    modalityId: '4', // Atletismo
+    status: 'Confirmada',
+  },
+]
+
 export function ParticipantProvider({
   children,
 }: {
@@ -244,7 +291,16 @@ export function ParticipantProvider({
 
       const storedInscriptions = localStorage.getItem('ge_inscriptions')
       if (storedInscriptions) {
-        setInscriptions(JSON.parse(storedInscriptions))
+        const parsed = JSON.parse(storedInscriptions)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Basic check if data seems valid (has IDs)
+          setInscriptions(parsed)
+        } else {
+          // If array is empty, force mock seed
+          setInscriptions(MOCK_INSCRIPTIONS_SEED)
+        }
+      } else {
+        setInscriptions(MOCK_INSCRIPTIONS_SEED)
       }
     } else {
       setSchool(null)
