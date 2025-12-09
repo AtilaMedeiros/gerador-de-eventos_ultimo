@@ -590,7 +590,7 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
         </div>
       </div>
 
-      <div className="rounded-lg border border-blue-200 dark:border-blue-900/50 bg-white/40 dark:bg-black/40 backdrop-blur-md overflow-scroll shadow-inner">
+      <div className="rounded-lg border border-blue-200 dark:border-blue-900/50 bg-white/40 dark:bg-black/40 backdrop-blur-md overflow-hidden">
         <Table className="min-w-[800px]">
           <TableHeader className="bg-primary/5">
             <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
