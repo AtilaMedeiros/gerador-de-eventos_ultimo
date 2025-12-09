@@ -62,7 +62,7 @@ export function EventProducerFields() {
               <FormItem>
                 <FileUpload
                   label="Realização"
-                  description="Logos dos organizadores."
+                  description="Logos dos organizadores. Resol. ideal: ~200x200px"
                   multiple
                   maxSizeMB={2}
                   onChange={field.onChange}
@@ -81,7 +81,7 @@ export function EventProducerFields() {
               <FormItem>
                 <FileUpload
                   label="Apoio"
-                  description="Logos dos patrocinadores."
+                  description="Logos dos patrocinadores. Resol. ideal: ~200x200px"
                   multiple
                   maxSizeMB={2}
                   onChange={field.onChange}

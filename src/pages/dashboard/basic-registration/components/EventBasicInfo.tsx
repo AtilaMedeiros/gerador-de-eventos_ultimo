@@ -47,7 +47,7 @@ export function EventBasicInfo() {
             <FormItem>
               <FileUpload
                 label="Imagem de Capa"
-                description="1920x1080px recomendado. Max 5MB."
+                description="1600x838px recomendado. Max 2MB."
                 onChange={field.onChange}
                 value={field.value}
                 className="bg-background shadow-sm"
@@ -64,7 +64,7 @@ export function EventBasicInfo() {
             <FormItem>
               <FileUpload
                 label="Logo do Evento"
-                description="Fundo transparente (PNG). Max 2MB."
+                description="Resol. ideal: ~200x200px - Max 2MB."
                 maxSizeMB={2}
                 onChange={field.onChange}
                 value={field.value}
