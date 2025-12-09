@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Users,
@@ -12,6 +12,12 @@ import {
   CalendarDays,
   Plus,
   Search,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Printer,
+  FileSpreadsheet,
+  FileText,
 } from 'lucide-react'
 import { format, differenceInDays, differenceInHours, isPast } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -220,12 +226,68 @@ export default function ParticipantHome() {
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts'
 import { useModality } from '@/contexts/ModalityContext'
-
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
+import * as XLSX from 'xlsx'
 
 function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[], events: any[] }) {
   const { modalities } = useModality()
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState<Filter[]>([])
+
+  // Sorting State
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
+
+  // Column Resizing State
+  const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
+    const saved = localStorage.getItem('ge_participant_home_table_widths')
+    return saved ? JSON.parse(saved) : {
+      modality: 220,
+      type: 120,
+      category: 150,
+      gender: 120,
+      count: 80
+    }
+  })
+
+  useEffect(() => {
+    localStorage.setItem('ge_participant_home_table_widths', JSON.stringify(colWidths))
+  }, [colWidths])
+
+  const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!resizingRef.current) return
+    const { key, startX, startWidth } = resizingRef.current
+    const diff = e.clientX - startX
+    const newWidth = Math.max(50, startWidth + diff)
+
+    setColWidths(prev => ({
+      ...prev,
+      [key]: newWidth
+    }))
+  }, [])
+
+  const handleMouseUp = useCallback(() => {
+    resizingRef.current = null
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'default'
+  }, [handleMouseMove])
+
+  const handleMouseDown = useCallback((e: React.MouseEvent, key: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    resizingRef.current = {
+      key,
+      startX: e.clientX,
+      startWidth: colWidths[key] || 100
+    }
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'col-resize'
+  }, [colWidths, handleMouseMove, handleMouseUp])
+
 
   const filterFields: FilterFieldConfig[] = [
     {
@@ -299,8 +361,142 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
     })
   })
 
+  // Apply Sorting
+  const sortedData = useMemo(() => {
+    const sorted = [...filteredData].sort((a, b) => {
+      if (!sortConfig) return 0
+
+      const { key, direction } = sortConfig
+
+      // Map column keys to data keys
+      let dataKey = key
+      if (key === 'modality') dataKey = 'categoryName'
+      if (key === 'type') dataKey = 'modalityType'
+      if (key === 'category') dataKey = 'ageRange'
+      // gender and count map directly if key matches property
+
+      const aValue: any = a[dataKey as keyof typeof a]
+      const bValue: any = b[dataKey as keyof typeof b]
+
+      // Handle numeric range sorting for 'ageRange' if needed, but string compare might be enough for now or simple parse
+      if (key === 'category') {
+        const aNum = parseInt(aValue.split(' ')[0])
+        const bNum = parseInt(bValue.split(' ')[0])
+        if (aNum < bNum) return direction === 'asc' ? -1 : 1
+        if (aNum > bNum) return direction === 'asc' ? 1 : -1
+        return 0
+      }
+
+      if (aValue < bValue) {
+        return direction === 'asc' ? -1 : 1
+      }
+      if (aValue > bValue) {
+        return direction === 'asc' ? 1 : -1
+      }
+      return 0
+    })
+    return sorted
+  }, [filteredData, sortConfig])
+
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc'
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc'
+    }
+    setSortConfig({ key, direction })
+  }
+
+  const getSortIcon = (key: string) => {
+    if (!sortConfig || sortConfig.key !== key) {
+      return <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground/50" />
+    }
+    return sortConfig.direction === 'asc' ?
+      <ArrowUp className="ml-2 h-4 w-4 text-primary" /> :
+      <ArrowDown className="ml-2 h-4 w-4 text-primary" />
+  }
+
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF()
+
+    doc.text('Relatório de Atletas Inscritos por Categoria', 14, 15)
+
+    const tableColumn = ["Modalidade", "Tipo", "Categoria", "Naipe", "Qtd."]
+    const tableRows = sortedData.map(item => [
+      item.categoryName,
+      item.modalityType,
+      item.ageRange,
+      item.gender,
+      item.count
+    ])
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20
+    })
+
+    const fileName = `atletas_inscritos_categoria_${format(new Date(), 'yyyy-MM-dd')}.pdf`
+    doc.save(fileName)
+  }
+
+  const handleExportExcel = () => {
+    const wsData = sortedData.map(item => ({
+      Modalidade: item.categoryName,
+      Tipo: item.modalityType,
+      Categoria: item.ageRange,
+      Naipe: item.gender,
+      Qtd: item.count
+    }))
+
+    const ws = XLSX.utils.json_to_sheet(wsData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Inscritos")
+    const fileName = `atletas_inscritos_categoria_${format(new Date(), 'yyyy-MM-dd')}.xlsx`
+    XLSX.writeFile(wb, fileName)
+  }
+
+  const handlePrint = () => {
+    const printContent = document.getElementById('printable-table-section')
+    if (!printContent) return
+
+    const printWindow = window.open('', '', 'height=600,width=800')
+    if (!printWindow) return
+
+    printWindow.document.write('<html><head><title>Imprimir Inscrições</title>')
+    printWindow.document.write('<style>')
+    printWindow.document.write(`
+      body { font-family: sans-serif; padding: 20px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+      th { background-color: #f2f2f2; }
+      h2 { text-align: center; color: #333; }
+    `)
+    printWindow.document.write('</style></head><body>')
+    printWindow.document.write('<h2>Relatório de Atletas Inscritos por Categoria</h2>')
+
+    // Construct table HTML manually to ensure clean print
+    let tableHtml = '<table><thead><tr><th>Modalidade</th><th>Tipo</th><th>Categoria</th><th>Naipe</th><th>Qtd.</th></tr></thead><tbody>'
+    sortedData.forEach(item => {
+      tableHtml += `<tr>
+        <td>${item.categoryName}</td>
+        <td>${item.modalityType}</td>
+        <td>${item.ageRange}</td>
+        <td>${item.gender}</td>
+        <td>${item.count}</td>
+      </tr>`
+    })
+    tableHtml += '</tbody></table>'
+
+    printWindow.document.write(tableHtml)
+    printWindow.document.write('</body></html>')
+    printWindow.document.close()
+    printWindow.print()
+  }
+
   return (
-    <div className="space-y-6 relative rounded-xl border border-blue-100 bg-white/50 dark:bg-black/20 dark:border-blue-900/50 shadow-sm p-6 overflow-hidden">
+    <div id="printable-table-section" className="space-y-6 relative rounded-xl border border-blue-100 bg-white/50 dark:bg-black/20 dark:border-blue-900/50 shadow-sm p-6 overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/5 rounded-full blur-3xl -z-10 pointer-events-none" />
@@ -314,6 +510,33 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
           <p className="text-muted-foreground mt-1">
             Visão agrupada das inscrições confirmadas.
           </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            className="bg-rose-600 hover:bg-rose-700 text-white rounded-[5px] h-8 text-xs font-medium shadow-sm transition-all hover:scale-105"
+            onClick={handleExportPDF}
+          >
+            <FileText className="mr-2 h-3.5 w-3.5" />
+            PDF
+          </Button>
+          <Button
+            size="sm"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[5px] h-8 text-xs font-medium shadow-sm transition-all hover:scale-105"
+            onClick={handleExportExcel}
+          >
+            <FileSpreadsheet className="mr-2 h-3.5 w-3.5" />
+            Excel
+          </Button>
+          <Button
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-[5px] h-8 text-xs font-medium shadow-sm transition-all hover:scale-105"
+            onClick={handlePrint}
+          >
+            <Printer className="mr-2 h-3.5 w-3.5" />
+            Imprimir
+          </Button>
         </div>
       </div>
 
@@ -354,19 +577,96 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
         </div>
       </div>
 
-      <div className="rounded-lg border border-blue-200 dark:border-blue-900/50 bg-white/40 dark:bg-black/40 backdrop-blur-md overflow-hidden shadow-inner">
-        <Table>
+      <div className="rounded-lg border border-blue-200 dark:border-blue-900/50 bg-white/40 dark:bg-black/40 backdrop-blur-md overflow-scroll shadow-inner">
+        <Table className="min-w-[800px]">
           <TableHeader className="bg-primary/5">
             <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
-              <TableHead className="w-[120px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Tipo</TableHead>
-              <TableHead className="w-[200px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Modalidade</TableHead>
-              <TableHead className="w-[150px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Categoria</TableHead>
-              <TableHead className="w-[120px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Naipe</TableHead>
-              <TableHead className="w-[80px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider text-center">Qtd.</TableHead>
+
+              {/* Coluna 1: Modalidade */}
+              <TableHead
+                className="font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider cursor-pointer hover:bg-primary/10 transition-colors select-none relative group"
+                style={{ width: colWidths.modality }}
+                onClick={() => requestSort('modality')}
+              >
+                <div className="flex items-center justify-between">
+                  <span>Modalidade</span>
+                  {getSortIcon('modality')}
+                </div>
+                <div
+                  className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary/50 group-hover:bg-primary/30"
+                  onMouseDown={(e) => handleMouseDown(e, 'modality')}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </TableHead>
+
+              {/* Coluna 2: Tipo */}
+              <TableHead
+                className="font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider cursor-pointer hover:bg-primary/10 transition-colors select-none relative group"
+                style={{ width: colWidths.type }}
+                onClick={() => requestSort('type')}
+              >
+                <div className="flex items-center justify-between">
+                  <span>Tipo</span>
+                  {getSortIcon('type')}
+                </div>
+                <div
+                  className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary/50 group-hover:bg-primary/30"
+                  onMouseDown={(e) => handleMouseDown(e, 'type')}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </TableHead>
+
+              {/* Coluna 3: Categoria (Idade) */}
+              <TableHead
+                className="font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider cursor-pointer hover:bg-primary/10 transition-colors select-none relative group"
+                style={{ width: colWidths.category }}
+                onClick={() => requestSort('category')}
+              >
+                <div className="flex items-center justify-between">
+                  <span>Categoria</span>
+                  {getSortIcon('category')}
+                </div>
+                <div
+                  className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary/50 group-hover:bg-primary/30"
+                  onMouseDown={(e) => handleMouseDown(e, 'category')}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </TableHead>
+
+
+              {/* Coluna 4: Naipe */}
+              <TableHead
+                className="font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider cursor-pointer hover:bg-primary/10 transition-colors select-none relative group"
+                style={{ width: colWidths.gender }}
+                onClick={() => requestSort('gender')}
+              >
+                <div className="flex items-center justify-between">
+                  <span>Naipe</span>
+                  {getSortIcon('gender')}
+                </div>
+                <div
+                  className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary/50 group-hover:bg-primary/30"
+                  onMouseDown={(e) => handleMouseDown(e, 'gender')}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </TableHead>
+
+              {/* Coluna 5: Qtd */}
+              <TableHead
+                className="font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider text-center cursor-pointer hover:bg-primary/10 transition-colors select-none relative group"
+                style={{ width: colWidths.count }}
+                onClick={() => requestSort('count')}
+              >
+                <div className="flex items-center justify-center">
+                  <span>Qtd.</span>
+                  {getSortIcon('count')}
+                </div>
+                {/* No resizer for last column usually, or distinct handling */}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredData.length === 0 ? (
+            {sortedData.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center justify-center gap-2">
@@ -376,24 +676,32 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
                 </TableCell>
               </TableRow>
             ) : (
-              filteredData.map((row, i) => (
+              sortedData.map((row, i) => (
                 <TableRow key={i} className="hover:bg-primary/5 transition-all duration-200 border-b border-blue-50 dark:border-blue-900/10 group last:border-0">
+
+                  {/* Modalidade */}
+                  <TableCell className="font-semibold text-foreground/80">
+                    {row.categoryName}
+                  </TableCell>
+
+                  {/* Tipo */}
                   <TableCell className="font-medium text-foreground/90">
-                    <Badge variant="outline" className="bg-background/50 border-primary/20 text-primary hover:bg-primary/10 transition-colors">
+                    <Badge variant="outline" className="bg-background/50 border-primary/20 text-primary hover:bg-primary/10 transition-colors rounded-[5px] font-bold">
                       {row.modalityType}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-semibold text-foreground/80">{row.categoryName}</TableCell>
+
+                  {/* Categoria (Idade) */}
                   <TableCell className="text-muted-foreground font-mono text-xs">
                     {row.ageRange}
                   </TableCell>
+
+                  {/* Naipe */}
                   <TableCell className="capitalize text-muted-foreground">{row.gender}</TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex items-center justify-center">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-sm shadow-sm group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 transform group-hover:scale-110">
-                        {row.count}
-                      </div>
-                    </div>
+
+                  {/* Qtd */}
+                  <TableCell className="text-center font-bold text-foreground">
+                    {row.count}
                   </TableCell>
                 </TableRow>
               ))
@@ -402,15 +710,7 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
         </Table>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-        <div className="flex gap-2">
-          <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/5 hover:text-primary transition-colors">
-            Imprimir
-          </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-primary/5 hover:text-primary transition-colors">
-            Excel
-          </Button>
-        </div>
+      <div className="flex items-center justify-end text-xs text-muted-foreground px-1">
         <div>
           Mostrando {filteredData.length} categorias
         </div>
