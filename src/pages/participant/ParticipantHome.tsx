@@ -18,6 +18,8 @@ import {
   Printer,
   FileSpreadsheet,
   FileText,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { format, differenceInDays, differenceInHours, isPast } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -237,6 +239,10 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
 
   // Sorting State
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState<number | string>(10)
 
   // Column Resizing State
   const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
@@ -495,6 +501,13 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
     printWindow.print()
   }
 
+  // Pagination Logic
+  const totalPages = Math.ceil(sortedData.length / (typeof itemsPerPage === 'number' ? itemsPerPage : 1))
+  const paginatedData = sortedData.slice(
+    (currentPage - 1) * (typeof itemsPerPage === 'number' ? itemsPerPage : 1),
+    currentPage * (typeof itemsPerPage === 'number' ? itemsPerPage : 1)
+  )
+
   return (
     <div id="printable-table-section" className="space-y-6 relative rounded-xl border border-blue-100 bg-white/50 dark:bg-black/20 dark:border-blue-900/50 shadow-sm p-6 overflow-hidden">
       {/* Decorative Background Elements */}
@@ -666,7 +679,7 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedData.length === 0 ? (
+            {paginatedData.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center justify-center gap-2">
@@ -676,7 +689,7 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
                 </TableCell>
               </TableRow>
             ) : (
-              sortedData.map((row, i) => (
+              paginatedData.map((row, i) => (
                 <TableRow key={i} className="hover:bg-primary/5 transition-all duration-200 border-b border-blue-50 dark:border-blue-900/10 group last:border-0">
 
                   {/* Modalidade */}
@@ -686,7 +699,13 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
 
                   {/* Tipo */}
                   <TableCell className="font-medium text-foreground/90">
-                    <Badge variant="outline" className="bg-background/50 border-primary/20 text-primary hover:bg-primary/10 transition-colors rounded-[5px] font-bold">
+                    <Badge
+                      variant="outline"
+                      className={`rounded-[5px] font-bold border ${row.modalityType === 'Coletiva'
+                          ? 'bg-blue-100/50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
+                          : 'bg-purple-100/50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800'
+                        }`}
+                    >
                       {row.modalityType}
                     </Badge>
                   </TableCell>
@@ -710,9 +729,55 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
         </Table>
       </div>
 
-      <div className="flex items-center justify-end text-xs text-muted-foreground px-1">
-        <div>
-          Mostrando {filteredData.length} categorias
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <span>Mostrando</span>
+          <Input
+            type="number"
+            min={1}
+            max={500}
+            value={itemsPerPage}
+            onChange={(e) => {
+              const val = e.target.value
+              if (val === '') {
+                setItemsPerPage('')
+                return
+              }
+              let num = parseInt(val)
+              if (isNaN(num)) return
+              if (num > 500) num = 500
+              setItemsPerPage(num)
+              setCurrentPage(1)
+            }}
+            className="h-8 w-10 text-center p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+          <span>registros por página</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span>
+            Página {currentPage} de {totalPages || 1}
+          </span>
+          <div className="flex gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

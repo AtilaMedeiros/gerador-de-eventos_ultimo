@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Printer, Search, Trophy, Activity, Users, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { Printer, Search, Trophy, Activity, Users, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 
 const filterFields: FilterFieldConfig[] = [
@@ -105,6 +105,10 @@ export default function InscriptionForms() {
 
     return filtered
   }
+
+  /* Pagination State */
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState<number | string>(10)
 
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
 
@@ -245,6 +249,13 @@ export default function InscriptionForms() {
     { id: 'mock5', name: 'Handebol', type: 'coletiva', gender: 'feminino', minAge: 12, maxAge: 14 },
   ] as any[] // Force type for mock compatibility
 
+
+  const totalPages = Math.ceil(displayList.length / (typeof itemsPerPage === 'number' ? itemsPerPage : 1))
+  const currentData = displayList.slice(
+    (currentPage - 1) * (typeof itemsPerPage === 'number' ? itemsPerPage : 1),
+    currentPage * (typeof itemsPerPage === 'number' ? itemsPerPage : 1)
+  )
+
   return (
     <div className="space-y-8 animate-fade-in relative">
       {/* ... header ... */}
@@ -350,7 +361,7 @@ export default function InscriptionForms() {
           </TableHeader>
           <TableBody>
 
-            {displayList.length === 0 ? (
+            {currentData.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={5}
@@ -360,7 +371,7 @@ export default function InscriptionForms() {
                 </TableCell>
               </TableRow>
             ) : (
-              displayList.map((mod) => (
+              currentData.map((mod) => (
                 <TableRow
                   key={mod!.id}
                   className="hover:bg-primary/5 transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group"
@@ -402,6 +413,58 @@ export default function InscriptionForms() {
             )}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <span>Mostrando</span>
+          <Input
+            type="number"
+            min={1}
+            max={500}
+            value={itemsPerPage}
+            onChange={(e) => {
+              const val = e.target.value
+              if (val === '') {
+                setItemsPerPage('')
+                return
+              }
+              let num = parseInt(val)
+              if (isNaN(num)) return
+              if (num > 500) num = 500
+              setItemsPerPage(num)
+              setCurrentPage(1)
+            }}
+            className="h-8 w-10 text-center p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+          <span>registros por página</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span>
+            Página {currentPage} de {totalPages || 1}
+          </span>
+          <div className="flex gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )
