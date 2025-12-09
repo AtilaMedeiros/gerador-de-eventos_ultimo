@@ -702,8 +702,8 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
                     <Badge
                       variant="outline"
                       className={`rounded-[5px] font-bold border ${row.modalityType === 'Coletiva'
-                          ? 'bg-blue-100/50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
-                          : 'bg-purple-100/50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800'
+                        ? 'bg-blue-100/50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
+                        : 'bg-purple-100/50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800'
                         }`}
                     >
                       {row.modalityType}
@@ -719,7 +719,7 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
                   <TableCell className="capitalize text-muted-foreground">{row.gender}</TableCell>
 
                   {/* Qtd */}
-                  <TableCell className="text-center font-bold text-foreground">
+                  <TableCell className="text-center text-foreground">
                     {row.count}
                   </TableCell>
                 </TableRow>
