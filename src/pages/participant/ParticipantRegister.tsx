@@ -65,6 +65,7 @@ const step1Schema = z.object({
 
   // School Contact
   landline: z.string().optional(),
+  schoolMobile: z.string().min(9, 'Celular inválido'),
 })
 
 const baseStep2Schema = z.object({
@@ -125,6 +126,7 @@ export default function ParticipantRegister() {
       neighborhood: '',
       municipality: '',
       landline: '',
+      schoolMobile: '',
       responsibleName: '',
       cpf: '',
       mobile: '',
@@ -500,6 +502,19 @@ export default function ParticipantRegister() {
                             </FormItem>
                           )}
                         />
+                        <FormField
+                          control={form.control}
+                          name="schoolMobile"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Celular (WhatsApp)</FormLabel>
+                              <FormControl>
+                                <Input placeholder="(00) 90000-0000" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
                     </div>
                   </div>
@@ -612,7 +627,7 @@ export default function ParticipantRegister() {
                       variant="outline"
                       onClick={handleBack}
                       disabled={isSubmitting}
-                      className="w-full md:w-auto min-w-[140px]"
+                      className="min-w-[120px]"
                     >
                       Voltar
                     </Button>
@@ -622,7 +637,7 @@ export default function ParticipantRegister() {
                     <Button
                       type="button"
                       onClick={handleNext}
-                      className="w-full md:w-auto min-w-[140px] text-lg h-12 apple-button-gradient"
+                      className="min-w-[140px] apple-button-gradient"
                     >
                       Próxima Etapa <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -630,7 +645,7 @@ export default function ParticipantRegister() {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full md:w-auto min-w-[140px] text-lg h-12 apple-button-gradient"
+                      className="min-w-[140px] apple-button-gradient"
                     >
                       {isSubmitting ? (
                         <>
