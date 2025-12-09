@@ -42,7 +42,6 @@ export interface Technician {
   cref?: string
   email: string
   phone: string
-  uniformSize: string
 }
 
 export interface Inscription {
@@ -152,6 +151,31 @@ const MOCK_ATHLETES_SEED: Athlete[] = [
   }
 ]
 
+const MOCK_TECHNICIANS_SEED: Technician[] = [
+  {
+    id: 'tech-1',
+    schoolId: 'school-1',
+    name: 'Carlos Oliveira',
+    sex: 'Masculino',
+    dob: new Date('1985-05-10T12:00:00'),
+    cpf: '111.111.111-11',
+    cref: '123456-G/CE',
+    email: 'carlos.oliveira@escola.com',
+    phone: '(85) 98888-8888',
+  },
+  {
+    id: 'tech-2',
+    schoolId: 'school-1',
+    name: 'Fernanda Santos',
+    sex: 'Feminino',
+    dob: new Date('1990-08-15T12:00:00'),
+    cpf: '222.222.222-22',
+    cref: '654321-G/CE',
+    email: 'fernanda.santos@escola.com',
+    phone: '(85) 97777-7777',
+  }
+]
+
 export function ParticipantProvider({
   children,
 }: {
@@ -200,12 +224,19 @@ export function ParticipantProvider({
 
       const storedTechs = localStorage.getItem('ge_technicians')
       if (storedTechs) {
-        setTechnicians(
-          JSON.parse(storedTechs).map((t: any) => ({
-            ...t,
-            dob: new Date(t.dob),
-          })),
-        )
+        const parsed = JSON.parse(storedTechs)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setTechnicians(
+            parsed.map((t: any) => ({
+              ...t,
+              dob: new Date(t.dob),
+            })),
+          )
+        } else {
+          setTechnicians(MOCK_TECHNICIANS_SEED)
+        }
+      } else {
+        setTechnicians(MOCK_TECHNICIANS_SEED)
       }
 
       const storedInscriptions = localStorage.getItem('ge_inscriptions')

@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, Briefcase, User, Mail, Phone, FileText, Loader2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -15,15 +15,9 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+
 import { useParticipant } from '@/contexts/ParticipantContext'
-import { useAuth } from '@/contexts/AuthContext'
+import { toast } from 'sonner'
 
 const techSchema = z.object({
   name: z.string().min(3, 'Nome é obrigatório'),
@@ -31,9 +25,10 @@ const techSchema = z.object({
   dob: z.string().min(10, 'Data inválida').max(10),
   cpf: z.string().min(11, 'CPF inválido'),
   cref: z.string().optional(),
-  uniformSize: z.string().min(1, 'Selecione um tamanho'),
+
   email: z.string().email('Email inválido'),
   phone: z.string().min(10, 'Contato inválido'),
+  password: z.string(),
 })
 
 type TechFormValues = z.infer<typeof techSchema>
@@ -43,6 +38,7 @@ export default function TechnicianForm() {
   const { id } = useParams()
   const { technicians, addTechnician, updateTechnician } = useParticipant()
   const isEditing = id && id !== 'novo'
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<TechFormValues>({
     resolver: zodResolver(techSchema),
@@ -52,9 +48,10 @@ export default function TechnicianForm() {
       dob: '',
       cpf: '',
       cref: '',
-      uniformSize: '',
+
       email: '',
       phone: '',
+      password: '@Sme2025',
     },
   })
 
@@ -63,7 +60,7 @@ export default function TechnicianForm() {
       const tech = technicians.find((t) => t.id === id)
       if (tech) {
         // Convert Date to DD/MM/YYYY string
-        const d = tech.dob
+        const d = new Date(tech.dob)
         const day = String(d.getDate()).padStart(2, '0')
         const month = String(d.getMonth() + 1).padStart(2, '0')
         const year = d.getFullYear()
@@ -77,28 +74,38 @@ export default function TechnicianForm() {
     }
   }, [isEditing, id, technicians, form, navigate])
 
-  const onSubmit = (data: TechFormValues) => {
-    // Parse DD/MM/YYYY to Date
-    const [day, month, year] = data.dob.split('/')
+  const onSubmit = async (data: TechFormValues) => {
+    setIsSubmitting(true)
+    try {
+      // Parse DD/MM/YYYY to Date
+      const [day, month, year] = data.dob.split('/')
 
-    // Explicitly cast to ensure type safety and avoid inference errors
-    const payload = {
-      name: data.name,
-      sex: data.sex,
-      dob: new Date(`${year}-${month}-${day}T00:00:00`),
-      cpf: data.cpf,
-      cref: data.cref,
-      email: data.email,
-      phone: data.phone,
-      uniformSize: data.uniformSize,
-    }
+      const payload = {
+        name: data.name,
+        sex: data.sex,
+        dob: new Date(`${year}-${month}-${day}T00:00:00`),
+        cpf: data.cpf,
+        cref: data.cref,
+        email: data.email,
+        phone: data.phone,
 
-    if (isEditing && id) {
-      updateTechnician(id, payload)
-    } else {
-      addTechnician(payload)
+      }
+
+      if (isEditing && id) {
+        updateTechnician(id, payload)
+      } else {
+        addTechnician(payload)
+      }
+
+      // Simulate slight delay for effect
+      await new Promise(resolve => setTimeout(resolve, 500))
+      navigate('/area-do-participante/tecnicos')
+    } catch (error) {
+      console.error(error)
+      toast.error("Erro ao salvar técnico")
+    } finally {
+      setIsSubmitting(false)
     }
-    navigate('/area-do-participante/tecnicos')
   }
 
   // Simple masks
@@ -142,197 +149,241 @@ export default function TechnicianForm() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/area-do-participante/tecnicos')}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h2 className="text-2xl font-bold">
-          {isEditing ? 'Editar Técnico' : 'Novo Técnico'}
-        </h2>
+    <div className="max-w-full mx-auto h-[calc(100vh-5rem)] flex flex-col animate-fade-in text-foreground">
+      {/* Premium Header */}
+      <div className="flex items-center justify-between mb-6 shrink-0 px-1">
+        <div className="flex items-center gap-2">
+          <div className="bg-primary/10 p-2 rounded-lg shadow-sm">
+            <Briefcase className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">
+              {isEditing ? 'Editar Técnico' : 'Novo Técnico'}
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Preencha os dados do membro da comissão técnica.
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/area-do-participante/tecnicos')}
+            disabled={isSubmitting}
+            className="hidden sm:flex"
+          >
+            <X className="mr-2 h-4 w-4" /> Cancelar
+          </Button>
+          <Button
+            onClick={form.handleSubmit(onSubmit)}
+            disabled={isSubmitting}
+            className="shadow-md hover:shadow-lg transition-all"
+          >
+            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            Salvar Técnico
+          </Button>
+        </div>
       </div>
 
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 bg-card p-6 rounded-lg border shadow-sm"
-        >
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nome</FormLabel>
-                <FormControl>
-                  <Input placeholder="Nome completo" maxLength={255} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <div className="flex-1 overflow-y-auto pr-2 lg:pr-4 scrollbar-thin pb-6">
+        <div className="max-w-5xl mx-auto">
+          <Form {...form}>
+            <form className="space-y-6">
 
-          <FormField
-            control={form.control}
-            name="sex"
-            render={({ field }) => (
-              <FormItem className="space-y-3">
-                <FormLabel>Sexo</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="flex flex-col gap-2"
-                  >
-                    <FormItem className="flex items-center space-x-2 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value="Feminino" id="sexoFeminino" />
-                      </FormControl>
-                      <FormLabel htmlFor="sexoFeminino" className="font-normal font-light cursor-pointer">
-                        &nbsp;Feminino
-                      </FormLabel>
-                    </FormItem>
-                    <FormItem className="flex items-center space-x-2 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value="Masculino" id="sexoMasculino" />
-                      </FormControl>
-                      <FormLabel htmlFor="sexoMasculino" className="font-normal font-light cursor-pointer">
-                        &nbsp;Masculino
-                      </FormLabel>
-                    </FormItem>
-                  </RadioGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              {/* Personal Info Section */}
+              <div className="space-y-4 p-5 border rounded-xl bg-card shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-2 mb-2 border-b pb-2">
+                  <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-md">
+                    <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-foreground/80">Informações Pessoais</h3>
+                </div>
 
-          <FormField
-            control={form.control}
-            name="dob"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nascimento</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="00/00/0000"
-                    maxLength={10}
-                    {...field}
-                    onChange={(e) => handleDateChange(e, field.onChange)}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem className="col-span-1 md:col-span-2">
+                        <FormLabel>Nome Completo</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nome completo" maxLength={255} {...field} className="bg-background/50" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
-          <FormField
-            control={form.control}
-            name="cpf"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cpf</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="000.000.000-00"
-                    maxLength={14}
-                    {...field}
-                    onChange={(e) => handleCpfChange(e, field.onChange)}
+                  <FormField
+                    control={form.control}
+                    name="sex"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel>Sexo</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex gap-6"
+                          >
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="Feminino" id="sexoFeminino" />
+                              </FormControl>
+                              <FormLabel htmlFor="sexoFeminino" className="font-normal cursor-pointer">Feminino</FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="Masculino" id="sexoMasculino" />
+                              </FormControl>
+                              <FormLabel htmlFor="sexoMasculino" className="font-normal cursor-pointer">Masculino</FormLabel>
+                            </FormItem>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
-          <FormField
-            control={form.control}
-            name="cref"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cref</FormLabel>
-                <FormControl>
-                  <Input placeholder="Nº do Cref" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="uniformSize"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Uniforme</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Escolha uma opção" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="PP">PP</SelectItem>
-                    <SelectItem value="P">P</SelectItem>
-                    <SelectItem value="M">M</SelectItem>
-                    <SelectItem value="G">G</SelectItem>
-                    <SelectItem value="GG">GG</SelectItem>
-                    <SelectItem value="XG">XG</SelectItem>
-                    <SelectItem value="XGG">XGG</SelectItem>
-                    <SelectItem value="EGG">EGG</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>E-mail</FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="E-mail" maxLength={255} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Contato</FormLabel>
-                <FormControl>
-                  <Input
-                    type="tel"
-                    placeholder="(00)0000-0000"
-                    maxLength={15}
-                    {...field}
-                    onChange={(e) => handlePhoneChange(e, field.onChange)}
+                  <FormField
+                    control={form.control}
+                    name="dob"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nascimento</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="00/00/0000"
+                            maxLength={10}
+                            {...field}
+                            onChange={(e) => handleDateChange(e, field.onChange)}
+                            className="bg-background/50"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
-          <div className="form-group pt-4">
-            <div className="col-sm-12">
-              <Button type="submit" className="btn btn-success text-white bg-green-600 hover:bg-green-700">
-                Salvar
-              </Button>
-            </div>
-          </div>
-        </form>
-      </Form>
+                  <FormField
+                    control={form.control}
+                    name="cpf"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CPF</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="000.000.000-00"
+                            maxLength={14}
+                            {...field}
+                            onChange={(e) => handleCpfChange(e, field.onChange)}
+                            className="bg-background/50"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Professional Info Section */}
+              <div className="space-y-4 p-5 border rounded-xl bg-card shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-2 mb-2 border-b pb-2">
+                  <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-md">
+                    <Briefcase className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-foreground/80">Dados Profissionais & Contato</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="cref"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CREF</FormLabel>
+                        <div className="relative">
+                          <FileText className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <FormControl>
+                            <Input placeholder="Nº do Cref" {...field} className="pl-9 bg-background/50" />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+
+
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem className="col-span-1 md:col-span-2">
+                        <FormLabel>E-mail</FormLabel>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <FormControl>
+                            <Input type="email" placeholder="E-mail" maxLength={255} {...field} className="pl-9 bg-background/50" />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem className="col-span-1 md:col-span-2">
+                        <FormLabel>Contato</FormLabel>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <FormControl>
+                            <Input
+                              type="tel"
+                              placeholder="(00)0000-0000"
+                              maxLength={15}
+                              {...field}
+                              onChange={(e) => handlePhoneChange(e, field.onChange)}
+                              className="pl-9 bg-background/50"
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem className="col-span-1 md:col-span-2">
+                        <FormLabel>
+                          Senha inicial (será solicitado a troca no primeiro login)
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="@Sme2025"
+                            readOnly
+                            className="bg-muted text-muted-foreground"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+            </form>
+          </Form>
+        </div>
+      </div>
     </div>
   )
 }
