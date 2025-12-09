@@ -503,16 +503,35 @@ export function RegulationsTab({ eventId }: RegulationsTabProps) {
                 {reg.description}
               </p>
 
-              <div className="flex flex-col gap-2 pt-4 border-t border-border mt-auto">
-                <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
-                  <CalendarIcon className="w-4 h-4 text-primary" />
-                  <span>
-                    {format(new Date(reg.date), "dd 'de' MMM yyyy", { locale: ptBR })}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
-                  <User className="w-4 h-4 text-primary" />
-                  <span className="truncate">{reg.author}</span>
+              <div className="pt-4 border-t border-border mt-auto h-16 flex items-end">
+                <div className="w-full flex justify-between items-end">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
+                      <CalendarIcon className="w-4 h-4 text-primary" />
+                      <span>
+                        {format(new Date(reg.date), "dd 'de' MMM yyyy", { locale: ptBR })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
+                      <User className="w-4 h-4 text-primary" />
+                      <span className="truncate max-w-[150px]">{reg.author}</span>
+                    </div>
+                  </div>
+
+                  {reg.fileName && (
+                    <a
+                      href="#"
+                      className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1 cursor-pointer bg-primary/5 hover:bg-primary/10 px-2 py-1 rounded-md mb-[-2px] ml-2 shrink-0 max-w-[160px]"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        // Mock file opening
+                        alert(`Abrindo arquivo: ${reg.fileName}`)
+                      }}
+                    >
+                      <Download className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{reg.fileName}</span>
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
