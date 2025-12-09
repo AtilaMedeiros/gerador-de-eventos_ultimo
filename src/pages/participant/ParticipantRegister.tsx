@@ -3,8 +3,9 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useNavigate } from 'react-router-dom'
-import { Loader2, School, Search, ArrowLeft } from 'lucide-react'
+import { Loader2, School, Search, ArrowLeft, Check, User, Building, Phone, MapPin, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,9 +21,6 @@ import {
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from '@/components/ui/card'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
@@ -48,54 +46,87 @@ const MUNICIPALITIES = [
   'Quixadá',
 ]
 
-const registerSchema = z
-  .object({
-    // Basic Info
-    name: z.string().min(3, 'Nome é obrigatório'),
-    inep: z.string().max(8, 'Máximo 8 caracteres').min(1, 'INEP é obrigatório'),
-    cnpj: z.string().max(18, 'CNPJ inválido').min(14, 'CNPJ é obrigatório'),
-    municipality: z.string().min(1, 'Selecione um município'),
-    address: z.string().min(3, 'Endereço é obrigatório'),
-    neighborhood: z.string().min(2, 'Bairro é obrigatório'),
-    cep: z.string().min(8, 'CEP inválido').max(9, 'CEP inválido'),
-    type: z.enum(['Publica', 'Privada']),
-    sphere: z.enum(['Municipal', 'Estadual', 'Federal']),
-    directorName: z.string().min(3, 'Nome do diretor é obrigatório'),
+// --- Schemas ---
 
-    // Contact Info
-    landline: z.string().min(8, 'Telefone fixo é obrigatório'),
-    mobile: z.string().min(9, 'Celular é obrigatório'),
-    email: z.string().email('Email inválido'),
-    password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'As senhas não coincidem',
-    path: ['confirmPassword'],
-  })
+const step1Schema = z.object({
+  // School Info
+  schoolName: z.string().min(3, 'Nome é obrigatório'),
+  inep: z.string().max(8, 'Máximo 8 caracteres').min(1, 'INEP é obrigatório'),
+  cnpj: z.string().max(18, 'CNPJ inválido').min(14, 'CNPJ é obrigatório'),
+  type: z.enum(['Publica', 'Privada']),
+  sphere: z.enum(['Municipal', 'Estadual', 'Federal']),
+  directorName: z.string().min(3, 'Nome do diretor é obrigatório'),
 
-type RegisterFormValues = z.infer<typeof registerSchema>
+  // Location
+  cep: z.string().min(8, 'CEP inválido'),
+  address: z.string().min(3, 'Endereço é obrigatório'),
+  neighborhood: z.string().min(2, 'Bairro é obrigatório'),
+  municipality: z.string().min(1, 'Selecione um município'),
+
+  // School Contact
+  landline: z.string().optional(),
+})
+
+const baseStep2Schema = z.object({
+  // Responsible Info
+  responsibleName: z.string().min(3, 'Nome é obrigatório'),
+  cpf: z.string().min(11, 'CPF inválido').max(14, 'CPF inválido'),
+  mobile: z.string().min(9, 'Celular/WhatsApp é obrigatório'), // WhatsApp
+  email: z.string().email('Email inválido'),
+  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+  confirmPassword: z.string(),
+})
+
+const step2Schema = baseStep2Schema.refine((data) => data.password === data.confirmPassword, {
+  message: 'As senhas não coincidem',
+  path: ['confirmPassword'],
+})
+
+// Combined Schema for type definition
+// We merge with baseStep2Schema to avoid ZodEffects issues in merge
+const combinedSchema = step1Schema.merge(baseStep2Schema)
+type RegisterFormValues = z.infer<typeof combinedSchema>
+
+// Steps Definition
+const steps = [
+  {
+    id: 1,
+    title: 'Dados da Escola',
+    description: 'Informações da Instituição',
+    icon: School,
+  },
+  {
+    id: 2,
+    title: 'Dados do Responsável',
+    description: 'Acesso e Contato',
+    icon: User,
+  },
+]
 
 export default function ParticipantRegister() {
   const navigate = useNavigate()
   const { login } = useAuth()
+  const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingCep, setIsLoadingCep] = useState(false)
 
   const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver((step === 1 ? step1Schema : step2Schema) as any),
+    mode: 'onChange',
     defaultValues: {
-      name: '',
+      schoolName: '',
       inep: '',
       cnpj: '',
-      municipality: '',
-      address: '',
-      neighborhood: '',
-      cep: '',
       type: 'Publica',
       sphere: 'Municipal',
       directorName: '',
+      cep: '',
+      address: '',
+      neighborhood: '',
+      municipality: '',
       landline: '',
+      responsibleName: '',
+      cpf: '',
       mobile: '',
       email: '',
       password: '',
@@ -103,6 +134,7 @@ export default function ParticipantRegister() {
     },
   })
 
+  // CEP Handler (Step 1)
   const handleCepBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
     const cep = e.target.value.replace(/\D/g, '')
     if (cep.length === 8) {
@@ -113,7 +145,7 @@ export default function ParticipantRegister() {
         if (!data.erro) {
           form.setValue('address', data.logradouro)
           form.setValue('neighborhood', data.bairro)
-          form.setValue('municipality', data.localidade) // Might need mapping if select options are strict
+          form.setValue('municipality', data.localidade)
           toast.success('Endereço encontrado!')
         } else {
           toast.error('CEP não encontrado.')
@@ -126,404 +158,492 @@ export default function ParticipantRegister() {
     }
   }
 
-  async function onSubmit(data: RegisterFormValues) {
+  const handleNext = async () => {
+    // Validate Step 1 Fields explicitly
+    const step1Fields = Object.keys(step1Schema.shape) as Array<keyof typeof step1Schema.shape>
+    // We cast to any to avoid generic key issues with trigger, or use specific list if reliable
+    const isValid = await form.trigger(step1Fields as any)
+
+    if (isValid) {
+      setStep(2)
+      window.scrollTo(0, 0)
+    }
+  }
+
+  const handleBack = () => {
+    setStep(1)
+    window.scrollTo(0, 0)
+  }
+
+  const onSubmit = async (data: RegisterFormValues) => {
     setIsSubmitting(true)
     try {
-      // Mock Registration API call
+      // Validate Step 2 Fields explicitly just in case (though handleSubmit does it based on resolver)
+      // Since our resolver is dynamic based on 'step', handleSubmit should check current step schema.
+
+      // Submit Logic
       await new Promise((resolve) => setTimeout(resolve, 1500))
 
-      // Auto login
+      // Simulate registration + login
+      console.log('Registered Data:', data)
       await login(data.email, data.password)
 
-      toast.success('Conta criada com sucesso!')
+      toast.success('Cadastro realizado com sucesso!')
       navigate('/area-do-participante/inicio')
     } catch (error) {
-      toast.error('Erro ao criar conta. Tente novamente.')
+      toast.error('Erro ao realizar cadastro.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-4xl mx-auto">
-        <Button
-          variant="ghost"
-          className="mb-6 pl-0 hover:bg-transparent hover:text-primary"
-          onClick={() => navigate('/area-do-participante/login')}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Voltar para Login
-        </Button>
+    <div className="min-h-screen bg-gray-50/50 flex flex-col">
+      {/* Top Navigation Bar Component-ish */}
+      <div className="border-b bg-white z-10 sticky top-0 shadow-sm">
+        <div className="container mx-auto py-4 px-4 flex items-center justify-between">
+          <Button
+            variant="ghost"
+            className="pl-0 hover:bg-transparent hover:text-primary gap-2"
+            onClick={() => {
+              if (step === 2) handleBack()
+              else navigate('/area-do-participante/login')
+            }}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {step === 1 ? 'Voltar para Login' : 'Voltar para Etapa 1'}
+          </Button>
 
-        <Card className="shadow-lg border-none">
-          <CardHeader className="text-center border-b bg-primary/5 rounded-t-lg py-8">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm">
-              <School className="h-6 w-6 text-primary" />
+          <div className="text-sm font-medium text-muted-foreground mr-4 hidden md:block">
+            Passo {step} de 2
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col items-center justify-start pt-8 pb-12 px-4">
+
+        {/* Wizard Progress Header */}
+        <div className="w-full max-w-4xl mb-8">
+          <div className="flex flex-col md:flex-row md:items-center gap-6">
+            <div className="min-w-[200px]">
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900">
+                {step === 1 ? 'Cadastro da Escola' : 'Cadastro do Responsável'}
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                {step === 1 ? 'Dados institucionais da escola.' : 'Dados de acesso do gestor.'}
+              </p>
             </div>
-            <CardTitle className="text-2xl font-bold">
-              Cadastro de Instituição
-            </CardTitle>
-            <CardDescription>
-              Preencha os dados para registrar sua escola nos eventos esportivos
-            </CardDescription>
-          </CardHeader>
+
+            {/* Separator */}
+            <div className="hidden md:block h-10 w-px bg-border mx-4" />
+
+            {/* Stepper Visuals */}
+            <div className="flex-1 max-w-lg">
+              <div className="relative">
+                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-muted -translate-y-1/2 rounded-full" />
+                <ol className="relative z-10 flex justify-between w-full">
+                  {steps.map((s) => {
+                    const isActive = s.id === step
+                    const isCompleted = s.id < step
+
+                    return (
+                      <li key={s.id} className="flex flex-col items-center bg-gray-50 px-2 first:pl-0 last:pr-0">
+                        <div
+                          className={cn(
+                            'flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300',
+                            isActive && 'border-primary bg-primary text-primary-foreground scale-110 shadow-md',
+                            isCompleted && 'border-primary bg-primary text-primary-foreground',
+                            !isActive && !isCompleted && 'border-muted-foreground/30 bg-white text-muted-foreground'
+                          )}
+                        >
+                          {isCompleted ? <Check className="h-4 w-4" /> : <s.icon className="h-4 w-4" />}
+                        </div>
+                        <span className={cn(
+                          "text-[10px] mt-1 font-medium uppercase tracking-wider transition-colors duration-200",
+                          isActive ? "text-primary" : "text-muted-foreground"
+                        )}>
+                          {s.title}
+                        </span>
+                      </li>
+                    )
+                  })}
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Form Card */}
+        <Card className="w-full max-w-4xl shadow-lg border-none animate-in fade-in slide-in-from-bottom-4 duration-500">
           <CardContent className="p-6 md:p-8">
             <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-8"
-              >
-                {/* Basic Info */}
-                <div className="space-y-6">
-                  <h3 className="text-lg font-semibold flex items-center gap-2 border-l-4 border-primary pl-3">
-                    Informações Básicas
-                  </h3>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem className="col-span-2">
-                          <FormLabel>Nome da Escola</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Escola Municipal..."
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                {/* --- Step 1: School Data --- */}
+                {step === 1 && (
+                  <div className="space-y-6 animate-in fade-in duration-300">
+                    {/* Basic Info Block */}
+                    <div className="space-y-4 p-5 border rounded-xl bg-card/50 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="p-2 bg-primary/10 rounded-md">
+                          <School className="h-5 w-5 text-primary" />
+                        </div>
+                        <h3 className="font-semibold text-lg text-gray-800">Dados Institucionais</h3>
+                      </div>
 
-                    <FormField
-                      control={form.control}
-                      name="inep"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Código INEP</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="00000000"
-                              maxLength={8}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="schoolName"
+                          render={({ field }) => (
+                            <FormItem className="col-span-2">
+                              <FormLabel>Nome da Escola</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Escola Municipal..." {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="inep"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Código INEP</FormLabel>
+                              <FormControl>
+                                <Input placeholder="00000000" maxLength={8} {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="cnpj"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>CNPJ</FormLabel>
+                              <FormControl>
+                                <Input placeholder="00.000.000/0000-00" maxLength={18} {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                    <FormField
-                      control={form.control}
-                      name="cnpj"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>CNPJ</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="00.000.000/0000-00"
-                              maxLength={18}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                      <div className="grid md:grid-cols-2 gap-6 pt-2">
+                        <FormField
+                          control={form.control}
+                          name="type"
+                          render={({ field }) => (
+                            <FormItem className="space-y-3">
+                              <FormLabel>Tipo de Escola</FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                  className="flex gap-4"
+                                >
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl><RadioGroupItem value="Publica" /></FormControl>
+                                    <FormLabel className="font-normal">Pública</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl><RadioGroupItem value="Privada" /></FormControl>
+                                    <FormLabel className="font-normal">Privada</FormLabel>
+                                  </FormItem>
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="sphere"
+                          render={({ field }) => (
+                            <FormItem className="space-y-3">
+                              <FormLabel>Esfera</FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                  className="flex gap-4"
+                                >
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl><RadioGroupItem value="Municipal" /></FormControl>
+                                    <FormLabel className="font-normal">Municipal</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl><RadioGroupItem value="Estadual" /></FormControl>
+                                    <FormLabel className="font-normal">Estadual</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl><RadioGroupItem value="Federal" /></FormControl>
+                                    <FormLabel className="font-normal">Federal</FormLabel>
+                                  </FormItem>
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="cep"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>CEP</FormLabel>
-                          <div className="relative">
+                      <FormField
+                        control={form.control}
+                        name="directorName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome do Diretor(a)</FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="00000-000"
-                                maxLength={9}
-                                {...field}
-                                onBlur={handleCepBlur}
-                              />
+                              <Input placeholder="Nome completo" {...field} />
                             </FormControl>
-                            {isLoadingCep && (
-                              <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-primary" />
-                            )}
-                            {!isLoadingCep && field.value && (
-                              <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground opacity-50" />
-                            )}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                    <FormField
-                      control={form.control}
-                      name="address"
-                      render={({ field }) => (
-                        <FormItem className="col-span-2">
-                          <FormLabel>Endereço</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Rua, Número..." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {/* Address Block */}
+                    <div className="space-y-4 p-5 border rounded-xl bg-card/50 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="p-2 bg-primary/10 rounded-md">
+                          <MapPin className="h-5 w-5 text-primary" />
+                        </div>
+                        <h3 className="font-semibold text-lg text-gray-800">Endereço e Contato</h3>
+                      </div>
 
-                    <FormField
-                      control={form.control}
-                      name="neighborhood"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Bairro</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Bairro" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                      <div className="grid md:grid-cols-3 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="cep"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>CEP</FormLabel>
+                              <div className="relative">
+                                <FormControl>
+                                  <Input
+                                    placeholder="00000-000"
+                                    maxLength={9}
+                                    {...field}
+                                    onBlur={handleCepBlur}
+                                  />
+                                </FormControl>
+                                {isLoadingCep && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-primary" />}
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="address"
+                          render={({ field }) => (
+                            <FormItem className="col-span-2">
+                              <FormLabel>Logradouro</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Rua, Av..." {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="neighborhood"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Bairro</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Bairro" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="municipality"
+                          render={({ field }) => (
+                            <FormItem className="col-span-2">
+                              <FormLabel>Município</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione..." />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {MUNICIPALITIES.map((city) => (
+                                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="municipality"
-                      render={({ field }) => (
-                        <FormItem className="col-span-2">
-                          <FormLabel>Município</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione o município" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {MUNICIPALITIES.map((city) => (
-                                <SelectItem key={city} value={city}>
-                                  {city}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        <FormField
+                          control={form.control}
+                          name="landline"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Telefone Fixo (Escola)</FormLabel>
+                              <FormControl>
+                                <Input placeholder="(00) 0000-0000" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
                   </div>
+                )}
 
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="type"
-                      render={({ field }) => (
-                        <FormItem className="space-y-3">
-                          <FormLabel>Tipo de Escola</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="flex gap-4"
-                            >
-                              <FormItem className="flex items-center space-x-2 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="Publica" />
-                                </FormControl>
-                                <FormLabel className="font-normal">
-                                  Pública
-                                </FormLabel>
-                              </FormItem>
-                              <FormItem className="flex items-center space-x-2 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="Privada" />
-                                </FormControl>
-                                <FormLabel className="font-normal">
-                                  Privada
-                                </FormLabel>
-                              </FormItem>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                {/* --- Step 2: Responsible Data --- */}
+                {step === 2 && (
+                  <div className="space-y-6 animate-in fade-in duration-300">
+                    <div className="p-5 border rounded-xl bg-card/50 shadow-sm space-y-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="p-2 bg-primary/10 rounded-md">
+                          <User className="h-5 w-5 text-primary" />
+                        </div>
+                        <h3 className="font-semibold text-lg text-gray-800">Dados do Responsável</h3>
+                      </div>
 
-                    <FormField
-                      control={form.control}
-                      name="sphere"
-                      render={({ field }) => (
-                        <FormItem className="space-y-3">
-                          <FormLabel>Esfera Administrativa</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="flex gap-4"
-                            >
-                              <FormItem className="flex items-center space-x-2 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="Municipal" />
-                                </FormControl>
-                                <FormLabel className="font-normal">
-                                  Municipal
-                                </FormLabel>
-                              </FormItem>
-                              <FormItem className="flex items-center space-x-2 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="Estadual" />
-                                </FormControl>
-                                <FormLabel className="font-normal">
-                                  Estadual
-                                </FormLabel>
-                              </FormItem>
-                              <FormItem className="flex items-center space-x-2 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="Federal" />
-                                </FormControl>
-                                <FormLabel className="font-normal">
-                                  Federal
-                                </FormLabel>
-                              </FormItem>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="responsibleName"
+                          render={({ field }) => (
+                            <FormItem className="col-span-2">
+                              <FormLabel>Nome Completo</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Nome do responsável..." {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="cpf"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>CPF</FormLabel>
+                              <FormControl>
+                                <Input placeholder="000.000.000-00" maxLength={14} {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="mobile"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>WhatsApp / Celular</FormLabel>
+                              <FormControl>
+                                <Input placeholder="(00) 90000-0000" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-6 pt-4 border-t">
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem className="col-span-2">
+                              <FormLabel>E-mail (Login)</FormLabel>
+                              <FormControl>
+                                <Input type="email" placeholder="seu.email@exemplo.com" {...field} />
+                              </FormControl>
+                              <FormDescription>Este e-mail será utilizado para entrar no sistema.</FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Senha</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="******" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="confirmPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Confirmar Senha</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="******" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
                   </div>
+                )}
 
-                  <FormField
-                    control={form.control}
-                    name="directorName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome do Diretor(a)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nome completo" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                {/* --- Actions Footer --- */}
+                <div className="flex gap-4 pt-6 border-t justify-end">
+                  {step === 2 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleBack}
+                      disabled={isSubmitting}
+                      className="w-full md:w-auto min-w-[140px]"
+                    >
+                      Voltar
+                    </Button>
+                  )}
+
+                  {step === 1 ? (
+                    <Button
+                      type="button"
+                      onClick={handleNext}
+                      className="w-full md:w-auto min-w-[140px] text-lg h-12 apple-button-gradient"
+                    >
+                      Próxima Etapa <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full md:w-auto min-w-[140px] text-lg h-12 apple-button-gradient"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Cadastrando...
+                        </>
+                      ) : (
+                        'Finalizar Cadastro'
+                      )}
+                    </Button>
+                  )}
                 </div>
 
-                {/* Contact Info */}
-                <div className="space-y-6 pt-4 border-t">
-                  <h3 className="text-lg font-semibold flex items-center gap-2 border-l-4 border-primary pl-3">
-                    Contato e Acesso
-                  </h3>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="landline"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Telefone Fixo</FormLabel>
-                          <FormControl>
-                            <Input placeholder="(00) 0000-0000" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="mobile"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Celular / WhatsApp</FormLabel>
-                          <FormControl>
-                            <Input placeholder="(00) 90000-0000" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem className="col-span-2">
-                          <FormLabel>E-mail Institucional</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="email@escola.com"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Este email será usado para login.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Senha</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder="******"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Confirmar Senha</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder="******"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-4">
-                  <Button
-                    type="submit"
-                    className="w-full h-12 text-lg font-semibold"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processando Cadastro...
-                      </>
-                    ) : (
-                      'Finalizar Cadastro da Escola'
-                    )}
-                  </Button>
-                </div>
               </form>
             </Form>
           </CardContent>
