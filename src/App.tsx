@@ -38,6 +38,7 @@ import Profile from './pages/dashboard/Profile'
 import Settings from './pages/dashboard/Settings'
 import EventPage from './pages/public/EventPage'
 import EventCommunicationPage from './pages/public/EventCommunicationPage'
+import EventRegulationsPage from '@/pages/public/EventRegulationsPage'
 import AccessDenied from './pages/AccessDenied'
 
 // Event Panel Pages
@@ -82,6 +83,10 @@ const App = () => (
                     <Route
                       path="/evento/:slug/:id/comunicacao"
                       element={<EventCommunicationPage />}
+                    />
+                    <Route
+                      path="/evento/:slug/:id/regulamentos"
+                      element={<EventRegulationsPage />}
                     />
 
                     {/* Participant Public Routes */}

@@ -16,16 +16,12 @@ export function PublicHeader({ title }: PublicHeaderProps) {
   const navigate = useNavigate()
 
   const eventBaseUrl = `/evento/${slug}/${id}`
-  const communicationUrl = `${eventBaseUrl}/comunicacao`
-  const regulationUrl = `${eventBaseUrl}/comunicacao?tab=regulamentos`
+  const communicationUrl = `/evento/${slug}/${id}/comunicacao`
+  const regulationUrl = `/evento/${slug}/${id}/regulamentos`
 
   const isHome = location.pathname === eventBaseUrl
-  const isCommunication =
-    location.pathname === communicationUrl &&
-    !location.search.includes('tab=regulamentos')
-  const isRegulation =
-    location.pathname === communicationUrl &&
-    location.search.includes('tab=regulamentos')
+  const isCommunication = location.pathname.includes('/comunicacao') && !location.pathname.includes('/regulamentos')
+  const isRegulation = location.pathname.includes('/regulamentos')
 
   useEffect(() => {
     const handleScroll = () => {
