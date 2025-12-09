@@ -53,11 +53,11 @@ export function DashboardHeader() {
     // Event Panel routes
     if (path.includes('/area-do-produtor/evento/')) {
       if (path.includes('/dashboard')) return 'Visão Geral'
-      if (path.includes('/relatorios')) return 'Relatório'
-      if (path.includes('/escolas')) return 'Escolas'
-      if (path.includes('/atletas')) return 'Atletas'
-      if (path.includes('/modalidades')) return 'Modalidades'
-      if (path.includes('/tema')) return 'Tema Aplicado'
+
+
+
+
+
       if (path.includes('/publicacoes')) return 'Avisos e Boletins'
       return 'Painel do Evento'
     }

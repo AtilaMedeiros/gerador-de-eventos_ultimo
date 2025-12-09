@@ -102,53 +102,10 @@ export function EventPanelSidebar() {
             label="Visão Geral"
             active={isActive(`/area-do-produtor/evento/${eventId}/dashboard`)}
           />
-          <NavItem
-            to={`/area-do-produtor/evento/${eventId}/relatorios`}
-            icon={FileBarChart}
-            label="Relatório"
-            active={isActive(`/area-do-produtor/evento/${eventId}/relatorios`)}
-          />
+
         </div>
 
-        {/* Participantes */}
-        <div className="space-y-1">
-          <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Participantes
-          </p>
-          <NavItem
-            to={`/area-do-produtor/evento/${eventId}/escolas`}
-            icon={School}
-            label="Escolas"
-            active={isActive(`/area-do-produtor/evento/${eventId}/escolas`)}
-          />
-          <NavItem
-            to={`/area-do-produtor/evento/${eventId}/atletas`}
-            icon={Users}
-            label="Atletas"
-            active={isActive(`/area-do-produtor/evento/${eventId}/atletas`)}
-          />
-        </div>
 
-        {/* Vínculos */}
-        <div className="space-y-1">
-          <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Vínculos
-          </p>
-          <NavItem
-            to={`/area-do-produtor/evento/${eventId}/modalidades`}
-            icon={Trophy}
-            label="Modalidades"
-            active={isChildActive(
-              `/area-do-produtor/evento/${eventId}/modalidades`,
-            )}
-          />
-          <NavItem
-            to={`/area-do-produtor/evento/${eventId}/tema`}
-            icon={Palette}
-            label="Tema Aplicado"
-            active={isChildActive(`/area-do-produtor/evento/${eventId}/tema`)}
-          />
-        </div>
 
         {/* Comunicação */}
         <div className="space-y-1">

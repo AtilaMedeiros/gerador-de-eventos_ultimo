@@ -43,9 +43,9 @@ import AccessDenied from './pages/AccessDenied'
 // Event Panel Pages
 import EventPanelLayout from './components/EventPanelLayout'
 import EventPanelDashboard from './pages/dashboard/event-panel/EventPanelDashboard'
-import EventSchools from './pages/dashboard/event-panel/EventSchools'
-import EventAthletes from './pages/dashboard/event-panel/EventAthletes'
-import EventReports from './pages/dashboard/event-panel/EventReports'
+
+
+
 
 // Participant Pages
 import ParticipantLayout from './components/ParticipantLayout'
@@ -221,14 +221,11 @@ const App = () => (
                         path="dashboard"
                         element={<EventPanelDashboard />}
                       />
-                      <Route path="relatorios" element={<EventReports />} />
-                      <Route path="escolas" element={<EventSchools />} />
-                      <Route path="atletas" element={<EventAthletes />} />
-                      <Route
-                        path="modalidades"
-                        element={<AssociateModalities />}
-                      />
-                      <Route path="tema" element={<ApplyVisualIdentity />} />
+
+
+
+
+
                     </Route>
 
                     <Route path="/acesso-negado" element={<AccessDenied />} />
