@@ -1,15 +1,4 @@
-import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import {
-  Plus,
-  Search,
-  Download,
-  Edit,
-  Trash2,
-  UserCheck,
-  AlertTriangle,
-  Filter,
-} from 'lucide-react'
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -20,254 +9,428 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { useParticipant } from '@/contexts/ParticipantContext'
-import { useModality } from '@/contexts/ModalityContext'
-import { differenceInYears } from 'date-fns'
+import { Filters, createFilter, type Filter, type FilterFieldConfig } from '@/components/ui/filters'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
+  Search,
+  Download,
+  Plus,
+  Edit,
+  Trash2,
+  User,
+  Activity,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
+import { useParticipant, Athlete } from '@/contexts/ParticipantContext'
+import { format } from 'date-fns'
+
+const filterFields: FilterFieldConfig[] = [
+  {
+    key: 'name',
+    label: 'Nome do Atleta',
+    icon: <User className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Buscar por nome...',
+  },
+  {
+    key: 'cpf',
+    label: 'CPF',
+    icon: <Activity className="size-3.5" />,
+    type: 'text',
+    placeholder: 'Número do CPF...',
+  },
+]
 
 export default function AthletesList() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const eventId = searchParams.get('eventId')
-  const { athletes, deleteAthlete, inscriptions } = useParticipant()
-  const { modalities } = useModality()
-  const [search, setSearch] = useState('')
+  const { athletes, deleteAthlete } = useParticipant()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filters, setFilters] = useState<Filter[]>([])
 
-  const filteredAthletes = athletes.filter(
-    (a) =>
-      a.name.toLowerCase().includes(search.toLowerCase()) ||
-      a.cpf.includes(search),
-  )
+  // Apply Filters
+  const filteredAthletes = useMemo(() => {
+    return athletes.filter(athlete => {
+      // Global Search
+      const searchLower = searchTerm.toLowerCase()
+      const matchesSearch =
+        athlete.name.toLowerCase().includes(searchLower) ||
+        athlete.cpf.includes(searchLower)
 
-  const getAge = (dob: Date) => differenceInYears(new Date(), dob)
+      if (!matchesSearch) return false
 
-  // Get linked modalities for an athlete in the current event
-  const getAthleteModalities = (athleteId: string) => {
-    if (eventId) {
-      const athleteInscriptions = inscriptions.filter(
-        (i) => i.athleteId === athleteId && i.eventId === eventId,
-      )
-      return athleteInscriptions
-        .map((ins) => modalities.find((m) => m.id === ins.modalityId))
-        .filter((m) => !!m)
+      // Specific Filters
+      if (filters.length === 0) return true
+
+      return filters.every(filter => {
+        const value = filter.value?.toString().toLowerCase() || ''
+        if (value === '') return true
+
+        switch (filter.field) {
+          case 'name':
+            return athlete.name.toLowerCase().includes(value)
+          case 'cpf':
+            return athlete.cpf.includes(value)
+          default:
+            return true
+        }
+      })
+    })
+  }, [athletes, searchTerm, filters])
+
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Athlete, direction: 'asc' | 'desc' } | null>(null)
+
+  // Apply Sorting
+  const sortedAthletes = useMemo(() => {
+    const sorted = [...filteredAthletes].sort((a, b) => {
+      if (!sortConfig) return 0
+
+      const { key, direction } = sortConfig
+
+      const aValue: any = a[key as keyof typeof a]
+      const bValue: any = b[key as keyof typeof b]
+
+      if (aValue < bValue) {
+        return direction === 'asc' ? -1 : 1
+      }
+      if (aValue > bValue) {
+        return direction === 'asc' ? 1 : -1
+      }
+      return 0
+    })
+    return sorted
+  }, [filteredAthletes, sortConfig])
+
+  const requestSort = (key: keyof Athlete) => {
+    let direction: 'asc' | 'desc' = 'asc'
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc'
     }
-    return []
+    setSortConfig({ key, direction })
+  }
+
+  const getSortIcon = (key: string) => {
+    if (!sortConfig || sortConfig.key !== key) {
+      return <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground/50" />
+    }
+    return sortConfig.direction === 'asc' ?
+      <ArrowUp className="ml-2 h-4 w-4 text-primary" /> :
+      <ArrowDown className="ml-2 h-4 w-4 text-primary" />
+  }
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState<number | string>(50)
+
+  // Pagination Logic
+  const pageSize = Number(itemsPerPage) > 0 ? Number(itemsPerPage) : 50
+  const totalPages = Math.ceil(sortedAthletes.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const currentAthletes = sortedAthletes.slice(startIndex, endIndex)
+
+  // Reset page when filters change
+  if (currentPage > totalPages && totalPages > 0) {
+    setCurrentPage(1)
+  }
+
+  // Column Resizing Logic
+  const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
+    const saved = localStorage.getItem('ge_participant_athletes_col_widths')
+    return saved ? JSON.parse(saved) : {
+      name: 300,
+      sex: 120,
+      dob: 150,
+      cpf: 180,
+      actions: 100
+    }
+  })
+
+  useEffect(() => {
+    localStorage.setItem('ge_participant_athletes_col_widths', JSON.stringify(colWidths))
+  }, [colWidths])
+
+  const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!resizingRef.current) return
+    const { key, startX, startWidth } = resizingRef.current
+    const diff = e.clientX - startX
+    const newWidth = Math.max(50, startWidth + diff)
+
+    setColWidths(prev => ({
+      ...prev,
+      [key]: newWidth
+    }))
+  }, [])
+
+  const handleMouseUp = useCallback(() => {
+    resizingRef.current = null
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'default'
+  }, [handleMouseMove])
+
+  const handleMouseDown = useCallback((e: React.MouseEvent, key: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    resizingRef.current = {
+      key,
+      startX: e.clientX,
+      startWidth: colWidths[key] || 100
+    }
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'col-resize'
+  }, [colWidths, handleMouseMove, handleMouseUp])
+
+  const handleAction = (action: string) => {
+    toast.info(`Ação ${action} simulada com sucesso.`)
+  }
+
+  const handleDelete = (id: string) => {
+    if (confirm("Tem certeza que deseja excluir este atleta?")) {
+      deleteAthlete(id)
+    }
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-8 animate-fade-in relative">
+      {/* Background Gradients */}
+      <div className="absolute -top-20 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl -z-10 opacity-50 pointer-events-none" />
+      <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-secondary/20 rounded-full blur-3xl -z-10 opacity-50 pointer-events-none" />
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">
-            Gestão de Atletas
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            Meus Atletas
           </h2>
-          <p className="text-muted-foreground">
-            {eventId
-              ? 'Gerencie as inscrições dos atletas para este evento.'
-              : 'Cadastre e gerencie os atletas da sua escola.'}
+          <p className="text-muted-foreground mt-1 text-lg">
+            Gerencie os atletas da sua escola.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleAction('Exportar')}
+            className="backdrop-blur-sm bg-background/50 border-primary/20 hover:bg-primary/5 hover:border-primary/40 transition-all duration-300"
+          >
             <Download className="mr-2 h-4 w-4" /> Exportar
           </Button>
           <Button
             onClick={() => navigate('/area-do-participante/atletas/novo')}
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
           >
-            <Plus className="mr-2 h-4 w-4" /> Incluir Atleta
+            <Plus className="mr-2 h-4 w-4" /> Novo Atleta
           </Button>
         </div>
       </div>
 
-      {/* Warning Banner */}
-      <div className="bg-amber-50 border border-amber-200 rounded-md p-4 flex items-start gap-3">
-        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-        <div className="text-sm text-amber-800">
-          <p className="font-semibold">Atenção ao editar atletas!</p>
-          <p>
-            Alterações nos dados cadastrais (como idade ou sexo) podem invalidar
-            inscrições já realizadas em modalidades específicas. Verifique
-            sempre as inscrições após editar.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between gap-4 bg-card p-4 rounded-lg border shadow-sm">
-        <div className="flex items-center gap-2 flex-1 max-w-sm relative">
-          <Search className="h-4 w-4 text-muted-foreground absolute left-3" />
+      {/* Search and Advanced Filters */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-1 min-w-[200px] relative group">
+          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
+            <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          </div>
           <Input
-            placeholder="Buscar por nome ou CPF..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-background"
+            placeholder="Pesquisar por nome ou CPF..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
           />
         </div>
-        <Button variant="ghost" size="icon">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-        </Button>
+
+        <div className="flex bg-white items-center gap-4">
+          <div className="flex-1">
+            <Filters
+              fields={filterFields}
+              filters={filters}
+              onChange={setFilters}
+              addButton={
+                <Button
+                  size="sm"
+                  className="h-10 w-10 p-0 rounded-md bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-blue-200 dark:border-blue-800 hover:bg-primary/5 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-blue-400" aria-hidden="true">
+                    <path d="M13.354 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14v6a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341l1.218-1.348"></path>
+                    <path d="M16 6h6"></path>
+                    <path d="M19 3v6"></path>
+                  </svg>
+                </Button>
+              }
+            />
+          </div>
+
+        </div>
       </div>
 
-      <div className="rounded-md border bg-card overflow-hidden">
-        <Table>
-          <TableHeader className="bg-muted/30">
-            <TableRow>
-              <TableHead className="w-[300px]">Nome</TableHead>
-              <TableHead>CPF</TableHead>
-              <TableHead>Idade</TableHead>
-              <TableHead>Naipe</TableHead>
-              {/* Always show Modalidades column if eventId is present, or just for structure */}
-              {eventId && <TableHead>Modalidades</TableHead>}
-              <TableHead className="text-right">Ações</TableHead>
+      <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden overflow-x-auto">
+        <Table style={{ tableLayout: 'fixed', minWidth: '100%' }}>
+          <TableHeader className="bg-primary/5">
+            <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
+              <TableHead style={{ width: colWidths.name }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('name')}>
+                <div className="flex items-center overflow-hidden">
+                  <span className="truncate">Nome</span> {getSortIcon('name')}
+                </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'name')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
+              </TableHead>
+              <TableHead style={{ width: colWidths.sex }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('sex')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Naipe</span> {getSortIcon('sex')}
+                </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'sex')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
+              </TableHead>
+              <TableHead style={{ width: colWidths.dob }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('dob')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">Data Nasc.</span> {getSortIcon('dob')}
+                </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'dob')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
+              </TableHead>
+              <TableHead style={{ width: colWidths.cpf }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('cpf')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">CPF</span> {getSortIcon('cpf')}
+                </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'cpf')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
+              </TableHead>
+              <TableHead style={{ width: colWidths.actions }} className="relative text-right font-semibold text-primary/80 h-12">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAthletes.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={eventId ? 6 : 5}
-                  className="h-32 text-center text-muted-foreground"
+            {currentAthletes.length > 0 ? (
+              currentAthletes.map((athlete) => (
+                <TableRow
+                  key={athlete.id}
+                  className="hover:bg-primary/5 transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group"
                 >
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <Search className="h-8 w-8 opacity-20" />
-                    <p>Nenhum atleta encontrado.</p>
-                  </div>
+                  <TableCell className="font-medium h-12 py-0">
+                    <div className="flex items-center h-full">
+                      <User className="mr-2 h-4 w-4 text-primary/50" />
+                      <span className="text-sm group-hover:text-primary transition-colors leading-tight">
+                        {athlete.name}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="h-12 py-0">
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                      {athlete.sex}
+                    </div>
+                  </TableCell>
+                  <TableCell className="h-12 py-0">
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                      {format(new Date(athlete.dob), 'dd/MM/yyyy')}
+                    </div>
+                  </TableCell>
+                  <TableCell className="h-12 py-0">
+                    <div className="flex items-center justify-center h-full text-muted-foreground font-mono text-xs">
+                      {athlete.cpf}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right h-12 py-0">
+
+                    <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity h-full items-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                        onClick={() => navigate(`/area-do-participante/atletas/${athlete.id}`)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                        onClick={() => handleDelete(athlete.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                  Nenhum atleta encontrado.
                 </TableCell>
               </TableRow>
-            ) : (
-              filteredAthletes.map((athlete) => {
-                const linkedModalities = getAthleteModalities(athlete.id)
-                return (
-                  <TableRow key={athlete.id} className="hover:bg-muted/10">
-                    <TableCell>
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto font-medium text-foreground hover:text-primary hover:underline"
-                        onClick={() =>
-                          navigate(
-                            `/area-do-participante/atletas/${athlete.id}`,
-                          )
-                        }
-                      >
-                        {athlete.name}
-                      </Button>
-                    </TableCell>
-                    <TableCell className="font-mono text-sm text-muted-foreground">
-                      {athlete.cpf}
-                    </TableCell>
-                    <TableCell>{getAge(athlete.dob)} anos</TableCell>
-                    <TableCell>{athlete.sex}</TableCell>
-                    {eventId && (
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1.5">
-                          {linkedModalities.length > 0 ? (
-                            linkedModalities.map((mod) => (
-                              <Badge
-                                key={mod!.id}
-                                variant="outline"
-                                className={`text-[10px] border ${mod!.type === 'coletiva' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}
-                              >
-                                {mod!.type === 'coletiva' ? 'Col' : 'Ind'}:{' '}
-                                {mod!.name}
-                              </Badge>
-                            ))
-                          ) : (
-                            <span className="text-xs text-muted-foreground italic">
-                              -
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                    )}
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {eventId && (
-                          <Button
-                            variant={
-                              linkedModalities.length > 0
-                                ? 'secondary'
-                                : 'default'
-                            }
-                            size="sm"
-                            className="shadow-sm"
-                            title="Alocar/Vincular Modalidades"
-                            onClick={() =>
-                              navigate(
-                                `/area-do-participante/atletas/${athlete.id}/inscricao?eventId=${eventId}`,
-                              )
-                            }
-                          >
-                            <UserCheck className="mr-2 h-3 w-3" />
-                            {linkedModalities.length > 0
-                              ? 'Editar Inscrição'
-                              : 'Alocar/Vincular'}
-                          </Button>
-                        )}
-
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="Editar Atleta"
-                          onClick={() =>
-                            navigate(
-                              `/area-do-participante/atletas/${athlete.id}`,
-                            )
-                          }
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                              title="Excluir Atleta"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Excluir Atleta?
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Esta ação removerá o atleta{' '}
-                                <strong>{athlete.name}</strong> e todas as suas
-                                inscrições em eventos. Não pode ser desfeito.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteAthlete(athlete.id)}
-                                className="bg-destructive hover:bg-destructive/90"
-                              >
-                                Excluir
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <span>Monstrando</span>
+          <Input
+            type="number"
+            min={1}
+            max={500}
+            value={itemsPerPage}
+            onChange={(e) => {
+              const val = e.target.value
+              if (val === '') {
+                setItemsPerPage('')
+                return
+              }
+              let num = parseInt(val)
+              if (isNaN(num)) return
+              if (num > 500) num = 500
+              setItemsPerPage(num)
+              setCurrentPage(1)
+            }}
+            className="h-8 w-10 text-center p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+          <span>registros por página</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span>
+            Página {currentPage} de {totalPages || 1}
+          </span>
+          <div className="flex gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -25,7 +25,7 @@ export interface Athlete {
   name: string
   sex: 'Feminino' | 'Masculino'
   dob: Date
-  rg: string
+  rg?: string
   cpf: string
   nis?: string
   motherName: string

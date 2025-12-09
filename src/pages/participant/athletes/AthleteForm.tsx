@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -18,7 +18,8 @@ import {
   FormDescription,
 } from '@/components/ui/form'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { useParticipant } from '@/contexts/ParticipantContext'
+import { useParticipant, Athlete } from '@/contexts/ParticipantContext'
+import { format } from 'date-fns'
 
 const athleteSchema = z.object({
   name: z.string().min(3, 'Nome é obrigatório'),
@@ -26,7 +27,7 @@ const athleteSchema = z.object({
   dob: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: 'Data inválida',
   }),
-  rg: z.string().min(2, 'RG é obrigatório'),
+  rg: z.string().optional(),
   cpf: z.string().min(11, 'CPF inválido').max(14),
   nis: z.string().optional(),
   motherName: z.string().min(3, 'Nome do Responsável é obrigatório'),
@@ -39,7 +40,11 @@ export default function AthleteForm() {
   const navigate = useNavigate()
   const { id } = useParams()
   const { athletes, addAthlete, updateAthlete } = useParticipant()
+
   const isEditing = id && id !== 'novo'
+  const editingAthlete = useMemo(() =>
+    isEditing ? athletes.find(a => a.id === id) : null
+    , [isEditing, id, athletes])
 
   const form = useForm<AthleteFormValues>({
     resolver: zodResolver(athleteSchema),
@@ -56,47 +61,47 @@ export default function AthleteForm() {
   })
 
   useEffect(() => {
-    if (isEditing && id) {
-      const athlete = athletes.find((a) => a.id === id)
-      if (athlete) {
-        form.reset({
-          ...athlete,
-          dob: athlete.dob.toISOString().split('T')[0],
-          nis: athlete.nis || '',
-        })
-      } else {
-        toast.error('Atleta não encontrado')
-        navigate('/area-do-participante/atletas')
-      }
+    if (isEditing && editingAthlete) {
+      form.reset({
+        name: editingAthlete.name,
+        sex: editingAthlete.sex,
+        dob: format(new Date(editingAthlete.dob), 'yyyy-MM-dd'),
+        rg: editingAthlete.rg,
+        cpf: editingAthlete.cpf,
+        nis: editingAthlete.nis || '',
+        motherName: editingAthlete.motherName,
+        motherCpf: editingAthlete.motherCpf
+      })
     }
-  }, [isEditing, id, athletes, form, navigate])
+  }, [isEditing, editingAthlete, form])
 
   const onSubmit = (data: AthleteFormValues) => {
-    // Validate CPF uniqueness in school
-    const cpfExists = athletes.some((a) => a.cpf === data.cpf && a.id !== id)
+    try {
+      const payload: Omit<Athlete, 'id' | 'schoolId'> = {
+        name: data.name,
+        sex: data.sex,
+        dob: new Date(data.dob + 'T12:00:00'), // Ensure correct day by adding time middle of day to avoid timezone shift
+        cpf: data.cpf,
+        motherName: data.motherName,
+        motherCpf: data.motherCpf,
+        rg: data.rg,
+        nis: data.nis
+      }
 
-    if (cpfExists) {
-      form.setError('cpf', {
-        message: 'Este CPF já está cadastrado na escola.',
-      })
-      return
+      if (isEditing && id) {
+        updateAthlete(id, payload)
+      } else {
+        addAthlete(payload)
+      }
+      navigate('/area-do-participante/atletas')
+    } catch (error) {
+      console.error(error)
+      toast.error("Erro ao salvar atleta.")
     }
-
-    const payload = {
-      ...data,
-      dob: new Date(data.dob),
-    }
-
-    if (isEditing && id) {
-      updateAthlete(id, payload)
-    } else {
-      addAthlete(payload)
-    }
-    navigate('/area-do-participante/atletas')
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 pt-6 animate-fade-in">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
@@ -135,7 +140,7 @@ export default function AthleteForm() {
               name="sex"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>Sexo *</FormLabel>
+                  <FormLabel>Naipe *</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -165,10 +170,10 @@ export default function AthleteForm() {
               control={form.control}
               name="dob"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-fit ml-auto">
                   <FormLabel>Data de Nascimento *</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Input type="date" {...field} className="w-[180px]" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -201,7 +206,7 @@ export default function AthleteForm() {
               name="rg"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>RG *</FormLabel>
+                  <FormLabel>RG (Opcional)</FormLabel>
                   <FormControl>
                     <Input placeholder="Número do RG" {...field} />
                   </FormControl>
