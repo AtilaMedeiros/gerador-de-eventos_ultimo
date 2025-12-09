@@ -15,7 +15,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Phone,
-  KeyRound
+  KeyRound,
+  RotateCcwKey,
+  Trophy
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,6 +29,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +52,7 @@ import {
 import { Filters, type Filter, type FilterFieldConfig } from '@/components/ui/filters'
 import { useParticipant } from '@/contexts/ParticipantContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { useEvent } from '@/contexts/EventContext'
 import { toast } from 'sonner'
 import { FaWhatsapp } from 'react-icons/fa'
 
@@ -77,10 +89,17 @@ const filterFields: FilterFieldConfig[] = [
 
 export default function TechniciansList() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const calculateUser = useAuth()
+  const user = calculateUser.user
   const { technicians, deleteTechnician } = useParticipant()
+  const { events } = useEvent()
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<Filter[]>([])
+
+  // Password Reset State
+  const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false)
+  const [selectedTechForReset, setSelectedTechForReset] = useState<any | null>(null)
+  const [newPassword, setNewPassword] = useState('')
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1)
@@ -170,8 +189,21 @@ export default function TechniciansList() {
     toast.info(`Ação ${action} simulada com sucesso.`)
   }
 
-  const handleResetPassword = (name: string) => {
-    toast.success(`Link de redefinição de senha enviado para ${name}`)
+  const handleResetPassword = (tech: any) => {
+    setSelectedTechForReset(tech)
+    setNewPassword(`@Sme${new Date().getFullYear()}`)
+    setResetPasswordDialogOpen(true)
+  }
+
+  const handleConfirmReset = () => {
+    if (!selectedTechForReset) return
+
+    // Simulate API call
+    console.log(`Resetting password for user ${selectedTechForReset.id} to ${newPassword}`)
+
+    toast.success(`Senha para ${selectedTechForReset.name} alterada com sucesso!`)
+    setResetPasswordDialogOpen(false)
+    setSelectedTechForReset(null)
   }
 
   // Column Resizing Logic
@@ -406,11 +438,21 @@ export default function TechniciansList() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="hover:bg-orange-500/10 hover:text-orange-600 rounded-full transition-colors"
-                            onClick={() => handleResetPassword(tech.name)}
+                            className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                            onClick={() => navigate(`/area-do-participante/tecnicos/${tech.id}/inscricao?eventId=${events.length > 0 ? events[0].id : ''}`)}
+                            title="Vincular Modalidade"
+                          >
+                            <Trophy className="h-4 w-4" />
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                            onClick={() => handleResetPassword(tech)}
                             title="Resetar Senha"
                           >
-                            <KeyRound className="h-4 w-4" />
+                            <RotateCcwKey className="h-5 w-5" />
                           </Button>
 
                           <Button
@@ -523,6 +565,32 @@ export default function TechniciansList() {
           </div>
         </div>
       </div>
+
+      <Dialog open={resetPasswordDialogOpen} onOpenChange={setResetPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Resetar Senha</DialogTitle>
+            <DialogDescription>
+              Defina a senha temporária. No primeiro acesso, o sistema solicitará a troca obrigatória da senha.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="new-password">Nova Senha</Label>
+              <Input
+                id="new-password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Digite a nova senha"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetPasswordDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleConfirmReset}>Confirmar Alteração</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

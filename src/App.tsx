@@ -58,6 +58,7 @@ import AthleteForm from './pages/participant/athletes/AthleteForm'
 import AthleteInscription from './pages/participant/athletes/AthleteInscription'
 import TechniciansList from './pages/participant/technicians/TechniciansList'
 import TechnicianForm from './pages/participant/technicians/TechnicianForm'
+import TechnicianInscription from './pages/participant/technicians/TechnicianInscription'
 import InscriptionForms from './pages/participant/InscriptionForms'
 import PrintableInscriptionForm from './pages/participant/PrintableInscriptionForm'
 
@@ -122,6 +123,10 @@ const App = () => (
                         element={<TechnicianForm />}
                       />
                       <Route path="tecnicos/:id" element={<TechnicianForm />} />
+                      <Route
+                        path="tecnicos/:id/inscricao"
+                        element={<TechnicianInscription />}
+                      />
                       <Route path="fichas" element={<InscriptionForms />} />
                     </Route>
 
