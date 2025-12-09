@@ -2,15 +2,8 @@ import { useRef, useEffect } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { PublicHeader } from './components/PublicHeader'
 import { PublicFooter } from './components/PublicFooter'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
   Megaphone,
   FileText,
@@ -73,12 +66,9 @@ export default function EventCommunicationPage() {
   )
 
   const SectionHeader = ({ icon: Icon, title, description }: { icon: any, title: string, description: string }) => (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6 mb-8">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
       <div>
         <h2 className="text-3xl font-bold flex items-center gap-3 text-foreground">
-          <div className="bg-primary/10 p-2 rounded-lg">
-            <Icon className="h-6 w-6 text-primary" />
-          </div>
           {title}
         </h2>
         <p className="text-muted-foreground mt-2 text-lg ml-1">
@@ -103,12 +93,7 @@ export default function EventCommunicationPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900/10 via-slate-900/60 to-background" />
         </div>
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white/90 animate-in slide-in-from-bottom-4 duration-700 delay-100">
-            <Megaphone className="h-4 w-4 text-primary" />
-            <span className="text-sm font-bold uppercase tracking-wider">
-              Canal Oficial de Comunicação
-            </span>
-          </div>
+
 
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 text-white animate-in slide-in-from-bottom-4 duration-700 delay-200">
             Central de Informações
@@ -123,191 +108,196 @@ export default function EventCommunicationPage() {
 
         {/* MURAL DE AVISOS */}
         <section id="avisos" ref={avisosRef} className="scroll-mt-32">
-          <div className="bg-card rounded-2xl border shadow-xl p-8 md:p-10 animate-in slide-in-from-bottom-8 duration-700">
-            <SectionHeader
-              icon={Megaphone}
-              title="Mural de Avisos"
-              description="Acompanhe as últimas notas e informativos urgentes do evento."
-            />
+          <SectionHeader
+            icon={Megaphone}
+            title="Mural de Avisos"
+            description="Acompanhe as últimas notas e informativos urgentes do evento."
+          />
 
-            {eventNotices.length === 0 ? (
-              <EmptyState
-                icon={Megaphone}
-                title="Nenhum aviso publicado"
-                message="Todos os avisos e comunicados importantes aparecerão aqui."
-              />
-            ) : (
-              <div className="grid gap-6">
-                {eventNotices.map((notice) => (
-                  <Card
-                    key={notice.id}
-                    className="group overflow-hidden border-l-4 border-l-primary hover:border-l-primary hover:shadow-lg transition-all duration-300"
-                  >
-                    <CardHeader className="pb-3 bg-muted/5">
-                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                        <div className="space-y-3 flex-1">
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              className={cn(
-                                'uppercase tracking-wider font-bold shadow-sm',
-                                notice.category === 'Urgente'
-                                  ? 'bg-red-500 hover:bg-red-600 text-white'
-                                  : notice.category === 'Plantão'
-                                    ? 'bg-amber-500 hover:bg-amber-600 text-white'
-                                    : notice.category === 'Últimas Notícias'
-                                      ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                                      : 'bg-primary/10 text-primary hover:bg-primary/20 border-primary/20'
-                              )}
-                            >
-                              {notice.category}
-                            </Badge>
-                            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 bg-background px-2 py-0.5 rounded-full border">
-                              <Clock className="h-3 w-3" />
-                              {format(notice.date, "dd 'de' MMM 'de' yyyy", { locale: ptBR })} às{' '}
-                              {notice.time}
-                            </span>
-                          </div>
-                          <CardTitle className="text-xl md:text-2xl text-foreground font-bold group-hover:text-primary transition-colors">
-                            {notice.title}
-                          </CardTitle>
+          {eventNotices.length === 0 ? (
+            <EmptyState
+              icon={Megaphone}
+              title="Nenhum aviso publicado"
+              message="Todos os avisos e comunicados importantes aparecerão aqui."
+            />
+          ) : (
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
+              {eventNotices.map((notice) => (
+                <div
+                  key={notice.id}
+                  className="aspect-square h-full flex flex-col rounded-xl bg-card p-6 text-card-foreground shadow-sm border hover:border-primary/50 hover:shadow-md transition-all duration-300 group relative overflow-hidden cursor-pointer"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={cn(
+                      "inline-flex items-center rounded-[5px] px-2.5 py-0.5 text-xs font-semibold border transition-colors",
+                      notice.category === 'Urgente'
+                        ? "bg-red-100 text-red-800 border-red-200"
+                        : notice.category === 'Plantão'
+                          ? "bg-amber-100 text-amber-800 border-amber-200"
+                          : "bg-orange-100 text-orange-800 border-orange-200"
+                    )}>
+                      {notice.category}
+                    </div>
+                  </div>
+
+                  <h3 className="font-semibold tracking-tight text-[16px] mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                    {notice.title}
+                  </h3>
+
+                  <p className="text-muted-foreground text-[13px] line-clamp-2 mb-4 flex-grow">
+                    {notice.description}
+                  </p>
+
+                  <div className="pt-4 border-t border-border mt-auto h-16 flex items-end">
+                    <div className="w-full flex justify-between items-end">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
+                          <Calendar className="w-4 h-4 text-primary" />
+                          <span>{format(notice.date, "dd 'de' MMM yyyy", { locale: ptBR })}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
+                          <Clock className="w-4 h-4 text-primary" />
+                          <span>{notice.time}</span>
                         </div>
                       </div>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                      <CardDescription className="text-foreground/80 text-base leading-relaxed whitespace-pre-line">
-                        {notice.description}
-                      </CardDescription>
-                      <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground border-t pt-4 border-dashed">
-                        <User className="h-4 w-4 text-primary/70" />
-                        <span className="font-medium">Publicado por {notice.author}</span>
+                      <div className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1 cursor-pointer bg-primary/5 hover:bg-primary/10 px-2 py-1 rounded-md mb-[-2px] ml-2 shrink-0">
+                        <Megaphone className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Ler aviso</span>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* BOLETINS OFICIAIS */}
         <section id="boletins" ref={boletinsRef} className="scroll-mt-32">
-          <div className="bg-card rounded-2xl border shadow-xl p-8 md:p-10 animate-in slide-in-from-bottom-8 duration-700 delay-100">
-            <SectionHeader
-              icon={FileText}
-              title="Boletins Oficiais"
-              description="Balanços diários, programações e documentos para download."
-            />
+          <SectionHeader
+            icon={FileText}
+            title="Boletins Oficiais"
+            description="Balanços diários, programações e documentos para download."
+          />
 
-            {eventBulletins.length === 0 ? (
-              <EmptyState
-                icon={FileText}
-                title="Nenhum boletim disponível"
-                message="Os boletins oficiais serão listados aqui para download."
-              />
-            ) : (
-              <div className="grid gap-4">
-                {eventBulletins.map((bulletin) => (
-                  <Card
-                    key={bulletin.id}
-                    className="group hover:border-primary/50 hover:shadow-lg transition-all duration-300"
-                  >
-                    <div className="flex flex-col md:flex-row">
-                      <div className="flex-1 p-6">
-                        <div className="flex items-center gap-3 mb-3">
-                          <Badge variant="outline" className="bg-primary/5 border-primary/20 text-primary">
-                            {bulletin.category}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5" />
-                            {format(bulletin.date, 'dd/MM/yyyy')}
-                          </span>
-                        </div>
-                        <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
-                          {bulletin.title}
-                        </h3>
-                        <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                          {bulletin.description}
-                        </p>
-                        <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                          <FileText className="h-3.5 w-3.5" />
-                          <span className="font-mono">{bulletin.fileName}</span>
-                        </div>
-                      </div>
-                      <div className="bg-muted/10 border-t md:border-t-0 md:border-l p-6 flex flex-col items-center justify-center md:w-64 shrink-0 gap-3 group-hover:bg-primary/5 transition-colors">
-                        <Button className="w-full shadow-sm font-semibold h-12 text-base" size="lg">
-                          <Download className="mr-2 h-5 w-5" />
-                          Baixar PDF
-                        </Button>
-                      </div>
+          {eventBulletins.length === 0 ? (
+            <EmptyState
+              icon={FileText}
+              title="Nenhum boletim disponível"
+              message="Os boletins oficiais serão listados aqui para download."
+            />
+          ) : (
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
+              {eventBulletins.map((bulletin) => (
+                <div
+                  key={bulletin.id}
+                  className="aspect-square h-full flex flex-col rounded-xl bg-card p-6 text-card-foreground shadow-sm border hover:border-primary/50 hover:shadow-md transition-all duration-300 group relative overflow-hidden cursor-pointer"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={cn(
+                      "inline-flex items-center rounded-[5px] px-2.5 py-0.5 text-xs font-semibold border transition-colors",
+                      "bg-emerald-100 text-emerald-800 border-emerald-200"
+                    )}>
+                      {bulletin.category}
                     </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+                  </div>
+
+                  <h3 className="font-semibold tracking-tight text-[16px] mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                    {bulletin.title}
+                  </h3>
+
+                  <p className="text-muted-foreground text-[13px] line-clamp-2 mb-4 flex-grow">
+                    {bulletin.description}
+                  </p>
+
+                  <div className="pt-4 border-t border-border mt-auto h-16 flex items-end">
+                    <div className="w-full flex justify-between items-end">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
+                          <Calendar className="w-4 h-4 text-primary" />
+                          <span>{format(bulletin.date, "dd 'de' MMM yyyy", { locale: ptBR })}</span>
+                        </div>
+                        {bulletin.author && (
+                          <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
+                            <User className="w-4 h-4 text-primary" />
+                            <span className="truncate max-w-[150px]">{bulletin.author}</span>
+                          </div>
+                        )}
+                      </div>
+                      <a href="#" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1 cursor-pointer bg-primary/5 hover:bg-primary/10 px-2 py-1 rounded-md mb-[-2px] ml-2 shrink-0 max-w-[160px]">
+                        <Download className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{bulletin.fileName}</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* GALERIA DE RESULTADOS */}
         <section id="resultados" ref={resultadosRef} className="scroll-mt-32">
-          <div className="bg-card rounded-2xl border shadow-xl p-8 md:p-10 animate-in slide-in-from-bottom-8 duration-700 delay-200">
-            <SectionHeader
-              icon={Trophy}
-              title="Galeria de Resultados"
-              description="Confira os resultados oficiais e classificações das competições."
-            />
+          <SectionHeader
+            icon={Trophy}
+            title="Galeria de Resultados"
+            description="Confira os resultados oficiais e classificações das competições."
+          />
 
-            {eventResults.length === 0 ? (
-              <EmptyState
-                icon={Trophy}
-                title="Resultados em breve"
-                message="A tabela de resultados será atualizada conforme os jogos acontecem."
-              />
-            ) : (
-              <div className="grid gap-4">
-                {eventResults.map((result) => (
-                  <Card
-                    key={result.id}
-                    className="group hover:border-primary/50 hover:shadow-lg transition-all duration-300 border-l-4 border-l-transparent hover:border-l-yellow-500"
-                  >
-                    <div className="flex flex-col md:flex-row">
-                      <div className="flex-1 p-6">
-                        <div className="flex items-center gap-3 mb-3">
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              'shadow-sm bg-yellow-50 text-yellow-700 border-yellow-200'
-                            )}
-                          >
-                            {result.category}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5" />
-                            {format(result.date, "dd/MM/yyyy")}
-                          </span>
-                        </div>
-                        <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
-                          {result.title}
-                        </h3>
-                        <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                          {result.description}
-                        </p>
-                        <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                          <FileText className="h-3.5 w-3.5" />
-                          <span className="font-mono">{result.fileName}</span>
-                        </div>
-                      </div>
-                      <div className="bg-muted/10 border-t md:border-t-0 md:border-l p-6 flex flex-col items-center justify-center md:w-64 shrink-0 gap-3 group-hover:bg-yellow-500/5 transition-colors">
-                        <Button className="w-full shadow-sm font-semibold hover:bg-yellow-600 hover:text-white h-12 text-base" variant="outline">
-                          <Download className="mr-2 h-5 w-5" />
-                          Baixar Resultado
-                        </Button>
-                      </div>
+          {eventResults.length === 0 ? (
+            <EmptyState
+              icon={Trophy}
+              title="Resultados em breve"
+              message="A tabela de resultados será atualizada conforme os jogos acontecem."
+            />
+          ) : (
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
+              {eventResults.map((result) => (
+                <div
+                  key={result.id}
+                  className="aspect-square h-full flex flex-col rounded-xl bg-card p-6 text-card-foreground shadow-sm border hover:border-primary/50 hover:shadow-md transition-all duration-300 group relative overflow-hidden cursor-pointer"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={cn(
+                      "inline-flex items-center rounded-[5px] px-2.5 py-0.5 text-xs font-semibold border transition-colors",
+                      "bg-blue-100 text-blue-800 border-blue-200"
+                    )}>
+                      {result.category}
                     </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+                  </div>
+
+                  <h3 className="font-semibold tracking-tight text-[16px] mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                    {result.title}
+                  </h3>
+
+                  <p className="text-muted-foreground text-[13px] line-clamp-2 mb-4 flex-grow">
+                    {result.description || "Confira os resultados completos no documento anexo."}
+                  </p>
+
+                  <div className="pt-4 border-t border-border mt-auto h-16 flex items-end">
+                    <div className="w-full flex justify-between items-end">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
+                          <Calendar className="w-4 h-4 text-primary" />
+                          <span>{format(result.date, "dd 'de' MMM yyyy", { locale: ptBR })}</span>
+                        </div>
+                        {result.author && (
+                          <div className="flex items-center gap-2 text-[12.25px] text-muted-foreground">
+                            <User className="w-4 h-4 text-primary" />
+                            <span className="truncate max-w-[150px]">{result.author}</span>
+                          </div>
+                        )}
+                      </div>
+                      <a href="#" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1 cursor-pointer bg-primary/5 hover:bg-primary/10 px-2 py-1 rounded-md mb-[-2px] ml-2 shrink-0 max-w-[160px]">
+                        <Download className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{result.fileName}</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
       </main>

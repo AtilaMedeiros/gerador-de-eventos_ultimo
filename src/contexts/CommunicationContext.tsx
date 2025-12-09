@@ -295,6 +295,45 @@ const MOCK_REGULATIONS: Regulation[] = [
   }
 ]
 
+const MOCK_RESULTS: Result[] = [
+  {
+    id: '1',
+    eventId: '2',
+    title: 'Resultado Final - Futsal Masculino',
+    category: 'Resultado Geral',
+    description: 'Placar final e estatísticas da partida entre Escola A vs Escola B.',
+    date: new Date('2024-03-20'),
+    time: '16:00',
+    author: 'Arbitragem',
+    fileName: 'futsal_masc_final.pdf',
+    createdAt: new Date('2024-03-20T16:00:00'),
+  },
+  {
+    id: '2',
+    eventId: '2',
+    title: 'Ranking de Medalhas',
+    category: 'Ranking',
+    description: 'Quadro de medalhas atualizado após o terceiro dia de competições.',
+    date: new Date('2024-03-21'),
+    time: '18:00',
+    author: 'Comitê Olímpico',
+    fileName: 'quadro_medalhas.pdf',
+    createdAt: new Date('2024-03-21T18:00:00'),
+  },
+  {
+    id: '3',
+    eventId: '2',
+    title: 'Classificação Geral - Natação',
+    category: 'Classificação',
+    description: 'Tempos e colocações de todas as baterias de 50m e 100m livres.',
+    date: new Date('2024-03-19'),
+    time: '11:00',
+    author: 'Federação Aquática',
+    fileName: 'natacao_res.pdf',
+    createdAt: new Date('2024-03-19T11:00:00'),
+  }
+]
+
 export function CommunicationProvider({
   children,
 }: {
@@ -356,8 +395,17 @@ export function CommunicationProvider({
         if (storedResults) {
           const parsed = JSON.parse(storedResults)
           if (Array.isArray(parsed) && parsed.length > 0) {
-            initialResults = parsed
+            initialResults = parsed.map((r: any) => ({
+              ...r,
+              date: new Date(r.date),
+              createdAt: new Date(r.createdAt),
+            }))
           }
+        }
+
+        // Merge mocks if Event 2 is missing
+        if (!initialResults.some((r) => r.eventId === '2')) {
+          initialResults = [...initialResults, ...MOCK_RESULTS]
         }
         setResults(initialResults)
 
