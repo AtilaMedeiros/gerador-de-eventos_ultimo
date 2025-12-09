@@ -64,17 +64,7 @@ export function ParticipantSidebar() {
           Atletas
         </Link>
 
-        <Link
-          to="/area-do-participante/tecnicos"
-          className={cn(
-            'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group',
-            isChildActive('/area-do-participante/tecnicos') &&
-            'bg-sidebar-accent text-primary',
-          )}
-        >
-          <GraduationCap className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-          Técnicos
-        </Link>
+
 
         <Link
           to="/area-do-participante/fichas"
@@ -87,6 +77,20 @@ export function ParticipantSidebar() {
           <FileText className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
           Ficha de Inscrição
         </Link>
+
+        <div className="pt-4">
+          <Link
+            to="/area-do-participante/tecnicos"
+            className={cn(
+              'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group',
+              isChildActive('/area-do-participante/tecnicos') &&
+              'bg-sidebar-accent text-primary',
+            )}
+          >
+            <GraduationCap className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+            Técnicos
+          </Link>
+        </div>
       </nav>
 
       <div className="p-4 border-t border-sidebar-border">

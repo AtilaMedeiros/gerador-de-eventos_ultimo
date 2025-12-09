@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useAuth } from './AuthContext'
+import { useEvent } from './EventContext'
 import { toast } from 'sonner'
 
 export interface School {
@@ -70,6 +71,8 @@ interface ParticipantContextType {
     data: Omit<Inscription, 'id' | 'schoolId' | 'status'>,
   ) => void
   deleteInscription: (id: string) => void
+  selectedEventId: string
+  selectEvent: (id: string) => void
 }
 
 const ParticipantContext = createContext<ParticipantContextType | undefined>(
@@ -344,6 +347,26 @@ export function ParticipantProvider({
     toast.success('Inscrição cancelada.')
   }
 
+  // Selected Event State
+  const [selectedEventId, setSelectedEventId] = useState<string>('')
+
+  // Initialize Selected Event
+  const { events } = useEvent()
+  useEffect(() => {
+    const stored = localStorage.getItem('ge_selected_event_id')
+    if (stored && events.some(e => e.id === stored)) {
+      setSelectedEventId(stored)
+    } else if (events.length > 0) {
+      setSelectedEventId(events[0].id)
+    }
+  }, [events])
+
+  const selectEvent = (id: string) => {
+    setSelectedEventId(id)
+    localStorage.setItem('ge_selected_event_id', id)
+    toast.info('Evento selecionado alterado.')
+  }
+
   return React.createElement(
     ParticipantContext.Provider,
     {
@@ -361,6 +384,8 @@ export function ParticipantProvider({
         inscriptions,
         addInscription,
         deleteInscription,
+        selectedEventId,
+        selectEvent,
       },
     },
     children,
@@ -374,3 +399,4 @@ export function useParticipant() {
   }
   return context
 }
+

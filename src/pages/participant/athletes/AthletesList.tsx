@@ -50,7 +50,7 @@ const filterFields: FilterFieldConfig[] = [
 
 export default function AthletesList() {
   const navigate = useNavigate()
-  const { athletes, deleteAthlete } = useParticipant()
+  const { athletes, deleteAthlete, selectedEventId } = useParticipant()
   const { events } = useEvent()
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<Filter[]>([])
@@ -387,7 +387,7 @@ export default function AthletesList() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
-                        onClick={() => navigate(`/area-do-participante/atletas/${athlete.id}/inscricao?eventId=${events.length > 0 ? events[0].id : ''}`)}
+                        onClick={() => navigate(`/area-do-participante/atletas/${athlete.id}/inscricao?eventId=${selectedEventId || (events.length > 0 ? events[0].id : '')}`)}
                         title="Vincular Modalidade"
                       >
                         <Trophy className="h-4 w-4" />

@@ -91,7 +91,7 @@ export default function TechniciansList() {
   const navigate = useNavigate()
   const calculateUser = useAuth()
   const user = calculateUser.user
-  const { technicians, deleteTechnician } = useParticipant()
+  const { technicians, deleteTechnician, selectedEventId } = useParticipant()
   const { events } = useEvent()
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<Filter[]>([])
@@ -439,7 +439,7 @@ export default function TechniciansList() {
                             variant="ghost"
                             size="icon"
                             className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
-                            onClick={() => navigate(`/area-do-participante/tecnicos/${tech.id}/inscricao?eventId=${events.length > 0 ? events[0].id : ''}`)}
+                            onClick={() => navigate(`/area-do-participante/tecnicos/${tech.id}/inscricao?eventId=${selectedEventId || (events.length > 0 ? events[0].id : '')}`)}
                             title="Vincular Modalidade"
                           >
                             <Trophy className="h-4 w-4" />

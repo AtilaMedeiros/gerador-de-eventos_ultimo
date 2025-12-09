@@ -203,10 +203,6 @@ export default function TechnicianInscription() {
             </div>
           </div>
         </div>
-        <Badge variant="secondary" className="text-sm px-3 py-1 h-auto">
-          <Calendar className="h-3 w-3 mr-2" />
-          Evento: {event.name}
-        </Badge>
       </div>
 
       <div className="grid lg:grid-cols-12 gap-8">
@@ -449,6 +445,6 @@ export default function TechnicianInscription() {
           </Card>
         </div>
       </div>
-    </div>
+    </div >
   )
 }

@@ -13,14 +13,15 @@ import { useEvent } from '@/contexts/EventContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useParticipant } from '@/contexts/ParticipantContext'
 import { LogOut, User, Settings } from 'lucide-react'
+import { RiSwap2Line } from "react-icons/ri";
 
 export function ParticipantHeader() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
-  const { school } = useParticipant()
+  const { school, selectedEventId, selectEvent } = useParticipant()
   const { events } = useEvent()
 
-  const currentEvent = events.length > 0 ? events[0] : null
+  const currentEvent = events.find(e => e.id === selectedEventId) || (events.length > 0 ? events[0] : null)
 
   const handleLogout = () => {
     logout()
@@ -34,6 +35,42 @@ export function ParticipantHeader() {
       </div>
 
       <div className="hidden md:flex flex-1 items-center gap-6">
+        {currentEvent && (
+          <>
+            <div className="flex items-center gap-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-11 w-11 text-muted-foreground hover:text-primary [&_svg]:!size-7">
+                    <RiSwap2Line className="!h-7 !w-7" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuLabel>Trocar Evento</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {events.map(event => (
+                    <DropdownMenuItem
+                      key={event.id}
+                      onClick={() => selectEvent(event.id)}
+                      className={event.id === selectedEventId ? "bg-primary/10 text-primary font-medium" : ""}
+                    >
+                      {event.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <div>
+                <p className="text-lg font-bold text-primary truncate max-w-[400px] leading-tight">
+                  {currentEvent.name}
+                </p>
+                <p className="text-[10px] uppercase font-bold text-muted-foreground leading-tight">
+                  Evento Atual
+                </p>
+              </div>
+            </div>
+            <div className="h-8 w-px bg-border" />
+          </>
+        )}
+
         <div>
           <h1 className="text-lg font-semibold text-foreground leading-tight">
             {school?.name || 'Área do Participante'}
@@ -42,20 +79,6 @@ export function ParticipantHeader() {
             <p className="text-xs text-muted-foreground">INEP: {school.inep}</p>
           )}
         </div>
-
-        {currentEvent && (
-          <>
-            <div className="h-8 w-px bg-border" />
-            <div>
-              <p className="text-lg font-bold text-primary truncate max-w-[400px] leading-tight">
-                {currentEvent.name}
-              </p>
-              <p className="text-[10px] uppercase font-bold text-muted-foreground leading-tight">
-                Evento Atual
-              </p>
-            </div>
-          </>
-        )}
       </div>
 
       <div className="flex items-center gap-4 ml-auto">
