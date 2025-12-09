@@ -21,22 +21,24 @@ export default function EventPage() {
   // Use event data or fallback to safe defaults if id is invalid
   const event = eventData
     ? {
-        name: eventData.name,
-        location: eventData.location || 'Local a definir',
-        dataInicio: eventData.startDate,
-        dataFim: eventData.endDate,
-        inscricaoIndividualFim:
-          eventData.registrationIndividualEnd || new Date(),
-        inscricaoColetivaFim: eventData.registrationCollectiveEnd || new Date(),
-      }
+      name: eventData.name,
+      location: eventData.location || 'Local a definir',
+      dataInicio: eventData.startDate,
+      dataFim: eventData.endDate,
+      inscricaoIndividualFim:
+        eventData.registrationIndividualEnd || new Date(),
+      inscricaoColetivaFim: eventData.registrationCollectiveEnd || new Date(),
+      coverImage: eventData.coverImage,
+    }
     : {
-        name: slug || 'Evento',
-        location: 'Local a definir',
-        dataInicio: new Date(),
-        dataFim: new Date(),
-        inscricaoIndividualFim: new Date(),
-        inscricaoColetivaFim: new Date(),
-      }
+      name: slug || 'Evento',
+      location: 'Local a definir',
+      dataInicio: new Date(),
+      dataFim: new Date(),
+      inscricaoIndividualFim: new Date(),
+      inscricaoColetivaFim: new Date(),
+      coverImage: undefined,
+    }
 
   // Filter Notices for "Plantão" (Ticker) - Urgent or Plantão categories
   const plantaoNotices = notices

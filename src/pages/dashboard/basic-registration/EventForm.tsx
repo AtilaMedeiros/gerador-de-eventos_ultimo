@@ -33,6 +33,15 @@ import { EventDateFields } from './components/EventDateFields'
 import { EventRegistrationFields } from './components/EventRegistrationFields'
 import { EventProducerFields } from './components/EventProducerFields'
 
+const convertFileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = (error) => reject(error)
+  })
+}
+
 const generateSlug = (text: string) => {
   return text
     .toLowerCase()
@@ -138,6 +147,16 @@ export default function EventForm({
     status: 'draft' | 'published',
   ) => {
     setIsSubmitting(true)
+    let coverImage = undefined
+    if (data.imagem && data.imagem.length > 0) {
+      try {
+        coverImage = await convertFileToBase64(data.imagem[0])
+      } catch (error) {
+        console.error('Error converting image to base64', error)
+        toast.error('Erro ao processar imagem de capa.')
+      }
+    }
+
     await new Promise((resolve) => setTimeout(resolve, 1000))
     const eventData = {
       name: data.name,
@@ -156,6 +175,7 @@ export default function EventForm({
       registrationCollectiveEnd: data.inscricaoColetivaFim,
       registrationIndividualStart: data.inscricaoIndividualInicio,
       registrationIndividualEnd: data.inscricaoIndividualFim,
+      coverImage: coverImage,
     }
     if (isEditing && id) {
       updateEvent(id, eventData, isWizard)

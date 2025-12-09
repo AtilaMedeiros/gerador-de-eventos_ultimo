@@ -8,6 +8,7 @@ import {
   EyeOff,
   Loader2,
   ArrowRight,
+  ArrowLeft,
   CheckCircle2,
   GraduationCap,
 } from 'lucide-react'
@@ -92,9 +93,19 @@ export default function ParticipantLogin() {
             <div className="lg:hidden mx-auto h-12 w-12 bg-secondary rounded-xl flex items-center justify-center text-secondary-foreground font-bold mb-6 shadow-lg">
               <GraduationCap className="h-6 w-6" />
             </div>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">
-              Bem-vindo
-            </h2>
+            <div className="flex items-center justify-center lg:justify-start gap-4 mb-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+                className="h-10 w-10 rounded-[5px] bg-transparent hover:bg-white border border-transparent hover:border-slate-200 shadow-none hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 group"
+              >
+                <ArrowLeft className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors stroke-[2.5]" />
+              </Button>
+              <h2 className="text-3xl font-bold tracking-tight text-foreground">
+                Bem-vindo
+              </h2>
+            </div>
             <p className="text-muted-foreground mt-2">
               Entre com sua conta institucional ou pessoal.
             </p>

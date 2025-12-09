@@ -18,6 +18,7 @@ export interface Event {
 
   // Visual Identity
   themeId?: string
+  coverImage?: string
 
   // Registration dates
   registrationCollectiveStart?: Date
