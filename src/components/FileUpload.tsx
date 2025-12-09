@@ -202,8 +202,8 @@ export function FileUpload({
           <span className="text-muted-foreground">ou arraste aqui</span>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          {multiple ? 'Vários arquivos' : 'Arquivo único'} • Max. {maxSizeMB}MB
-          • {accept === 'image/*' ? 'JPG, PNG' : accept}
+          {multiple ? 'Vários arquivos' : 'Arquivo único'} •{' '}
+          {accept === 'image/*' ? 'JPG, PNG' : accept}
         </p>
         {description && (
           <p className="text-xs text-muted-foreground/70 mt-2 max-w-[80%]">
