@@ -230,7 +230,7 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
   const filterFields: FilterFieldConfig[] = [
     {
       key: 'categoryName',
-      label: 'Categoria',
+      label: 'Modalidade',
       icon: <Trophy className="size-3.5" />,
       type: 'text',
       placeholder: 'Ex: Futsal',
@@ -358,10 +358,10 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
         <Table>
           <TableHeader className="bg-primary/5">
             <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
-              <TableHead className="w-[220px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Modalidade</TableHead>
-              <TableHead className="w-[190px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Categoria</TableHead>
+              <TableHead className="w-[120px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Tipo</TableHead>
+              <TableHead className="w-[200px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Modalidade</TableHead>
+              <TableHead className="w-[150px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Categoria</TableHead>
               <TableHead className="w-[120px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Naipe</TableHead>
-              <TableHead className="w-[120px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider">Idade</TableHead>
               <TableHead className="w-[80px] font-semibold text-primary/80 h-12 uppercase text-xs tracking-wider text-center">Qtd.</TableHead>
             </TableRow>
           </TableHeader>
@@ -384,10 +384,10 @@ function InscribedAthletesTable({ inscriptions, events }: { inscriptions: any[],
                     </Badge>
                   </TableCell>
                   <TableCell className="font-semibold text-foreground/80">{row.categoryName}</TableCell>
-                  <TableCell className="capitalize text-muted-foreground">{row.gender}</TableCell>
-                  <TableCell className="text-muted-foreground font-mono text-xs bg-muted/30 px-2 py-1 rounded inline-block w-fit my-2">
-                    {row.ageRange} anos
+                  <TableCell className="text-muted-foreground font-mono text-xs">
+                    {row.ageRange}
                   </TableCell>
+                  <TableCell className="capitalize text-muted-foreground">{row.gender}</TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center">
                       <div className="h-8 w-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-sm shadow-sm group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 transform group-hover:scale-110">
