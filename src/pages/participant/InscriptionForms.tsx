@@ -204,16 +204,35 @@ export default function InscriptionForms() {
   }, [colWidths, handleMouseMove, handleMouseUp])
 
   const handlePrint = (modalityId: string) => {
-    // ... existing print logic ...
+    // Check if it's a mock ID
+    if (modalityId.startsWith('mock')) {
+      // Open print view with mock/placeholder IDs
+      // We use 'mock-event' if no event selected (though context usually has one)
+      window.open(
+        `/area-do-participante/imprimir/${selectedEventId || 'mock-event'}/${modalityId}`,
+        '_blank',
+      )
+      return
+    }
+
     const inscription = inscriptions.find(i => i.modalityId === modalityId)
+    // Fallback search using selectedEventId if inscription not found directly (though list relies on it)
     if (inscription) {
       window.open(
         `/area-do-participante/imprimir/${inscription.eventId}/${modalityId}`,
         '_blank',
       )
+    } else if (selectedEventId) {
+      // If we have selected event and modality, but no specific inscription found (logic gap?), try opening anyway
+      // This might happen if 'list' is built from modality definitions but inscription logic differs.
+      // But in current "real" logic, list IS built from inscriptions.
+      // So this branch is just safety.
+      window.open(
+        `/area-do-participante/imprimir/${selectedEventId}/${modalityId}`,
+        '_blank',
+      )
     } else {
-      // Mock print for mock data
-      toast.success("Impressão iniciada (Mock)")
+      toast.error("Não foi possível localizar os dados para impressão.")
     }
   }
 
