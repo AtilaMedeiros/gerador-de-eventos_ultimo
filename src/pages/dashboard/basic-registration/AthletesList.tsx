@@ -10,7 +10,6 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { Filters, createFilter, type Filter, type FilterFieldConfig } from '@/components/ui/filters'
-import { Badge } from '@/components/ui/badge'
 import {
     Search,
     Download,
@@ -19,78 +18,19 @@ import {
     Trash2,
     User,
     Trophy,
-    School,
     Activity,
     ArrowUpDown,
     ArrowUp,
     ArrowDown,
     ChevronLeft,
     ChevronRight,
-    MapPin,
     CalendarHeart
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
-import { GiSoccerKick } from 'react-icons/gi'
+import { useParticipant, Athlete } from '@/contexts/ParticipantContext'
 import { useEvent } from '@/contexts/EventContext'
-
-const MOCK_ATHLETES = [
-    {
-        id: 1,
-        name: 'Lucas Pereira',
-        sex: 'Masculino',
-        dob: '15/05/2008',
-        cpf: '123.456.789-00',
-        school: 'Escola Municipal de Esportes',
-        inep: '12345678',
-        event: 'Tech Summit 2025',
-        status: 'published',
-    },
-    {
-        id: 2,
-        name: 'Beatriz Costa',
-        sex: 'Feminino',
-        dob: '20/08/2010',
-        cpf: '987.654.321-00',
-        school: 'Colégio Estadual do Saber',
-        inep: '87654321',
-        event: 'Jogos Estudantis 2025',
-        status: 'closed',
-    },
-    {
-        id: 3,
-        name: 'Gabriel Almeida',
-        sex: 'Masculino',
-        dob: '10/01/2005',
-        cpf: '111.222.333-44',
-        school: 'Instituto Atlético',
-        inep: '11223344',
-        event: 'Tech Summit 2025',
-        status: 'published',
-    },
-    {
-        id: 4,
-        name: 'Mariana Silva',
-        sex: 'Feminino',
-        dob: '05/11/2008',
-        cpf: '555.666.777-88',
-        school: 'Escola Municipal de Esportes',
-        inep: '12345678',
-        event: 'Tech Summit 2025',
-        status: 'published',
-    },
-    {
-        id: 5,
-        name: 'João Pedro',
-        sex: 'Masculino',
-        dob: '25/03/2012',
-        cpf: '999.888.777-66',
-        school: 'Escola Particular do Sol',
-        inep: '55667788',
-        event: 'Jogos Estudantis 2025',
-        status: 'closed',
-    },
-]
+import { format } from 'date-fns'
 
 const filterFields: FilterFieldConfig[] = [
     {
@@ -106,13 +46,6 @@ const filterFields: FilterFieldConfig[] = [
         icon: <Activity className="size-3.5" />,
         type: 'text',
         placeholder: 'Número do CPF...',
-    },
-    {
-        key: 'school',
-        label: 'Escola',
-        icon: <School className="size-3.5" />,
-        type: 'text',
-        placeholder: 'Nome da escola...',
     },
     {
         key: 'event',
@@ -132,17 +65,18 @@ const filterFields: FilterFieldConfig[] = [
 
 export default function AthletesList() {
     const navigate = useNavigate()
+    const { athletes, deleteAthlete } = useParticipant()
     const { events } = useEvent()
     const [searchTerm, setSearchTerm] = useState('')
     const [filters, setFilters] = useState<Filter[]>([
         createFilter('isEventActive', 'equals', 'true')
     ])
 
-    // Derived state merging mock athletes with real events
-    const athletes = useMemo(() => {
-        if (!events || events.length === 0) return MOCK_ATHLETES
+    // Derived state merging athletes with real events (Simulated Association for Display)
+    const enrichedAthletes = useMemo(() => {
+        if (!events || events.length === 0) return athletes.map(a => ({ ...a, event: 'N/A', status: 'closed' }))
 
-        return MOCK_ATHLETES.map((athlete, index) => {
+        return athletes.map((athlete, index) => {
             const assignedEvent = events[index % events.length]
             return {
                 ...athlete,
@@ -150,66 +84,68 @@ export default function AthletesList() {
                 status: assignedEvent.status
             }
         })
-    }, [events])
+    }, [athletes, events])
 
     // Apply Filters
-    const filteredAthletes = athletes.filter(athlete => {
-        // Global Search
-        const searchLower = searchTerm.toLowerCase()
-        const matchesSearch =
-            athlete.name.toLowerCase().includes(searchLower) ||
-            athlete.school.toLowerCase().includes(searchLower) ||
-            athlete.cpf.includes(searchLower) ||
-            athlete.event.toLowerCase().includes(searchLower)
+    const filteredAthletes = useMemo(() => {
+        return enrichedAthletes.filter(athlete => {
+            // Global Search
+            const searchLower = searchTerm.toLowerCase()
+            const matchesSearch =
+                athlete.name.toLowerCase().includes(searchLower) ||
+                athlete.cpf.includes(searchLower) ||
+                athlete.event.toLowerCase().includes(searchLower)
 
-        if (!matchesSearch) return false
+            if (!matchesSearch) return false
 
-        // Specific Filters
-        if (filters.length === 0) return true
+            // Specific Filters
+            if (filters.length === 0) return true
 
-        return filters.every(filter => {
-            const value = filter.value?.toString().toLowerCase() || ''
-            if (value === '') return true // Ignore empty filters
+            return filters.every(filter => {
+                const value = filter.value?.toString().toLowerCase() || ''
+                if (value === '') return true
 
-            switch (filter.field) {
-                case 'name':
-                    return athlete.name.toLowerCase().includes(value)
-                case 'cpf':
-                    return athlete.cpf.includes(value)
-                case 'school':
-                    return athlete.school.toLowerCase().includes(value)
-                case 'event':
-                    return athlete.event.toLowerCase().includes(value)
-                case 'isEventActive':
-                    if (value === 'false') return true
-                    return (athlete as any).status === 'published'
-                default:
-                    return true
-            }
+                switch (filter.field) {
+                    case 'name':
+                        return athlete.name.toLowerCase().includes(value)
+                    case 'cpf':
+                        return athlete.cpf.includes(value)
+                    case 'event':
+                        return athlete.event.toLowerCase().includes(value)
+                    case 'isEventActive':
+                        if (value === 'false') return true
+                        return athlete.status === 'published'
+                    default:
+                        return true
+                }
+            })
         })
-    })
+    }, [enrichedAthletes, searchTerm, filters])
 
-    const [sortConfig, setSortConfig] = useState<{ key: keyof typeof MOCK_ATHLETES[0], direction: 'asc' | 'desc' } | null>(null)
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
 
     // Apply Sorting
-    const sortedAthletes = [...filteredAthletes].sort((a, b) => {
-        if (!sortConfig) return 0
+    const sortedAthletes = useMemo(() => {
+        const sorted = [...filteredAthletes].sort((a, b) => {
+            if (!sortConfig) return 0
 
-        const { key, direction } = sortConfig
+            const { key, direction } = sortConfig
 
-        const aValue: any = a[key as keyof typeof a]
-        const bValue: any = b[key as keyof typeof b]
+            const aValue: any = (a as any)[key]
+            const bValue: any = (b as any)[key]
 
-        if (aValue < bValue) {
-            return direction === 'asc' ? -1 : 1
-        }
-        if (aValue > bValue) {
-            return direction === 'asc' ? 1 : -1
-        }
-        return 0
-    })
+            if (aValue < bValue) {
+                return direction === 'asc' ? -1 : 1
+            }
+            if (aValue > bValue) {
+                return direction === 'asc' ? 1 : -1
+            }
+            return 0
+        })
+        return sorted
+    }, [filteredAthletes, sortConfig])
 
-    const requestSort = (key: keyof typeof MOCK_ATHLETES[0]) => {
+    const requestSort = (key: string) => {
         let direction: 'asc' | 'desc' = 'asc'
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
             direction = 'desc'
@@ -250,7 +186,6 @@ export default function AthletesList() {
             sex: 120,
             dob: 120,
             cpf: 140,
-            school: 200,
             event: 180,
             actions: 130
         }
@@ -298,6 +233,12 @@ export default function AthletesList() {
         toast.info(`Ação ${action} simulada com sucesso.`)
     }
 
+    const handleDelete = (id: string) => {
+        if (confirm("Tem certeza que deseja excluir este atleta?")) {
+            deleteAthlete(id)
+        }
+    }
+
     return (
         <div className="space-y-8 animate-fade-in relative">
             {/* Background Gradients */}
@@ -338,7 +279,7 @@ export default function AthletesList() {
                         <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     </div>
                     <Input
-                        placeholder="Pesquisar por nome, categoria ou escola..."
+                        placeholder="Pesquisar por nome ou CPF..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
@@ -413,16 +354,6 @@ export default function AthletesList() {
                                     className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                                 />
                             </TableHead>
-                            <TableHead style={{ width: colWidths.school }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('school')}>
-                                <div className="flex items-center justify-center overflow-hidden">
-                                    <span className="truncate">Escola</span> {getSortIcon('school')}
-                                </div>
-                                <div
-                                    onMouseDown={(e) => handleMouseDown(e, 'school')}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
-                                />
-                            </TableHead>
                             <TableHead style={{ width: colWidths.event }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('event')}>
                                 <div className="flex items-center justify-center overflow-hidden">
                                     <span className="truncate">Evento</span> {getSortIcon('event')}
@@ -458,7 +389,7 @@ export default function AthletesList() {
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
                                         <div className="flex items-center justify-center h-full text-muted-foreground">
-                                            {athlete.dob}
+                                            {format(new Date(athlete.dob), 'dd/MM/yyyy')}
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
@@ -468,21 +399,11 @@ export default function AthletesList() {
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
                                         <div className="flex flex-col items-center justify-center h-full">
-                                            <span className="text-muted-foreground leading-tight text-sm">
-                                                {athlete.school}
-                                            </span>
-                                            {athlete.inep && (
-                                                <span className="text-[10px] text-muted-foreground/60">INEP: {athlete.inep}</span>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="h-12 py-0">
-                                        <div className="flex flex-col items-center justify-center h-full">
                                             <span className="text-muted-foreground leading-tight">
                                                 {athlete.event}
                                             </span>
                                             {(() => {
-                                                const status = (athlete as any).status
+                                                const status = athlete.status
                                                 if (status === 'published') {
                                                     return (
                                                         <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-medium mt-0.5">
@@ -509,7 +430,6 @@ export default function AthletesList() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right h-12 py-0">
-
                                         <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity h-full items-center">
                                             <Button
                                                 variant="ghost"
@@ -532,7 +452,7 @@ export default function AthletesList() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
-                                                onClick={() => handleAction('Excluir')}
+                                                onClick={() => handleDelete(athlete.id)}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
@@ -543,7 +463,7 @@ export default function AthletesList() {
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                                    Nenhum atleta encontrado com os filtros selecionados.
+                                    Nenhum atleta encontrado.
                                 </TableCell>
                             </TableRow>
                         )}

@@ -78,7 +78,8 @@ export default function AthleteInscription() {
 
     return modalities.filter((mod) => {
       // Must be associated with the event
-      if (!allowedModalityIds.includes(mod.id)) return false
+      // Must be associated with the event (if event has specific restrictions)
+      if (allowedModalityIds.length > 0 && !allowedModalityIds.includes(mod.id)) return false
 
       // Gender Check
       const genderMatch =
@@ -379,7 +380,10 @@ export default function AthleteInscription() {
                           <TableCell>
                             <Badge
                               variant="outline"
-                              className="capitalize text-[10px]"
+                              className={`capitalize text-[10px] rounded-[5px] border-none px-2 py-0.5 font-bold ${mod.type === 'individual'
+                                ? 'bg-blue-100 text-blue-700 hover:bg-blue-100'
+                                : 'bg-purple-100 text-purple-700 hover:bg-purple-100'
+                                }`}
                             >
                               {mod.type}
                             </Badge>

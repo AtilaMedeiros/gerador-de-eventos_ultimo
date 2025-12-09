@@ -39,18 +39,31 @@ const INITIAL_MODALITIES: Modality[] = [
     maxEventsPerAthlete: 3,
     maxTeams: 0,
     minAge: 10,
-    maxAge: 12,
+    maxAge: 99,
   },
   {
     id: '3',
-    name: 'Vôlei Misto',
+    name: 'Vôlei',
     type: 'coletiva',
-    gender: 'misto',
+    gender: 'feminino', // Changed from misto
     minAthletes: 6,
     maxAthletes: 14,
     maxEventsPerAthlete: 1,
     maxTeams: 8,
     minAge: 16,
+    maxAge: 99,
+  },
+  {
+    id: '4',
+    name: 'Atletismo 100m',
+    type: 'individual',
+    gender: 'masculino',
+    eventCategory: '100m Rasos',
+    minAthletes: 1,
+    maxAthletes: 1,
+    maxEventsPerAthlete: 3,
+    maxTeams: 0,
+    minAge: 12,
     maxAge: 99,
   },
 ]
@@ -71,7 +84,7 @@ export function ModalityProvider({ children }: { children: React.ReactNode }) {
   const [modalities, setModalities] = useState<Modality[]>(INITIAL_MODALITIES)
 
   useEffect(() => {
-    const stored = localStorage.getItem('ge_modalities')
+    const stored = localStorage.getItem('ge_modalities_v2') // Changed Key
     if (stored) {
       try {
         setModalities(JSON.parse(stored))
@@ -82,7 +95,7 @@ export function ModalityProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    localStorage.setItem('ge_modalities', JSON.stringify(modalities))
+    localStorage.setItem('ge_modalities_v2', JSON.stringify(modalities)) // Changed Key
   }, [modalities])
 
   const addModality = (modalityData: Omit<Modality, 'id'>) => {

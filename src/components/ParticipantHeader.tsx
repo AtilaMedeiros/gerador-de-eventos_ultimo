@@ -9,14 +9,18 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useNavigate } from 'react-router-dom'
+import { useEvent } from '@/contexts/EventContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useParticipant } from '@/contexts/ParticipantContext'
-import { Calendar, FileText, LogOut, User, Settings } from 'lucide-react'
+import { LogOut, User, Settings } from 'lucide-react'
 
 export function ParticipantHeader() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const { school } = useParticipant()
+  const { events } = useEvent()
+
+  const currentEvent = events.length > 0 ? events[0] : null
 
   const handleLogout = () => {
     logout()
@@ -29,34 +33,33 @@ export function ParticipantHeader() {
         GeradorEventos
       </div>
 
-      <div className="hidden md:block flex-1">
-        <h1 className="text-lg font-semibold text-foreground">
-          {school?.name || 'Área do Participante'}
-        </h1>
-        {school && (
-          <p className="text-xs text-muted-foreground">INEP: {school.inep}</p>
+      <div className="hidden md:flex flex-1 items-center gap-6">
+        <div>
+          <h1 className="text-lg font-semibold text-foreground leading-tight">
+            {school?.name || 'Área do Participante'}
+          </h1>
+          {school && (
+            <p className="text-xs text-muted-foreground">INEP: {school.inep}</p>
+          )}
+        </div>
+
+        {currentEvent && (
+          <>
+            <div className="h-8 w-px bg-border" />
+            <div>
+              <p className="text-lg font-bold text-primary truncate max-w-[400px] leading-tight">
+                {currentEvent.name}
+              </p>
+              <p className="text-[10px] uppercase font-bold text-muted-foreground leading-tight">
+                Evento Atual
+              </p>
+            </div>
+          </>
         )}
       </div>
 
       <div className="flex items-center gap-4 ml-auto">
-        <div className="hidden md:flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/area-do-participante/inicio')}
-          >
-            <Calendar className="mr-2 h-4 w-4" />
-            Eventos
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/area-do-participante/fichas')}
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            Fichas
-          </Button>
-        </div>
+
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

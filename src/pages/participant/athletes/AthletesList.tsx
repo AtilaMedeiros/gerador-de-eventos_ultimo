@@ -23,10 +23,12 @@ import {
   ArrowDown,
   ChevronLeft,
   ChevronRight,
+  Trophy,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { useParticipant, Athlete } from '@/contexts/ParticipantContext'
+import { useEvent } from '@/contexts/EventContext'
 import { format } from 'date-fns'
 
 const filterFields: FilterFieldConfig[] = [
@@ -49,6 +51,7 @@ const filterFields: FilterFieldConfig[] = [
 export default function AthletesList() {
   const navigate = useNavigate()
   const { athletes, deleteAthlete } = useParticipant()
+  const { events } = useEvent()
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<Filter[]>([])
 
@@ -145,8 +148,10 @@ export default function AthletesList() {
       name: 300,
       sex: 120,
       dob: 150,
-      cpf: 180,
-      actions: 100
+      rg: 120,
+      cpf: 140,
+      nis: 120,
+      actions: 140
     }
   })
 
@@ -303,12 +308,32 @@ export default function AthletesList() {
                   className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                 />
               </TableHead>
+              <TableHead style={{ width: colWidths.rg }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('rg')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">RG</span> {getSortIcon('rg')}
+                </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'rg')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
+              </TableHead>
               <TableHead style={{ width: colWidths.cpf }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('cpf')}>
                 <div className="flex items-center justify-center overflow-hidden">
                   <span className="truncate">CPF</span> {getSortIcon('cpf')}
                 </div>
                 <div
                   onMouseDown={(e) => handleMouseDown(e, 'cpf')}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                />
+              </TableHead>
+              <TableHead style={{ width: colWidths.nis }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('nis')}>
+                <div className="flex items-center justify-center overflow-hidden">
+                  <span className="truncate">NIS</span> {getSortIcon('nis')}
+                </div>
+                <div
+                  onMouseDown={(e) => handleMouseDown(e, 'nis')}
                   onClick={(e) => e.stopPropagation()}
                   className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                 />
@@ -343,16 +368,34 @@ export default function AthletesList() {
                   </TableCell>
                   <TableCell className="h-12 py-0">
                     <div className="flex items-center justify-center h-full text-muted-foreground font-mono text-xs">
+                      {athlete.rg || '-'}
+                    </div>
+                  </TableCell>
+                  <TableCell className="h-12 py-0">
+                    <div className="flex items-center justify-center h-full text-muted-foreground font-mono text-xs">
                       {athlete.cpf}
                     </div>
                   </TableCell>
+                  <TableCell className="h-12 py-0">
+                    <div className="flex items-center justify-center h-full text-muted-foreground font-mono text-xs">
+                      {athlete.nis || '-'}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-right h-12 py-0">
-
-                    <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity h-full items-center">
+                    <div className="flex justify-end gap-3 opacity-70 group-hover:opacity-100 transition-opacity h-full items-center pr-2">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                        className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
+                        onClick={() => navigate(`/area-do-participante/atletas/${athlete.id}/inscricao?eventId=${events.length > 0 ? events[0].id : ''}`)}
+                        title="Vincular Modalidade"
+                      >
+                        <Trophy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
                         onClick={() => navigate(`/area-do-participante/atletas/${athlete.id}`)}
                       >
                         <Edit className="h-4 w-4" />
@@ -360,7 +403,7 @@ export default function AthletesList() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                        className="h-8 w-8 rounded-full text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
                         onClick={() => handleDelete(athlete.id)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -371,7 +414,7 @@ export default function AthletesList() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                   Nenhum atleta encontrado.
                 </TableCell>
               </TableRow>
