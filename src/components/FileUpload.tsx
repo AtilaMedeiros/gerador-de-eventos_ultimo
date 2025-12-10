@@ -12,6 +12,7 @@ interface FileUploadProps {
   multiple?: boolean
   accept?: string
   maxSizeMB?: number
+  maxFiles?: number
   value?: File[]
   onChange?: (files: File[]) => void
   className?: string
@@ -25,6 +26,7 @@ export function FileUpload({
   multiple = false,
   accept = 'image/*',
   maxSizeMB = 5,
+  maxFiles,
   value = [],
   onChange,
   className,
@@ -67,6 +69,15 @@ export function FileUpload({
 
     const newFiles: File[] = []
     const errors: string[] = []
+
+    // Check max files limit for multiple uploads
+    if (multiple && maxFiles) {
+      const remainingSlots = maxFiles - value.length
+      if (files.length > remainingSlots) {
+        toast.error(`Você pode enviar no máximo ${maxFiles} arquivos.`)
+        return
+      }
+    }
 
     Array.from(files).forEach((file) => {
       // Validate Type
@@ -204,6 +215,7 @@ export function FileUpload({
         <p className="text-xs text-muted-foreground mt-1">
           {multiple ? 'Vários arquivos' : 'Arquivo único'} •{' '}
           {accept === 'image/*' ? 'JPG, PNG' : accept}
+          {maxSizeMB && ` de no máximo ${maxSizeMB}MB`}
         </p>
         {description && (
           <p className="text-xs text-muted-foreground/70 mt-2 max-w-[80%]">

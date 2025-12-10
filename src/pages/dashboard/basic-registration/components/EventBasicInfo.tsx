@@ -39,37 +39,20 @@ export function EventBasicInfo() {
         )}
       />
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="space-y-4">
         <FormField
           control={control}
           name="imagem"
           render={({ field }) => (
             <FormItem>
               <FileUpload
-                label="Imagem de Capa"
-                description="1600x838px recomendado. Max 2MB."
+                label="Banner do Evento"
+                maxSizeMB={2}
+                description="Dimensão recomendada é de 1600 x 838"
                 onChange={field.onChange}
                 value={field.value}
                 className="bg-background shadow-sm"
                 error={errors.imagem?.message as string}
-              />
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name="logoEvento"
-          render={({ field }) => (
-            <FormItem>
-              <FileUpload
-                label="Logo do Evento"
-                description="Resol. ideal: ~200x200px - Max 2MB."
-                maxSizeMB={2}
-                onChange={field.onChange}
-                value={field.value}
-                className="bg-background shadow-sm"
-                error={errors.logoEvento?.message as string}
               />
               <FormMessage />
             </FormItem>

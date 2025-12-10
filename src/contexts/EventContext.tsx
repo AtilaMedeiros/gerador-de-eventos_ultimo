@@ -26,6 +26,10 @@ export interface Event {
   registrationIndividualStart?: Date
   registrationIndividualEnd?: Date
 
+  // Partner Logos
+  realizerLogos?: string[]
+  supporterLogos?: string[]
+
   // Times
   startTime?: string
   endTime?: string

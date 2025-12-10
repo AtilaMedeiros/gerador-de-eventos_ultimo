@@ -89,7 +89,10 @@ export default function EventPage() {
         />
         <NewsCarousel />
         <PublicAbout description={event.description} />
-        <PublicPartners />
+        <PublicPartners
+          realizers={eventData?.realizerLogos || []}
+          supporters={eventData?.supporterLogos || []}
+        />
       </main>
 
       <PublicFooter eventName={event.name} />

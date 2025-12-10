@@ -157,6 +157,24 @@ export default function EventForm({
       }
     }
 
+    let realizerLogos: string[] = []
+    if (data.logosRealizadores && data.logosRealizadores.length > 0) {
+      try {
+        realizerLogos = await Promise.all(data.logosRealizadores.map(convertFileToBase64))
+      } catch (error) {
+        console.error('Error converting realizer logos', error)
+      }
+    }
+
+    let supporterLogos: string[] = []
+    if (data.logosApoiadores && data.logosApoiadores.length > 0) {
+      try {
+        supporterLogos = await Promise.all(data.logosApoiadores.map(convertFileToBase64))
+      } catch (error) {
+        console.error('Error converting supporter logos', error)
+      }
+    }
+
     await new Promise((resolve) => setTimeout(resolve, 1000))
     const eventData = {
       name: data.name,
@@ -176,6 +194,8 @@ export default function EventForm({
       registrationIndividualStart: data.inscricaoIndividualInicio,
       registrationIndividualEnd: data.inscricaoIndividualFim,
       coverImage: coverImage,
+      realizerLogos: realizerLogos.length > 0 ? realizerLogos : (isEditing && id ? getEventById(id)?.realizerLogos : []),
+      supporterLogos: supporterLogos.length > 0 ? supporterLogos : (isEditing && id ? getEventById(id)?.supporterLogos : []),
     }
     if (isEditing && id) {
       updateEvent(id, eventData, isWizard)

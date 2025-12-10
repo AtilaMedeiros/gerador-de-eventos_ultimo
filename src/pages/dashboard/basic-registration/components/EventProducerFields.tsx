@@ -25,8 +25,7 @@ export function EventProducerFields() {
             <FormControl>
               <Input
                 {...field}
-                readOnly
-                className="bg-muted text-muted-foreground font-medium"
+                className="font-medium"
               />
             </FormControl>
           </FormItem>
@@ -62,9 +61,10 @@ export function EventProducerFields() {
               <FormItem>
                 <FileUpload
                   label="Realização"
-                  description="Logos dos organizadores. Resol. ideal: ~200x200px"
+                  description="Logos dos organizadores. Resol. ideal: ~200x200px (Máx. 5)"
                   multiple
                   maxSizeMB={2}
+                  maxFiles={5}
                   onChange={field.onChange}
                   value={field.value}
                   className="bg-background"
@@ -81,9 +81,10 @@ export function EventProducerFields() {
               <FormItem>
                 <FileUpload
                   label="Apoio"
-                  description="Logos dos patrocinadores. Resol. ideal: ~200x200px"
+                  description="Logos dos patrocinadores. Resol. ideal: ~200x200px (Máx. 5)"
                   multiple
                   maxSizeMB={2}
+                  maxFiles={5}
                   onChange={field.onChange}
                   value={field.value}
                   className="bg-background"
