@@ -154,7 +154,7 @@ export function NewsCarousel() {
                                     key={slide.id}
                                     className={cn(
                                         "flex-shrink-0 transition-all duration-500",
-                                        isActive ? "scale-100 opacity-100" : "scale-95 opacity-60"
+                                        isActive ? "scale-110 opacity-100 z-10" : "scale-90 opacity-60"
                                     )}
                                     style={{ width: `${cardWidth}px` }}
                                 >
