@@ -89,6 +89,13 @@ export default {
           4: 'hsl(var(--chart-4))',
           5: 'hsl(var(--chart-5))',
         },
+        // Custom colors for News Carousel
+        sport: {
+          black: '#080808',
+          dark: '#121212',
+          gray: '#1E1E1E',
+        },
+        'accent-blue': '#2563EB',
       },
       borderRadius: {
         lg: 'var(--radius)',

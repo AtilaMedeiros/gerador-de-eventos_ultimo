@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { PublicHeader } from './components/PublicHeader'
+import { NewsCarousel } from './components/NewsCarousel'
 import { PublicHero } from './components/PublicHero'
-import { PublicNews, PublicTicker } from './components/PublicNews'
 import { PublicAbout } from './components/PublicAbout'
 import { PublicPartners } from './components/PublicPartners'
 import { PublicFooter } from './components/PublicFooter'
@@ -87,7 +87,7 @@ export default function EventPage() {
           event={event}
           plantaoItems={plantaoNotices}
         />
-        <PublicNews news={newsNotices} />
+        <NewsCarousel />
         <PublicAbout description={event.description} />
         <PublicPartners />
       </main>
