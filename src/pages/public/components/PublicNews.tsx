@@ -106,7 +106,7 @@ export function PublicNews({ news }: PublicNewsProps) {
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container max-w-5xl mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-end mb-6 gap-6">
             <div>
               <h2 className="text-2xl md:text-3xl font-black tracking-tighter text-slate-900 mb-1 uppercase italic">

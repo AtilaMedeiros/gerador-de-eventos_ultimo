@@ -82,11 +82,7 @@ export default function EventPage() {
       <main className="flex-1">
         <PublicHero
           event={event}
-          plantaoItems={plantaoNotices.length > 0 ? plantaoNotices : [
-            "Inscrições abertas para todas as modalidades!",
-            "Confira o regulamento atualizado.",
-            "Resultados da primeira fase disponíveis."
-          ]}
+          plantaoItems={plantaoNotices}
         />
         <PublicNews news={newsNotices} />
         <PublicAbout description={event.description} />

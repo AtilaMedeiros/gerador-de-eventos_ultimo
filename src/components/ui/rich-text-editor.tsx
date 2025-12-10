@@ -1,11 +1,20 @@
 import { useEditor, EditorContent, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
-import { Bold, Italic, List, ListOrdered, Strikethrough, Link as LinkIcon, Heading1, Heading2, Heading3 } from 'lucide-react'
+import TextAlign from '@tiptap/extension-text-align'
+import { TextStyle } from '@tiptap/extension-text-style'
+import FontFamily from '@tiptap/extension-font-family'
+import {
+    Bold, Italic, List, ListOrdered, Strikethrough, Link as LinkIcon,
+    Heading1, Heading2, Heading3,
+    AlignLeft, AlignCenter, AlignRight, AlignJustify,
+    Type, X
+} from 'lucide-react'
 import { Toggle } from '@/components/ui/toggle'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { useEffect } from 'react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface RichTextEditorProps {
     value: string
@@ -20,12 +29,13 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
     }
 
     return (
-        <div className="flex flex-wrap items-center gap-1 p-1 border-b bg-muted/20">
+        <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/20">
+            {/* Headers / Size */}
             <Toggle
                 size="sm"
                 pressed={editor.isActive('heading', { level: 1 })}
                 onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                aria-label="Heading 1"
+                title="Título 1"
             >
                 <Heading1 className="h-4 w-4" />
             </Toggle>
@@ -33,7 +43,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
                 size="sm"
                 pressed={editor.isActive('heading', { level: 2 })}
                 onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                aria-label="Heading 2"
+                title="Título 2"
             >
                 <Heading2 className="h-4 w-4" />
             </Toggle>
@@ -41,18 +51,19 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
                 size="sm"
                 pressed={editor.isActive('heading', { level: 3 })}
                 onPressedChange={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                aria-label="Heading 3"
+                title="Título 3"
             >
                 <Heading3 className="h-4 w-4" />
             </Toggle>
 
             <Separator orientation="vertical" className="mx-1 h-6" />
 
+            {/* Formatting */}
             <Toggle
                 size="sm"
                 pressed={editor.isActive('bold')}
                 onPressedChange={() => editor.chain().focus().toggleBold().run()}
-                aria-label="Bold"
+                title="Negrito"
             >
                 <Bold className="h-4 w-4" />
             </Toggle>
@@ -60,7 +71,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
                 size="sm"
                 pressed={editor.isActive('italic')}
                 onPressedChange={() => editor.chain().focus().toggleItalic().run()}
-                aria-label="Italic"
+                title="Itálico"
             >
                 <Italic className="h-4 w-4" />
             </Toggle>
@@ -68,18 +79,84 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
                 size="sm"
                 pressed={editor.isActive('strike')}
                 onPressedChange={() => editor.chain().focus().toggleStrike().run()}
-                aria-label="Strikethrough"
+                title="Tachado"
             >
                 <Strikethrough className="h-4 w-4" />
             </Toggle>
 
             <Separator orientation="vertical" className="mx-1 h-6" />
 
+            {/* Alignment */}
+            <Toggle
+                size="sm"
+                pressed={editor.isActive({ textAlign: 'left' })}
+                onPressedChange={() => editor.chain().focus().setTextAlign('left').run()}
+                title="Alinhar à Esquerda"
+            >
+                <AlignLeft className="h-4 w-4" />
+            </Toggle>
+            <Toggle
+                size="sm"
+                pressed={editor.isActive({ textAlign: 'center' })}
+                onPressedChange={() => editor.chain().focus().setTextAlign('center').run()}
+                title="Centralizar"
+            >
+                <AlignCenter className="h-4 w-4" />
+            </Toggle>
+            <Toggle
+                size="sm"
+                pressed={editor.isActive({ textAlign: 'right' })}
+                onPressedChange={() => editor.chain().focus().setTextAlign('right').run()}
+                title="Alinhar à Direita"
+            >
+                <AlignRight className="h-4 w-4" />
+            </Toggle>
+            <Toggle
+                size="sm"
+                pressed={editor.isActive({ textAlign: 'justify' })}
+                onPressedChange={() => editor.chain().focus().setTextAlign('justify').run()}
+                title="Justificar"
+            >
+                <AlignJustify className="h-4 w-4" />
+            </Toggle>
+
+            <Separator orientation="vertical" className="mx-1 h-6" />
+
+            {/* Font Family selector (Simplified) */}
+            <Toggle
+                size="sm"
+                pressed={editor.isActive('textStyle', { fontFamily: 'Inter' })}
+                onPressedChange={() => editor.chain().focus().setFontFamily('Inter').run()}
+                title="Fonte Padrão (Sans)"
+            >
+                <span className="text-xs font-sans font-bold">Sans</span>
+            </Toggle>
+            <Toggle
+                size="sm"
+                pressed={editor.isActive('textStyle', { fontFamily: 'serif' })}
+                onPressedChange={() => editor.chain().focus().setFontFamily('serif').run()}
+                title="Fonte Serifada"
+            >
+                <span className="text-xs font-serif font-bold">Serif</span>
+            </Toggle>
+            <Toggle
+                size="sm"
+                pressed={editor.isActive('textStyle', { fontFamily: 'monospace' })}
+                onPressedChange={() => editor.chain().focus().setFontFamily('monospace').run()}
+                title="Fonte Monoespaçada"
+            >
+                <span className="text-xs font-mono font-bold">Mono</span>
+            </Toggle>
+
+
+            <Separator orientation="vertical" className="mx-1 h-6" />
+
+            {/* Lists */}
             <Toggle
                 size="sm"
                 pressed={editor.isActive('bulletList')}
                 onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
-                aria-label="Bullet List"
+                title="Lista com Marcadores"
             >
                 <List className="h-4 w-4" />
             </Toggle>
@@ -87,13 +164,14 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
                 size="sm"
                 pressed={editor.isActive('orderedList')}
                 onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
-                aria-label="Ordered List"
+                title="Lista Numerada"
             >
                 <ListOrdered className="h-4 w-4" />
             </Toggle>
 
             <Separator orientation="vertical" className="mx-1 h-6" />
 
+            {/* Link & Clear */}
             <Toggle
                 size="sm"
                 pressed={editor.isActive('link')}
@@ -107,9 +185,17 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
                         }
                     }
                 }}
-                aria-label="Link"
+                title="Inserir Link"
             >
                 <LinkIcon className="h-4 w-4" />
+            </Toggle>
+
+            <Toggle
+                size="sm"
+                onPressedChange={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
+                title="Limpar Formatação"
+            >
+                <X className="h-4 w-4" />
             </Toggle>
         </div>
     )
@@ -125,6 +211,11 @@ export function RichTextEditor({ value, onChange, className }: RichTextEditorPro
                     class: 'text-primary underline cursor-pointer',
                 },
             }),
+            TextAlign.configure({
+                types: ['heading', 'paragraph'],
+            }),
+            TextStyle,
+            FontFamily,
         ],
         content: value,
         editorProps: {
@@ -135,28 +226,16 @@ export function RichTextEditor({ value, onChange, className }: RichTextEditorPro
         onUpdate: ({ editor }) => {
             onChange(editor.getHTML())
         },
-        immediatelyRender: false // Fix for React 19 hydration mismatch in simple usage
+        immediatelyRender: false
     })
 
-    // Sync content if value changes externally (and editor is not focused? or just allow it?)
-    // Allowing 2-way sync can be tricky with cursors.
-    // For this form, usually value only changes via editor, OR reset.
     useEffect(() => {
         if (editor && value !== editor.getHTML()) {
-            // Only update if difference is significant to avoid cursor jumps?
-            // Actually, for simple forms, if value is empty (reset), we should clear.
             if (value === '' && editor.getText() !== '') {
                 editor.commands.setContent('')
             }
-            // If external update happened that wasn't from us:
             else if (editor.getHTML() !== value) {
-                // Check if content matches roughly?
-                // Simple approach: setContent. Cursors might jump if typing fast and prop updates.
-                // But react-hook-form 'onChange' updates local state which feeds back 'value'.
-                // So we must be careful not to create loop.
-                // Typically we don't sync 'value' back to editor on every keypress if we just typed it.
-                // Tiptap handles this mostly, but let's only set content if fully different (like reset).
-                // editor.commands.setContent(value)
+                // Optional: Sync back if needed
             }
         }
     }, [value, editor])

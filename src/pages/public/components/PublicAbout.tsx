@@ -12,13 +12,15 @@ export function PublicAbout({ description }: PublicAboutProps) {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 relative inline-block mb-4">
-            Sobre o Evento
-            <span className="absolute bottom-2 left-0 w-full h-3 bg-primary/10 -z-10 transform skew-x-12" />
-          </h2>
+        <div className="max-w-5xl mx-auto space-y-12">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 relative inline-block mb-4">
+              Sobre o Evento
+              <span className="absolute bottom-2 left-0 w-full h-3 bg-primary/10 -z-10 transform skew-x-12" />
+            </h2>
+          </div>
 
-          <div className="prose prose-lg md:prose-xl mx-auto text-slate-600">
+          <div className="prose prose-lg md:prose-xl mx-auto text-slate-600 max-w-none text-left">
             {description ? (
               <div
                 className="leading-relaxed [&>h1]:font-black [&>h1]:text-3xl [&>h1]:mb-6 [&>h1]:text-slate-900 [&>p]:mb-4"

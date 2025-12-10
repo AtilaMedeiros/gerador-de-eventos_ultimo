@@ -24,7 +24,7 @@ export function PublicHero({ event, plantaoItems }: PublicHeroProps) {
   const navigate = useNavigate()
 
   return (
-    <section className="relative flex items-center justify-center overflow-hidden bg-slate-950 py-12 lg:py-20">
+    <section className="relative flex items-center justify-center overflow-hidden bg-slate-950 py-16 lg:py-28 min-h-[480px]">
       {/* Dynamic Background Image with Blur and Dim */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-slate-900/60 z-10" />
