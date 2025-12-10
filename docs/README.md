@@ -97,16 +97,85 @@ Esta documentação profissional fornece toda a informação necessária para **
 
 ---
 
+#### 6. **[UX-UI-FLOWCHART.md](./UX-UI-FLOWCHART.md)** - Flowchart Completo de UX/UI
+**Para**: Product Designers, UX/UI, Product Managers, Desenvolvedores  
+**Contém**:
+- Flowchart completo em Mermaid com todas as rotas
+- 3 áreas principais (Pública, Produtor, Participante)
+- Fluxos de autenticação detalhados
+- Componentes por página
+- Navegação entre telas
+- Ações e interações do usuário
+- Controle de acesso e permissões
+- Legenda de cores por área
+
+**Quando ler**: Entender a jornada completa do usuário
+
+---
+
+#### 7. **[UX-UI-FLOWCHART-SIMPLIFIED.md](./UX-UI-FLOWCHART-SIMPLIFIED.md)** - Flowchart Simplificado
+**Para**: Stakeholders, Novos Membros da Equipe  
+**Contém**:
+- Visão geral de alto nível
+- Jornadas principais dos 3 perfis de usuário
+- Arquitetura de componentes
+- Fluxo de dados e contextos
+- Sequência de autenticação
+- Métricas e KPIs exibidos
+- Tabela de funcionalidades por perfil
+- Navegação por dispositivo (Desktop/Mobile)
+
+**Quando ler**: Ter uma compreensão rápida do fluxo da aplicação
+
+---
+
+#### 8. **[DATABASE-SCHEMA.md](./DATABASE-SCHEMA.md)** - Schema do Banco de Dados
+**Para**: DBAs, Backend Developers, Arquitetos  
+**Contém**:
+- Diagrama ER completo em Mermaid
+- DDL SQL completo para PostgreSQL
+- Descrição detalhada de 15 tabelas
+- Índices e constraints
+- Triggers para updated_at
+- Queries comuns otimizadas
+- Estratégias de migração
+- Row Level Security (RLS)
+- Views para dashboards e analytics
+
+**Quando ler**: Implementar backend e banco de dados
+
+---
+
+#### 9. **[DATABASE-SCHEMA-SIMPLIFIED.md](./DATABASE-SCHEMA-SIMPLIFIED.md)** - Schema Simplificado
+**Para**: Product Managers, Clientes, Usuários Finais  
+**Contém**:
+- Tabelas simplificadas com nomenclatura padronizada
+- PK sempre como **id**
+- FK sempre como **id_<tabela>**
+- Descrição clara de 15 tabelas
+- Diagrama de relacionamentos simplificado
+- Resumo por área funcional
+- Glossário de termos técnicos
+- Principais fluxos de dados
+
+**Quando ler**: Entender a estrutura do banco sem conhecimentos técnicos
+
+---
+
 ## 🗂️ Estrutura de Documentação
 
 ```
 docs/
-├── README.md                    # Este arquivo
-├── PRD.md                       # Requisitos do produto
-├── ARCHITECTURE.md              # Arquitetura técnica
-├── API_CONTEXTS.md              # API de contextos
-├── SETUP_DEVELOPMENT.md         # Setup e desenvolvimento
-└── COMPONENTS_GUIDE.md          # Guia de componentes
+├── README.md                        # Este arquivo
+├── PRD.md                           # Requisitos do produto
+├── ARCHITECTURE.md                  # Arquitetura técnica
+├── API_CONTEXTS.md                  # API de contextos
+├── SETUP_DEVELOPMENT.md             # Setup e desenvolvimento
+├── COMPONENTS_GUIDE.md              # Guia de componentes
+├── UX-UI-FLOWCHART.md              # Flowchart completo de UX/UI
+├── UX-UI-FLOWCHART-SIMPLIFIED.md   # Flowchart simplificado
+├── DATABASE-SCHEMA.md               # Schema do banco de dados (técnico)
+└── DATABASE-SCHEMA-SIMPLIFIED.md    # Schema do banco (simplificado)
 ```
 
 ---
@@ -116,17 +185,25 @@ docs/
 ### Se você é novo no projeto
 
 1. **Leia [PRD.md](./PRD.md)** (30 min) - Entenda o que é o projeto
-2. **Leia [ARCHITECTURE.md](./ARCHITECTURE.md)** (30 min) - Entenda como está organizado
-3. **Siga [SETUP_DEVELOPMENT.md](./SETUP_DEVELOPMENT.md)** (15 min) - Configure o ambiente
-4. **Explore [API_CONTEXTS.md](./API_CONTEXTS.md)** (conforme necessário) - Use os contextos
-5. **Consulte [COMPONENTS_GUIDE.md](./COMPONENTS_GUIDE.md)** (conforme necessário) - Crie componentes
+2. **Leia [UX-UI-FLOWCHART-SIMPLIFIED.md](./UX-UI-FLOWCHART-SIMPLIFIED.md)** (15 min) - Visualize o fluxo da aplicação
+3. **Leia [ARCHITECTURE.md](./ARCHITECTURE.md)** (30 min) - Entenda como está organizado
+4. **Siga [SETUP_DEVELOPMENT.md](./SETUP_DEVELOPMENT.md)** (15 min) - Configure o ambiente
+5. **Explore [API_CONTEXTS.md](./API_CONTEXTS.md)** (conforme necessário) - Use os contextos
+6. **Consulte [COMPONENTS_GUIDE.md](./COMPONENTS_GUIDE.md)** (conforme necessário) - Crie componentes
+
+### Se você está fazendo design/UX
+
+1. Consulte [UX-UI-FLOWCHART.md](./UX-UI-FLOWCHART.md) - Flowchart completo
+2. Use [UX-UI-FLOWCHART-SIMPLIFIED.md](./UX-UI-FLOWCHART-SIMPLIFIED.md) - Para apresentações
+3. Verifique requisitos em [PRD.md](./PRD.md)
 
 ### Se você precisa adicionar uma funcionalidade
 
 1. Verifique requisitos em [PRD.md](./PRD.md)
-2. Escolha o contexto apropriado em [API_CONTEXTS.md](./API_CONTEXTS.md)
-3. Use padrões em [COMPONENTS_GUIDE.md](./COMPONENTS_GUIDE.md)
-4. Siga boas práticas em [ARCHITECTURE.md](./ARCHITECTURE.md)
+2. Consulte o fluxo em [UX-UI-FLOWCHART.md](./UX-UI-FLOWCHART.md)
+3. Escolha o contexto apropriado em [API_CONTEXTS.md](./API_CONTEXTS.md)
+4. Use padrões em [COMPONENTS_GUIDE.md](./COMPONENTS_GUIDE.md)
+5. Siga boas práticas em [ARCHITECTURE.md](./ARCHITECTURE.md)
 
 ### Se você precisa fazer deploy
 
@@ -428,3 +505,7 @@ Descreva:
 - [API_CONTEXTS.md](./API_CONTEXTS.md) - APIs
 - [SETUP_DEVELOPMENT.md](./SETUP_DEVELOPMENT.md) - Setup
 - [COMPONENTS_GUIDE.md](./COMPONENTS_GUIDE.md) - Componentes
+- [UX-UI-FLOWCHART.md](./UX-UI-FLOWCHART.md) - Flowchart Completo
+- [UX-UI-FLOWCHART-SIMPLIFIED.md](./UX-UI-FLOWCHART-SIMPLIFIED.md) - Flowchart Simplificado
+- [DATABASE-SCHEMA.md](./DATABASE-SCHEMA.md) - Schema do Banco de Dados (Técnico)
+- [DATABASE-SCHEMA-SIMPLIFIED.md](./DATABASE-SCHEMA-SIMPLIFIED.md) - Schema Simplificado
