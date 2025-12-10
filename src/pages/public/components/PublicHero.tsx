@@ -17,7 +17,7 @@ interface PublicHeroProps {
     inscricaoColetivaFim: Date
     coverImage?: string
   }
-  plantaoItems?: string[]
+  plantaoItems?: { title: string; description: string }[]
 }
 
 export function PublicHero({ event, plantaoItems }: PublicHeroProps) {

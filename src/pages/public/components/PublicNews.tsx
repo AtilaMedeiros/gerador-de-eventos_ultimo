@@ -15,7 +15,7 @@ interface PublicNewsProps {
 }
 
 interface PublicTickerProps {
-  items: string[]
+  items: { title: string; description: string }[]
 }
 
 export function PublicTicker({ items }: PublicTickerProps) {
@@ -50,8 +50,14 @@ export function PublicTicker({ items }: PublicTickerProps) {
           >
             {tickerItems.map((item, i) => (
               <div key={`ticker-${i}`} className="flex items-center px-8">
-                <span className="text-sm md:text-base font-medium tracking-wide">{item}</span>
-                <Zap className="w-4 h-4 md:w-5 md:h-5 text-[#f59e0b] ml-4 fill-[#f59e0b] drop-shadow-[0_0_5px_rgba(245,158,11,0.8)]" aria-hidden="true" />
+                <Zap className="w-4 h-4 md:w-5 md:h-5 text-[#f59e0b] mr-3 fill-[#f59e0b] drop-shadow-[0_0_5px_rgba(245,158,11,0.8)] shrink-0" aria-hidden="true" />
+                <span className="text-sm md:text-base tracking-wide flex items-center gap-2">
+                  <span className="font-bold text-[#f59e0b] uppercase">{item.title}:</span>
+                  <span
+                    dangerouslySetInnerHTML={{ __html: item.description }}
+                    className="[&>p]:inline [&>p]:m-0"
+                  />
+                </span>
               </div>
             ))}
           </div>

@@ -54,7 +54,10 @@ export default function EventPage() {
           n.category === 'plantao' ||
           n.category === 'Urgente'),
     )
-    .map((n) => n.title)
+    .map((n) => ({
+      title: n.title,
+      description: n.description || ''
+    }))
 
   // Filter Notices for "Últimas Notícias" (Featured + Grid)
   // We'll take all other notices as news
