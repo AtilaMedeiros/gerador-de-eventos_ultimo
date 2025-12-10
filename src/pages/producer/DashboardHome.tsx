@@ -120,7 +120,7 @@ export default function DashboardHome() {
 
   const handleCreateEvent = () => {
     if (hasPermission('criar_evento')) {
-      navigate('/area-do-produtor/cadastro-basico/evento/novo')
+      navigate('/area-do-produtor/evento/novo')
     } else {
       toast.error('Acesso Negado', {
         description: 'Você não tem permissão para criar novos eventos.',

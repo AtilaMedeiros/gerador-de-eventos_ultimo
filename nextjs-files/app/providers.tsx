@@ -1,5 +1,7 @@
 'use client'
 
+import { EventProvider } from '@/contexts/EventContext'
+import { ModalityProvider } from '@/contexts/ModalityContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ThemeProvider } from 'next-themes'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -15,11 +17,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
             disableTransitionOnChange
         >
             <AuthProvider>
-                <TooltipProvider>
-                    {children}
-                    <Toaster />
-                    <Sonner />
-                </TooltipProvider>
+                <EventProvider>
+                    <ModalityProvider>
+                        <TooltipProvider>
+                            {children}
+                            <Toaster />
+                            <Sonner />
+                        </TooltipProvider>
+                    </ModalityProvider>
+                </EventProvider>
             </AuthProvider>
         </ThemeProvider>
     )
