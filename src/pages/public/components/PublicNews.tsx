@@ -20,42 +20,45 @@ interface PublicTickerProps {
 export function PublicTicker({ items }: PublicTickerProps) {
   if (items.length === 0) return null
 
-  return (
-    <div className="bg-slate-900 border-b border-white/10 relative z-30">
-      <div className="container mx-auto px-4">
-        <div className="flex items-stretch h-12">
-          {/* Label */}
-          <div className="bg-red-600 px-4 flex items-center justify-center gap-2 shrink-0 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite]" />
-            <Radio className="h-4 w-4 text-white animate-pulse" />
-            <span className="font-black text-white uppercase tracking-wider text-xs md:text-sm">
-              PLANTÃO
-            </span>
-            {/* Slanted edge visual hack */}
-            <div className="absolute right-0 top-0 bottom-0 w-4 bg-slate-900 transform skew-x-12 translate-x-2" />
-          </div>
+  // No duplication - display original items only
+  const tickerItems = items
 
-          {/* Ticker Content */}
-          <div className="flex-1 flex items-center overflow-hidden relative mask-linear-fade">
-            <div className="animate-marquee whitespace-nowrap flex items-center text-white/90 text-sm font-medium">
-              {items.map((item, i) => (
-                <span key={i} className="mx-8 flex items-center gap-3">
-                  <Zap className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-                  {item}
-                </span>
-              ))}
-              {/* Duplicate for seamless loop */}
-              {items.map((item, i) => (
-                <span key={`dup-${i}`} className="mx-8 flex items-center gap-3">
-                  <Zap className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-                  {item}
-                </span>
-              ))}
-            </div>
+  return (
+    <>
+      <style>{`
+        @keyframes ticker-scroll {
+          0% { transform: translateX(100vw); }
+          100% { transform: translateX(-100%); }
+        }
+      `}</style>
+      <div className="relative bg-[#0f172a] text-white overflow-hidden h-12 flex items-center border-b border-[#0f172a]/50 shadow-lg z-20">
+        <div className="absolute left-0 top-0 bottom-0 z-20 bg-[#dc2626] px-6 md:px-8 flex items-center gap-3 font-bold uppercase tracking-wider text-xs md:text-sm shadow-xl pr-10 md:pr-12" style={{ clipPath: "polygon(0px 0px, 100% 0px, 85% 100%, 0% 100%)" }}>
+          <div className="relative">
+            <Radio className="w-4 h-4 md:w-5 md:h-5 relative z-10" aria-hidden="true" />
+            <div className="absolute inset-0 bg-white rounded-full animate-ping opacity-50"></div>
+          </div>
+          Plantão
+        </div>
+
+        <div className="flex items-center w-full overflow-hidden pl-32 md:pl-40">
+          <div
+            className="flex whitespace-nowrap"
+            style={{
+              animation: 'ticker-scroll 20s linear infinite',
+            }}
+          >
+            {tickerItems.map((item, i) => (
+              <div key={`ticker-${i}`} className="flex items-center px-8">
+                <span className="text-sm md:text-base font-medium tracking-wide">{item}</span>
+                <Zap className="w-4 h-4 md:w-5 md:h-5 text-[#f59e0b] ml-4 fill-[#f59e0b] drop-shadow-[0_0_5px_rgba(245,158,11,0.8)]" aria-hidden="true" />
+              </div>
+            ))}
           </div>
         </div>
+
+        <div className="absolute inset-0 pointer-events-none opacity-5 bg-[linear-gradient(45deg,transparent_25%,#fff_25%,#fff_50%,transparent_50%,transparent_75%,#fff_75%,#fff_100%)] bg-[length:8px_8px]"></div>
       </div>
-    </div>
+    </>
   )
 }
 

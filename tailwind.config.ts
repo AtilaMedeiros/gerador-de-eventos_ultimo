@@ -103,6 +103,10 @@ export default {
         'inner-light': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
       },
       keyframes: {
+        marquee: {
+          '0%': { transform: 'translateX(100%)' },   // INÍCIO: Escondido à DIREITA
+          '100%': { transform: 'translateX(-100%)' }, // FIM: Escondido à ESQUERDA
+        },
         'accordion-down': {
           from: { height: '0' },
           to: { height: 'var(--radix-accordion-content-height)' },
@@ -117,6 +121,7 @@ export default {
         },
       },
       animation: {
+        marquee: 'marquee 20s linear infinite',
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in-up': 'fade-in-up 0.5s ease-out forwards',

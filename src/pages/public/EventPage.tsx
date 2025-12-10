@@ -25,8 +25,9 @@ export default function EventPage() {
       location: eventData.location || 'Local a definir',
       dataInicio: eventData.startDate,
       dataFim: eventData.endDate,
-      inscricaoIndividualFim:
-        eventData.registrationIndividualEnd || new Date(),
+      inscricaoIndividualInicio: eventData.registrationIndividualStart || new Date(),
+      inscricaoIndividualFim: eventData.registrationIndividualEnd || new Date(),
+      inscricaoColetivaInicio: eventData.registrationCollectiveStart || new Date(),
       inscricaoColetivaFim: eventData.registrationCollectiveEnd || new Date(),
       coverImage: eventData.coverImage,
     }
@@ -35,7 +36,9 @@ export default function EventPage() {
       location: 'Local a definir',
       dataInicio: new Date(),
       dataFim: new Date(),
+      inscricaoIndividualInicio: new Date(),
       inscricaoIndividualFim: new Date(),
+      inscricaoColetivaInicio: new Date(),
       inscricaoColetivaFim: new Date(),
       coverImage: undefined,
     }
@@ -75,8 +78,14 @@ export default function EventPage() {
       <PublicHeader title={event.name} />
 
       <main className="flex-1">
-        <PublicHero event={event} />
-        <PublicTicker items={plantaoNotices} />
+        <PublicHero
+          event={event}
+          plantaoItems={plantaoNotices.length > 0 ? plantaoNotices : [
+            "Inscrições abertas para todas as modalidades!",
+            "Confira o regulamento atualizado.",
+            "Resultados da primeira fase disponíveis."
+          ]}
+        />
         <PublicNews news={newsNotices} />
         <PublicAbout />
         <PublicPartners />

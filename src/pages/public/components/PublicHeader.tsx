@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { Menu, Home, Megaphone, FileText, LogIn } from 'lucide-react'
+import { Menu, Home, Megaphone, FileText, LogIn, UserPlus } from 'lucide-react'
 import { Link, useLocation, useParams, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
@@ -112,8 +112,32 @@ export function PublicHeader({ title }: PublicHeaderProps) {
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8 relative">
-          <NavLinks />
+        <nav className="hidden md:flex items-center gap-8">
+          {[
+            { to: eventBaseUrl, icon: Home, label: 'Início', active: isHome },
+            { to: communicationUrl, icon: Megaphone, label: 'Comunicação', active: isCommunication },
+            { to: regulationUrl, icon: FileText, label: 'Regulamento', active: isRegulation },
+            { to: '/area-do-participante/login', icon: UserPlus, label: 'Inscrição', active: false }
+          ].map((item) => (
+            <Link
+              key={item.label}
+              to={item.to}
+              className={cn(
+                "flex items-center gap-2 text-sm transition-all duration-300 relative py-1 group",
+                item.active
+                  ? (isScrolled ? "text-primary font-bold" : "text-white font-bold")
+                  : (isScrolled ? "text-slate-600 font-medium hover:text-primary" : "text-white/80 font-medium hover:text-white")
+              )}
+            >
+              <item.icon className="w-4 h-4 transition-transform group-hover:scale-110 stroke-[2.5px]" aria-hidden="true" />
+              <span>{item.label}</span>
+              <span className={cn(
+                "absolute bottom-0 left-0 w-full h-0.5 rounded-full transition-all duration-300 transform origin-left scale-x-0 group-hover:scale-x-100",
+                item.active && "scale-x-100",
+                isScrolled ? "bg-primary" : "bg-white"
+              )}></span>
+            </Link>
+          ))}
         </nav>
 
         {/* Mobile Nav */}
