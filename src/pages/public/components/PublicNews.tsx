@@ -102,78 +102,91 @@ export function PublicNews({ news }: PublicNewsProps) {
         }
       `}</style>
       <section
-        className="py-12 bg-white"
+        className="py-8 bg-white"
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
         <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-6">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-6 gap-6">
             <div>
-              <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 mb-2 uppercase italic">
+              <h2 className="text-2xl md:text-3xl font-black tracking-tighter text-slate-900 mb-1 uppercase italic">
                 Últimas <span className="text-primary">Notícias</span>
               </h2>
-              <div className="h-1 w-24 bg-primary skew-x-[-12deg]"></div>
+              <div className="h-0.5 w-16 bg-primary skew-x-[-12deg]"></div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={handlePrev}
-                className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-900 hover:bg-slate-900 hover:text-white transition-all duration-300 group"
+                className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-900 hover:bg-slate-900 hover:text-white transition-all duration-300 group"
               >
-                <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
               </button>
               <button
                 onClick={handleNext}
-                className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-900 hover:bg-slate-900 hover:text-white transition-all duration-300 group"
+                className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-900 hover:bg-slate-900 hover:text-white transition-all duration-300 group"
               >
-                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </div>
 
-          <div className="border border-slate-200 bg-white shadow-xl rounded-lg overflow-hidden">
+          <div className="border border-slate-200 bg-white shadow-lg rounded-lg overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
 
               {/* Destaque Principal (Esquerda - Visual Gráfico) */}
-              <div className="lg:col-span-4 relative group overflow-hidden min-h-[300px] bg-slate-900 border-r border-white/10 flex flex-col justify-between p-8">
+              <div className="lg:col-span-4 relative group overflow-hidden min-h-[220px] bg-slate-900 border-r border-white/10 flex flex-col justify-between p-5">
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 z-0"></div>
                 <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary via-slate-900 to-transparent"></div>
 
                 <div className="relative z-10 w-full flex justify-between items-start">
-                  <span className="bg-primary text-primary-foreground font-black px-3 py-0.5 text-xs uppercase tracking-wider skew-x-[-12deg] inline-block">
+                  <span className="bg-primary text-primary-foreground font-black px-2.5 py-0.5 text-[10px] uppercase tracking-wider skew-x-[-12deg] inline-block">
                     {activeNews.category}
                   </span>
                 </div>
 
                 <div className="relative z-10 mt-auto">
                   <div key={activeNews.id} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="h-1 w-12 bg-primary mb-4"></div>
-                    <h3 className="text-2xl md:text-3xl font-bold text-white uppercase leading-tight line-clamp-4">
+                    <div className="h-0.5 w-8 bg-primary mb-3"></div>
+                    <h3 className="text-xl md:text-2xl font-bold text-white uppercase leading-tight line-clamp-3">
                       {activeNews.title}
                     </h3>
                   </div>
                 </div>
+
+                {/* Barra de Progresso do Auto-play */}
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10">
+                  {!isHovering && (
+                    <div
+                      key={`progress-visual-${activeIndex}`}
+                      className="h-full bg-primary origin-left"
+                      style={{
+                        animation: 'progress 5s linear forwards'
+                      }}
+                    />
+                  )}
+                </div>
               </div>
 
               {/* Conteúdo do Destaque (Direita - Texto) */}
-              <div className="lg:col-span-8 p-8 lg:p-10 flex flex-col justify-center relative bg-white text-slate-900">
+              <div className="lg:col-span-8 p-5 lg:p-6 flex flex-col justify-center relative bg-white text-slate-900">
                 <div key={activeNews.id + '-content'} className="animate-in fade-in zoom-in-95 duration-300">
-                  <div className="flex items-center gap-2 text-slate-500 mb-6 font-mono text-xs tracking-widest uppercase">
-                    <Calendar className="w-3.5 h-3.5 text-primary" />
+                  <div className="flex items-center gap-2 text-slate-500 mb-4 font-mono text-[10px] tracking-widest uppercase">
+                    <Calendar className="w-3 h-3 text-primary" />
                     {activeNews.date}
                   </div>
 
-                  <h3 className="text-3xl lg:text-4xl font-bold text-slate-900 leading-tight mb-6 uppercase">
+                  <h3 className="text-2xl lg:text-3xl font-bold text-slate-900 leading-tight mb-4 uppercase">
                     {activeNews.title}
                   </h3>
 
-                  <p className="text-slate-600 text-base md:text-lg mb-8 line-clamp-3 max-w-3xl leading-relaxed">
+                  <p className="text-slate-600 text-sm md:text-base mb-6 line-clamp-3 max-w-3xl leading-relaxed">
                     {activeNews.description}
                   </p>
 
-                  <button className="group flex items-center gap-3 text-slate-900 font-bold tracking-wider uppercase text-xs hover:text-primary transition-colors mt-auto w-fit cursor-pointer">
-                    <div className="w-12 h-[2px] bg-slate-200 group-hover:bg-primary transition-colors relative">
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-slate-900 rounded-full group-hover:bg-primary transition-colors"></div>
+                  <button className="group flex items-center gap-2 text-slate-900 font-bold tracking-wider uppercase text-[10px] hover:text-primary transition-colors mt-auto w-fit cursor-pointer">
+                    <div className="w-8 h-[1px] bg-slate-200 group-hover:bg-primary transition-colors relative">
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-1 bg-slate-900 rounded-full group-hover:bg-primary transition-colors"></div>
                     </div>
                     Ler Matéria Completa
                   </button>
@@ -183,7 +196,7 @@ export function PublicNews({ news }: PublicNewsProps) {
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-100">
                   {!isHovering && (
                     <div
-                      key={`progress-${activeIndex}`} // Ensure animation restarts when activeIndex changes
+                      key={`progress-${activeIndex}`}
                       className="h-full bg-primary origin-left"
                       style={{
                         animation: 'progress 5s linear forwards'
@@ -203,22 +216,22 @@ export function PublicNews({ news }: PublicNewsProps) {
                     const newIndex = news.findIndex(n => n.id === newsItem.id)
                     if (newIndex !== -1) setActiveIndex(newIndex)
                   }}
-                  className="p-6 flex items-center justify-between cursor-pointer transition-colors group relative overflow-hidden hover:bg-white h-full"
+                  className="p-4 flex items-center justify-between cursor-pointer transition-colors group relative overflow-hidden hover:bg-white h-full"
                 >
-                  <div className="flex flex-col gap-2 relative z-10 w-full">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-xs transition-colors text-slate-400 group-hover:text-primary">
+                  <div className="flex flex-col gap-1.5 relative z-10 w-full">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="font-mono text-[10px] transition-colors text-slate-400 group-hover:text-primary">
                         {String(index + 1).padStart(2, '0')}
                       </span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider transition-colors text-slate-400 group-hover:text-primary">
+                      <span className="text-[9px] font-bold uppercase tracking-wider transition-colors text-slate-400 group-hover:text-primary">
                         {newsItem.category}
                       </span>
                     </div>
-                    <h4 className="text-sm font-bold uppercase transition-colors line-clamp-2 leading-tight text-slate-700 group-hover:text-slate-900">
+                    <h4 className="text-xs font-bold uppercase transition-colors line-clamp-2 leading-snug text-slate-700 group-hover:text-slate-900">
                       {newsItem.title}
                     </h4>
                   </div>
-                  <ArrowRight className="w-4 h-4 transition-all transform shrink-0 ml-3 text-primary/50 -translate-x-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-0" />
+                  <ArrowRight className="w-3.5 h-3.5 transition-all transform shrink-0 ml-3 text-primary/50 -translate-x-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-0" />
                 </div>
               ))}
             </div>

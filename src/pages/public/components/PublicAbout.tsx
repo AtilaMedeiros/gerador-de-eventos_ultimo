@@ -1,34 +1,8 @@
-import { Card, CardContent } from '@/components/ui/card'
-import { Trophy, Heart, Users } from 'lucide-react'
+interface PublicAboutProps {
+  description?: string
+}
 
-export function PublicAbout() {
-  const features = [
-    {
-      icon: Users,
-      title: 'Inclusão',
-      desc: 'Promovendo a participação ativa de estudantes de todas as redes de ensino.',
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
-      border: 'border-blue-100',
-    },
-    {
-      icon: Trophy,
-      title: 'Talento',
-      desc: 'Um palco profissional para descobrir as futuras estrelas do esporte nacional.',
-      color: 'text-amber-500',
-      bg: 'bg-amber-50',
-      border: 'border-amber-100',
-    },
-    {
-      icon: Heart,
-      title: 'Cidadania',
-      desc: 'Formação integral através dos valores éticos e morais do esporte.',
-      color: 'text-red-500',
-      bg: 'bg-red-50',
-      border: 'border-red-100',
-    },
-  ]
-
+export function PublicAbout({ description }: PublicAboutProps) {
   return (
     <section className="py-24 bg-slate-50 relative overflow-hidden">
       {/* Background Decoration */}
@@ -38,37 +12,33 @@ export function PublicAbout() {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-3xl mx-auto text-center mb-16 space-y-4">
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 relative inline-block">
-            Sobre os Jogos
-            <span className="absolute bottom-1 left-0 w-full h-3 bg-primary/10 -z-10 transform skew-x-12" />
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          <h2 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 relative inline-block mb-4">
+            Sobre o Evento
+            <span className="absolute bottom-2 left-0 w-full h-3 bg-primary/10 -z-10 transform skew-x-12" />
           </h2>
-          <p className="text-lg md:text-xl text-slate-600 leading-relaxed">
-            Nossa missão é promover a integração social, o exercício da
-            cidadania e a descoberta de novos talentos através do desporto
-            escolar de alto nível.
-          </p>
-        </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {features.map((feature, i) => (
-            <Card
-              key={i}
-              className={`border ${feature.border} shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full bg-white`}
-            >
-              <CardContent className="p-8 flex flex-col items-center text-center h-full">
-                <div
-                  className={`p-4 rounded-2xl ${feature.bg} ${feature.color} mb-6 transform transition-transform group-hover:scale-110`}
-                >
-                  <feature.icon className="h-8 w-8" />
-                </div>
-                <h3 className="font-bold text-xl mb-3 text-slate-900">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-500 leading-relaxed">{feature.desc}</p>
-              </CardContent>
-            </Card>
-          ))}
+          <div className="prose prose-lg md:prose-xl mx-auto text-slate-600">
+            {description ? (
+              <div
+                className="leading-relaxed [&>h1]:font-black [&>h1]:text-3xl [&>h1]:mb-6 [&>h1]:text-slate-900 [&>p]:mb-4"
+                dangerouslySetInnerHTML={{ __html: description }}
+              />
+            ) : (
+              <>
+                <p className="leading-relaxed font-medium">
+                  Nossa missão é promover a integração social, o exercício da
+                  cidadania e a descoberta de novos talentos através do desporto
+                  escolar de alto nível.
+                </p>
+                <p className="mt-4 text-base md:text-lg text-slate-500 font-normal">
+                  Acreditamos que o esporte é uma ferramenta poderosa de transformação,
+                  capaz de unir comunidades, desenvolver disciplina e inspirar a próxima
+                  geração de atletas e cidadãos conscientes.
+                </p>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </section>

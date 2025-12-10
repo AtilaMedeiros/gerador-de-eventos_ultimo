@@ -30,6 +30,7 @@ export default function EventPage() {
       inscricaoColetivaInicio: eventData.registrationCollectiveStart || new Date(),
       inscricaoColetivaFim: eventData.registrationCollectiveEnd || new Date(),
       coverImage: eventData.coverImage,
+      description: eventData.description,
     }
     : {
       name: slug || 'Evento',
@@ -41,6 +42,7 @@ export default function EventPage() {
       inscricaoColetivaInicio: new Date(),
       inscricaoColetivaFim: new Date(),
       coverImage: undefined,
+      description: undefined,
     }
 
   // Filter Notices for "Plantão" (Ticker) - Urgent or Plantão categories
@@ -87,7 +89,7 @@ export default function EventPage() {
           ]}
         />
         <PublicNews news={newsNotices} />
-        <PublicAbout />
+        <PublicAbout description={event.description} />
         <PublicPartners />
       </main>
 
