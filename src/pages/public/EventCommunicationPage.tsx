@@ -189,7 +189,7 @@ export default function EventCommunicationPage() {
             Central de Informações
           </h1>
           <p className="text-slate-300 max-w-2xl mx-auto text-base md:text-lg leading-relaxed animate-in slide-in-from-bottom-4 duration-700 delay-300">
-            Acompanhe em tempo real todas as novidades, resultados e documentos oficiais do evento.
+            Acompanhe em tempo real todas as novidades, resultados e documentos oficiais.
           </p>
         </div>
       </div>

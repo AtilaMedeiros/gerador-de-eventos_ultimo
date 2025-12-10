@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Calendar, User, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useCommunication } from '@/contexts/CommunicationContext'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -17,7 +17,8 @@ interface Slide {
 }
 
 export function NewsCarousel() {
-    const { id } = useParams()
+    const { id, slug } = useParams()
+    const navigate = useNavigate()
     const { notices } = useCommunication()
 
     // Filter notices for this event and category 'Últimas Notícias'
@@ -152,8 +153,9 @@ export function NewsCarousel() {
                             return (
                                 <div
                                     key={slide.id}
+                                    onClick={() => navigate(`/evento/${slug}/${id}/comunicacao`)}
                                     className={cn(
-                                        "flex-shrink-0 transition-all duration-500",
+                                        "flex-shrink-0 transition-all duration-500 cursor-pointer",
                                         isActive ? "scale-110 opacity-100 z-10" : "scale-90 opacity-60"
                                     )}
                                     style={{ width: `${cardWidth}px` }}
