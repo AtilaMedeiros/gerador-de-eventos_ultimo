@@ -45,7 +45,7 @@ export function PublicTicker({ items }: PublicTickerProps) {
           <div
             className="flex whitespace-nowrap"
             style={{
-              animation: 'ticker-scroll 20s linear infinite',
+              animation: 'ticker-scroll 40s linear infinite',
             }}
           >
             {tickerItems.map((item, i) => (

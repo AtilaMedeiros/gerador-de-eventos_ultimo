@@ -69,7 +69,7 @@ export function NewsCarousel() {
         if (isAutoPlaying && slides.length > 1) {
             autoPlayRef.current = setInterval(() => {
                 nextSlide()
-            }, 6000)
+            }, 8000)
         }
 
         return () => {
@@ -141,7 +141,7 @@ export function NewsCarousel() {
             <div className="relative w-full max-w-4xl">
                 <div className="overflow-hidden py-4">
                     <div
-                        className="flex transition-transform duration-900 ease-out"
+                        className="flex transition-transform duration-[2000ms] ease-out"
                         style={{
                             transform: `translateX(${translateX})`,
                             gap: `${cardGap}px`
