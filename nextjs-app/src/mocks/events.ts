@@ -73,5 +73,25 @@ export const mockEvents: Event[] = [
         description: 'Torneio de xadrez para todas as idades.',
         producerName: 'Clube de Xadrez',
         themeId: 'default',
+    },
+    {
+        id: '2',
+        name: 'Maratona Escolar de Verão',
+        startDate: new Date('2025-02-15T07:00:00'),
+        endDate: new Date('2025-02-16T12:00:00'),
+        startTime: '07:00',
+        endTime: '12:00',
+        location: 'Orla Marítima',
+        registrations: 350,
+        capacity: 1000,
+        status: 'published',
+        description: '<p>Venha participar da maior <strong>Maratona Escolar</strong> de todos os tempos! Um evento focado na saúde, bem-estar e integração dos alunos da rede pública e privada.</p><p>Teremos diversas categorias:<ul><li>Infantil (5km)</li><li>Juvenil (10km)</li><li>Elite (21km)</li></ul></p>',
+        producerName: 'Secretaria de Esportes e Juventude',
+        themeId: 'blue',
+        coverImage: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?q=80&w=2070&auto=format&fit=crop',
+        registrationIndividualEnd: new Date('2025-02-10T23:59:59'),
+        registrationCollectiveEnd: new Date('2025-02-05T23:59:59'),
+        realizerLogos: ['https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Logo_Prefeitura_de_Fortaleza.svg/2560px-Logo_Prefeitura_de_Fortaleza.svg.png'],
+        supporterLogos: ['https://logodownload.org/wp-content/uploads/2019/08/secretaria-do-esporte-ceara-logo.png']
     }
 ]
