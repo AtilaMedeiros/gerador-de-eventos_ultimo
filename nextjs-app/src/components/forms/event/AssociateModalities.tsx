@@ -3,8 +3,8 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Search, ArrowLeft, Plus, Edit, Copy, Trash2, ArrowUpDown, ArrowUp, ArrowDown, ChevronRight, ChevronLeft } from 'lucide-react'
-import { useState, useEffect, useMemo } from 'react'
+import { Search, ArrowLeft, Plus, Edit, Copy, Trash2, ArrowUpDown, ArrowUp, ArrowDown, ChevronRight, ChevronLeft, Activity, Users, Trophy, Save } from 'lucide-react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams, useParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { useEvent } from '@/contexts/EventContext'
@@ -19,6 +19,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
+import { Filters, type Filter as FilterType, type FilterFieldConfig } from '@/components/ui/filters'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import {
     AlertDialog,
@@ -32,6 +33,79 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import ModalityForm from '@/components/forms/modality/ModalityForm'
+
+const filterFields: FilterFieldConfig[] = [
+    {
+        key: 'name',
+        label: 'Nome',
+        icon: <Trophy className="size-3.5" />,
+        type: 'text',
+        placeholder: 'Buscar por nome...',
+    },
+    {
+        key: 'category',
+        label: 'Categoria',
+        icon: <Activity className="size-3.5" />,
+        type: 'text',
+        placeholder: 'Infantil, Juvenil...',
+    },
+    {
+        key: 'type',
+        label: 'Tipo',
+        icon: <Activity className="size-3.5" />,
+        type: 'text',
+        placeholder: 'Coletivo, Individual...',
+    },
+    {
+        key: 'gender',
+        label: 'Gênero',
+        icon: <Users className="size-3.5" />,
+        type: 'text',
+        placeholder: 'Masculino, Feminino...',
+    },
+    {
+        key: 'minAge',
+        label: 'Idade Mín.',
+        icon: <Users className="size-3.5" />,
+        type: 'text',
+        placeholder: 'Ex: 10',
+    },
+    {
+        key: 'maxAge',
+        label: 'Idade Máx.',
+        icon: <Users className="size-3.5" />,
+        type: 'text',
+        placeholder: 'Ex: 12',
+    },
+    {
+        key: 'minAthletes',
+        label: 'Min. Atletas',
+        icon: <Users className="size-3.5" />,
+        type: 'text',
+        placeholder: 'Ex: 5',
+    },
+    {
+        key: 'maxAthletes',
+        label: 'Máx. Atletas',
+        icon: <Users className="size-3.5" />,
+        type: 'text',
+        placeholder: 'Ex: 11',
+    },
+    {
+        key: 'maxTeams',
+        label: 'Máx. Equipes',
+        icon: <Trophy className="size-3.5" />,
+        type: 'text',
+        placeholder: 'Ex: 8',
+    },
+    {
+        key: 'maxEventsPerAthlete',
+        label: 'Máx. Provas',
+        icon: <Activity className="size-3.5" />,
+        type: 'text',
+        placeholder: 'Ex: 2',
+    }
+]
 
 export default function AssociateModalities({
     eventId: propEventId,
@@ -47,8 +121,6 @@ export default function AssociateModalities({
     const router = useRouter()
     const searchParams = useSearchParams()
     const params = useParams()
-
-
     const paramEventId = typeof params?.id === 'string' ? params.id : undefined;
 
     const eventId = propEventId || paramEventId || searchParams.get('eventId')
@@ -57,11 +129,81 @@ export default function AssociateModalities({
     const [showNewModalityModal, setShowNewModalityModal] = useState(false)
     const [editingModalityId, setEditingModalityId] = useState<string | null>(null)
     const { getEventById, getEventModalities, setEventModalities } = useEvent()
-    const { modalities, deleteModality, createModality } = useModality() // Using createModality instead of addModality
+    const { modalities, deleteModality, createModality } = useModality()
 
     // Filtering & Sorting State
     const [searchTerm, setSearchTerm] = useState('')
+    const [filters, setFilters] = useState<FilterType[]>([])
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
+
+    // Column Resizing Logic
+    const [colWidths, setColWidths] = useState<{ [key: string]: number }>({
+        name: 250,
+        type: 120,
+        gender: 120,
+        minAge: 100,
+        minAthletes: 100,
+        maxTeams: 110,
+        maxEventsPerAthlete: 120
+    })
+
+    // Load colWidths from localStorage on mount (client-side only)
+    useEffect(() => {
+        const saved = localStorage.getItem('ge_associate_modalities_col_widths')
+        if (saved) {
+            try {
+                // eslint-disable-next-line react-hooks/exhaustive-deps
+                setColWidths(JSON.parse(saved))
+            } catch (e) {
+                console.error("Failed to parse colWidths", e)
+            }
+        }
+    }, [])
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('ge_associate_modalities_col_widths', JSON.stringify(colWidths))
+        }
+    }, [colWidths])
+
+    const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)
+
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+        if (!resizingRef.current) return
+        const { key, startX, startWidth } = resizingRef.current
+        const diff = e.clientX - startX
+        const newWidth = Math.max(50, startWidth + diff) // Min width 50
+
+        setColWidths(prev => ({
+            ...prev,
+            [key]: newWidth
+        }))
+    }, [])
+
+    const handleMouseUp = useCallback(() => {
+        resizingRef.current = null
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.body.style.cursor = 'default'
+    }, [handleMouseMove])
+
+    const handleMouseDown = useCallback((e: React.MouseEvent, key: string) => {
+        e.preventDefault()
+        e.stopPropagation()
+        resizingRef.current = {
+            key,
+            startX: e.clientX,
+            startWidth: colWidths[key] || 100
+        }
+        document.addEventListener('mousemove', handleMouseMove)
+
+        const onMouseUp = () => {
+            handleMouseUp()
+            document.removeEventListener('mouseup', onMouseUp)
+        }
+        document.addEventListener('mouseup', onMouseUp)
+        document.body.style.cursor = 'col-resize'
+    }, [colWidths, handleMouseMove, handleMouseUp])
+
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1)
@@ -69,8 +211,10 @@ export default function AssociateModalities({
 
     const event = eventId ? getEventById(eventId) : undefined
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleDuplicate = async (modality: any) => {
-        const { id: _, ...rest } = modality
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...rest } = modality
         await createModality({ ...rest, name: `${rest.name} (Cópia)` })
         toast.success("Modalidade duplicada com sucesso!")
     }
@@ -78,7 +222,7 @@ export default function AssociateModalities({
     useEffect(() => {
         if (!eventId) {
             if (isWizard) {
-                // If wizard, maybe we are just initializing
+                // wizard specific logic
             } else {
                 toast.warning('Nenhum evento selecionado.', {
                     description: 'Retornando para a lista de eventos.',
@@ -109,16 +253,39 @@ export default function AssociateModalities({
                 mod.gender.toLowerCase().includes(searchLower)
 
             if (!matchesSearch) return false
-            return true
+
+            // Specific Filters
+            if (filters.length === 0) return true
+
+            return filters.every(filter => {
+                const value = filter.value?.toString().toLowerCase() || ''
+                if (value === '') return true
+
+                switch (filter.field) {
+                    case 'name': return mod.name.toLowerCase().includes(value)
+                    case 'category': return (mod.category || '').toLowerCase().includes(value)
+                    case 'type': return (mod.type || '').toLowerCase().includes(value)
+                    case 'gender': return mod.gender.toLowerCase().includes(value)
+                    case 'minAge': return String(mod.minAge || '').includes(value)
+                    case 'maxAge': return String(mod.maxAge || '').includes(value)
+                    case 'minAthletes': return String(mod.minAthletes || '').includes(value)
+                    case 'maxAthletes': return String(mod.maxAthletes || '').includes(value)
+                    case 'maxTeams': return String(mod.maxTeams || '').includes(value)
+                    case 'maxEventsPerAthlete': return String(mod.maxEventsPerAthlete || '').includes(value)
+                    default: return true
+                }
+            })
         })
-    }, [modalities, searchTerm])
+    }, [modalities, searchTerm, filters])
 
     const sortedModalities = useMemo(() => {
         if (!sortConfig) return filteredModalities
         return [...filteredModalities].sort((a, b) => {
             const { key, direction } = sortConfig
-            let aValue: any = a[key as keyof typeof a]
-            let bValue: any = b[key as keyof typeof b]
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const aValue: any = a[key as keyof typeof a]
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const bValue: any = b[key as keyof typeof b]
             if (aValue < bValue) return direction === 'asc' ? -1 : 1
             if (aValue > bValue) return direction === 'asc' ? 1 : -1
             return 0
@@ -161,6 +328,8 @@ export default function AssociateModalities({
             <ArrowDown className="ml-2 h-4 w-4 text-primary" />
     }
 
+    const totalTableWidth = useMemo(() => Object.values(colWidths).reduce((acc, width) => acc + width, 0) + 150, [colWidths])
+
     const handleSave = () => {
         if (eventId) {
             setEventModalities(eventId, selected)
@@ -180,7 +349,7 @@ export default function AssociateModalities({
     }
 
     return (
-        <div className={cn("w-full max-w-[1200px] mx-auto flex flex-col pt-6", isWizard ? "h-full" : "h-[calc(100vh-5rem)]")}>
+        <div className={cn("w-full mx-auto px-4 lg:px-6 flex flex-col pt-6", isWizard ? "min-h-full" : "h-[calc(100vh-5rem)]")}>
             {/* Header */}
             {!isWizard && (
                 <div className="flex items-center justify-between mb-10 shrink-0 px-1">
@@ -205,14 +374,14 @@ export default function AssociateModalities({
             )}
 
             {/* Main Content */}
-            <div className="flex-1 pb-24 flex flex-col lg:flex-row gap-6">
+            <div className="flex-1 pr-2 lg:pr-4 pb-24 flex flex-col lg:flex-row gap-6 px-1 pt-1">
 
                 {/* Left Column: List */}
                 <Card className="flex-1 flex flex-col shadow-md border bg-card">
                     <CardContent className="flex-1 flex flex-col p-4 space-y-4">
                         <div className="flex justify-end">
                             <Button
-                                className="bg-primary hover:bg-primary/90 shadow-md"
+                                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
                                 onClick={() => setShowNewModalityModal(true)}
                             >
                                 <Plus className="mr-2 h-4 w-4" /> Nova Modalidade
@@ -229,7 +398,38 @@ export default function AssociateModalities({
                                     placeholder="Pesquisar por nome, tipo..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 h-10 bg-white dark:bg-black/20"
+                                    className="pl-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-blue-200 dark:border-blue-800 focus:border-primary/30 focus:ring-primary/20 rounded-md transition-all shadow-sm group-hover:shadow-md text-left w-full"
+                                />
+                            </div>
+                            <div className="flex items-center gap-2 w-full md:w-auto">
+                                <Filters
+                                    fields={filterFields}
+                                    filters={filters}
+                                    onChange={setFilters}
+                                    addButton={
+                                        <button
+                                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-primary-foreground h-10 w-10 p-0 rounded-md bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-blue-200 dark:border-blue-800 hover:bg-primary/5 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
+                                            type="button"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="h-5 w-5 text-blue-400"
+                                                aria-hidden="true"
+                                            >
+                                                <path d="M13.354 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14v6a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341l1.218-1.348" />
+                                                <path d="M16 6h6" />
+                                                <path d="M19 3v6" />
+                                            </svg>
+                                        </button>
+                                    }
                                 />
                             </div>
                         </div>
@@ -237,34 +437,96 @@ export default function AssociateModalities({
                         {/* Table */}
                         <div className="flex-1 flex flex-col">
                             <div className="flex-1">
-                                <div className="rounded-md border bg-card overflow-hidden overflow-x-auto">
-                                    <Table>
-                                        <TableHeader className="bg-muted/50">
-                                            <TableRow>
-                                                <TableHead className="w-[50px]">
+                                <div className="rounded-md border border-blue-200 dark:border-blue-800 bg-white/30 dark:bg-black/30 backdrop-blur-md overflow-hidden overflow-x-auto border-collapse">
+                                    <Table style={{ tableLayout: 'fixed', minWidth: `${totalTableWidth}px` }}>
+                                        <TableHeader className="bg-primary/5">
+                                            <TableRow className="hover:bg-transparent border-b border-blue-100 dark:border-blue-900/30">
+                                                <TableHead className="w-[50px] relative font-semibold text-primary/80 h-12">
                                                     <Checkbox
                                                         checked={areAllVisibleSelected}
                                                         onCheckedChange={(checked) => toggleAll(!!checked)}
+                                                        className="translate-y-[2px]"
                                                     />
                                                 </TableHead>
-                                                <TableHead className="cursor-pointer" onClick={() => requestSort('name')}>
-                                                    <div className="flex items-center gap-2">Nome {getSortIcon('name')}</div>
+                                                <TableHead style={{ width: colWidths.name }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('name')}>
+                                                    <div className="flex items-center overflow-hidden">
+                                                        <span className="truncate">Nome</span> {getSortIcon('name')}
+                                                    </div>
+                                                    <div
+                                                        onMouseDown={(e) => handleMouseDown(e, 'name')}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                                    />
                                                 </TableHead>
-                                                <TableHead className="cursor-pointer text-center" onClick={() => requestSort('type')}>
-                                                    <div className="flex items-center justify-center gap-2">Tipo {getSortIcon('type')}</div>
+                                                <TableHead style={{ width: colWidths.type }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('type')}>
+                                                    <div className="flex items-center justify-center overflow-hidden">
+                                                        <span className="truncate">Tipo</span> {getSortIcon('type')}
+                                                    </div>
+                                                    <div
+                                                        onMouseDown={(e) => handleMouseDown(e, 'type')}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                                    />
                                                 </TableHead>
-                                                <TableHead className="cursor-pointer text-center" onClick={() => requestSort('gender')}>
-                                                    <div className="flex items-center justify-center gap-2">Gênero {getSortIcon('gender')}</div>
+                                                <TableHead style={{ width: colWidths.gender }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('gender')}>
+                                                    <div className="flex items-center justify-center overflow-hidden">
+                                                        <span className="truncate">Gênero</span> {getSortIcon('gender')}
+                                                    </div>
+                                                    <div
+                                                        onMouseDown={(e) => handleMouseDown(e, 'gender')}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                                    />
                                                 </TableHead>
-                                                <TableHead className="text-center">Idade</TableHead>
-                                                <TableHead className="text-center">Equipes</TableHead>
-                                                <TableHead className="text-right">Ações</TableHead>
+                                                <TableHead style={{ width: colWidths.minAge }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('minAge')}>
+                                                    <div className="flex items-center justify-center overflow-hidden">
+                                                        <span className="truncate">Idade</span> {getSortIcon('minAge')}
+                                                    </div>
+                                                    <div
+                                                        onMouseDown={(e) => handleMouseDown(e, 'minAge')}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                                    />
+                                                </TableHead>
+                                                <TableHead style={{ width: colWidths.minAthletes }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('minAthletes')}>
+                                                    <div className="flex items-center justify-center overflow-hidden">
+                                                        <span className="truncate">Atletas</span> {getSortIcon('minAthletes')}
+                                                    </div>
+                                                    <div
+                                                        onMouseDown={(e) => handleMouseDown(e, 'minAthletes')}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                                    />
+                                                </TableHead>
+                                                <TableHead style={{ width: colWidths.maxTeams }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('maxTeams')}>
+                                                    <div className="flex items-center justify-center overflow-hidden">
+                                                        <span className="truncate">Equipes Máx</span> {getSortIcon('maxTeams')}
+                                                    </div>
+                                                    <div
+                                                        onMouseDown={(e) => handleMouseDown(e, 'maxTeams')}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                                    />
+                                                </TableHead>
+                                                <TableHead style={{ width: colWidths.maxEventsPerAthlete }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('maxEventsPerAthlete')}>
+                                                    <div className="flex items-center justify-center overflow-hidden">
+                                                        <span className="truncate">Máx. Provas</span> {getSortIcon('maxEventsPerAthlete')}
+                                                    </div>
+                                                    <div
+                                                        onMouseDown={(e) => handleMouseDown(e, 'maxEventsPerAthlete')}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                                    />
+                                                </TableHead>
+                                                <TableHead className="px-4 align-middle relative text-right font-semibold text-primary/80 h-12">
+                                                    Ações
+                                                </TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {currentModalities.length === 0 ? (
                                                 <TableRow>
-                                                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                                                    <TableCell colSpan={8} className="h-32 text-center text-muted-foreground text-lg">
                                                         Nenhuma modalidade encontrada.
                                                     </TableCell>
                                                 </TableRow>
@@ -275,51 +537,97 @@ export default function AssociateModalities({
                                                         <TableRow
                                                             key={mod.id}
                                                             className={cn(
-                                                                "transition-colors hover:bg-muted/50",
-                                                                isSelected && "bg-primary/5 hover:bg-primary/10"
+                                                                "transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group",
+                                                                isSelected ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-primary/5"
                                                             )}
                                                         >
-                                                            <TableCell>
+                                                            <TableCell className="h-12 py-0">
                                                                 <Checkbox
                                                                     checked={isSelected}
                                                                     onCheckedChange={() => toggle(mod.id)}
+                                                                    className="translate-y-[2px]"
                                                                 />
                                                             </TableCell>
-                                                            <TableCell className="font-medium">
-                                                                <div className="flex flex-col">
-                                                                    <span className={cn(isSelected && "text-primary font-bold")}>{mod.name}</span>
-                                                                    {mod.category && <span className="text-xs text-muted-foreground">{mod.category}</span>}
+                                                            <TableCell className="font-medium h-12 py-0">
+                                                                <div className="flex flex-col justify-center h-full">
+                                                                    <span className={cn("text-sm transition-colors leading-tight", isSelected && "text-primary font-bold")}>{mod.name}</span>
+                                                                    {mod.category && <span className="text-[10px] text-muted-foreground font-light leading-tight">{mod.category}</span>}
                                                                 </div>
                                                             </TableCell>
-                                                            <TableCell className="text-center capitalize">{mod.type || '-'}</TableCell>
-                                                            <TableCell className="text-center capitalize">{mod.gender}</TableCell>
-                                                            <TableCell className="text-center">{mod.minAge ?? '?'} - {mod.maxAge ?? '?'} anos</TableCell>
-                                                            <TableCell className="text-center">{mod.maxTeams && mod.maxTeams > 0 ? mod.maxTeams : '∞'}</TableCell>
-                                                            <TableCell className="text-right">
-                                                                <div className="flex justify-end gap-1">
-                                                                    <Button variant="ghost" size="icon" onClick={() => {
-                                                                        setEditingModalityId(mod.id);
-                                                                        setShowNewModalityModal(true);
-                                                                    }}>
+                                                            <TableCell className="capitalize text-muted-foreground h-12 py-0 text-center text-sm">{mod.type || '-'}</TableCell>
+                                                            <TableCell className="capitalize text-muted-foreground h-12 py-0 text-center text-sm">{mod.gender}</TableCell>
+                                                            <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">{mod.minAge} - {mod.maxAge} anos</TableCell>
+                                                            <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">{mod.minAthletes ?? '?'} - {mod.maxAthletes ?? '?'}</TableCell>
+                                                            <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">
+                                                                {mod.maxTeams && mod.maxTeams > 0 ? mod.maxTeams : 'Ilimitado'}
+                                                            </TableCell>
+                                                            <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">
+                                                                {mod.maxEventsPerAthlete}
+                                                            </TableCell>
+                                                            <TableCell className="text-right h-12 py-0">
+                                                                <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity h-full items-center">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                                                                        title="Editar"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setEditingModalityId(mod.id);
+                                                                            setShowNewModalityModal(true);
+                                                                        }}
+                                                                    >
                                                                         <Edit className="h-4 w-4" />
                                                                     </Button>
-                                                                    <Button variant="ghost" size="icon" onClick={() => handleDuplicate(mod)}>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="hover:bg-secondary/20 hover:text-secondary-foreground rounded-full transition-colors"
+                                                                        title="Copiar"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleDuplicate(mod);
+                                                                        }}
+                                                                    >
                                                                         <Copy className="h-4 w-4" />
                                                                     </Button>
+
                                                                     <AlertDialog>
                                                                         <AlertDialogTrigger asChild>
-                                                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                title="Excluir"
+                                                                                className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                                                                                onClick={(e) => e.stopPropagation()}
+                                                                            >
                                                                                 <Trash2 className="h-4 w-4" />
                                                                             </Button>
                                                                         </AlertDialogTrigger>
-                                                                        <AlertDialogContent>
+                                                                        <AlertDialogContent className="rounded-2xl border-primary/10 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                                                                             <AlertDialogHeader>
-                                                                                <AlertDialogTitle>Excluir modalidade?</AlertDialogTitle>
-                                                                                <AlertDialogDescription>Essa ação não pode ser desfeita.</AlertDialogDescription>
+                                                                                <AlertDialogTitle>
+                                                                                    Tem certeza absoluta?
+                                                                                </AlertDialogTitle>
+                                                                                <AlertDialogDescription>
+                                                                                    Essa ação não pode ser desfeita. Isso excluirá
+                                                                                    permanentemente a modalidade
+                                                                                    <strong> {mod.name}</strong>.
+                                                                                </AlertDialogDescription>
                                                                             </AlertDialogHeader>
                                                                             <AlertDialogFooter>
-                                                                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                                                <AlertDialogAction className="bg-destructive" onClick={() => deleteModality(mod.id)}>Excluir</AlertDialogAction>
+                                                                                <AlertDialogCancel className="rounded-xl">
+                                                                                    Cancelar
+                                                                                </AlertDialogCancel>
+                                                                                <AlertDialogAction
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        deleteModality(mod.id);
+                                                                                    }}
+                                                                                    className="bg-destructive hover:bg-destructive/90 rounded-xl shadow-lg shadow-destructive/20"
+                                                                                >
+                                                                                    Excluir
+                                                                                </AlertDialogAction>
                                                                             </AlertDialogFooter>
                                                                         </AlertDialogContent>
                                                                     </AlertDialog>
@@ -335,6 +643,24 @@ export default function AssociateModalities({
                             </div>
                             {/* Pagination Footer in Table */}
                             <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground pt-4 shrink-0">
+                                <div className="flex items-center gap-2">
+                                    <span>Mostrando</span>
+                                    <Input
+                                        type="number"
+                                        min={1}
+                                        max={500}
+                                        value={itemsPerPage}
+                                        onChange={(e) => {
+                                            const val = parseInt(e.target.value);
+                                            if (!isNaN(val) && val > 0) {
+                                                setItemsPerPage(val);
+                                                setCurrentPage(1);
+                                            }
+                                        }}
+                                        className="h-8 w-10 text-center p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    />
+                                    <span>registros por página</span>
+                                </div>
                                 <div className="flex items-center gap-2">
                                     <span>Página {currentPage} de {totalPages || 1}</span>
                                     <div className="flex gap-1">
@@ -404,11 +730,10 @@ export default function AssociateModalities({
                 )}
 
                 <Button onClick={handleSave} disabled={!eventId} className="min-w-[120px]">
-                    {/* If strict Next.js logic, ensure we don't save duplicates on multiple clicks */}
                     {isWizard ? (
                         <>Próximo <ArrowLeft className="ml-2 h-4 w-4 rotate-180" /></>
                     ) : (
-                        <><Edit className="mr-2 h-4 w-4" /> Salvar</>
+                        <><Save className="mr-2 h-4 w-4" /> Salvar</>
                     )}
                 </Button>
             </div>
