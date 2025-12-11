@@ -10,6 +10,7 @@ interface AuthContextType {
     isAuthenticated: boolean
     logout: () => Promise<void>
     refreshUser: () => Promise<void>
+    hasPermission: (permission: string) => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -58,12 +59,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await loadUser()
     }
 
+    const hasPermission = (permission: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _perm = permission // Placeholder usage
+        if (!user) return false
+        if (user.role === 'produtor') return true
+        return false // Simplificado para demo
+    }
+
     const value: AuthContextType = {
         user,
         isLoading,
         isAuthenticated: !!user,
         logout,
         refreshUser,
+        hasPermission,
     }
 
     return (

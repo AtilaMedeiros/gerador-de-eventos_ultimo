@@ -106,10 +106,10 @@ export function DashboardSidebar() {
                         active={isActive('/area-do-produtor/inicio')}
                     />
                     <NavItem
-                        to="/area-do-produtor/evento"
+                        to="/area-do-produtor/eventos"
                         icon={CalendarHeart}
                         label="Eventos"
-                        active={isChildActive('/area-do-produtor/evento')}
+                        active={isChildActive('/area-do-produtor/eventos')}
                         iconClassName="h-6 w-6"
                     />
                     <NavItem

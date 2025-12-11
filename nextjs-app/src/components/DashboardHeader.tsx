@@ -31,7 +31,7 @@ export function DashboardHeader() {
     const getPageTitle = () => {
         const path = pathname || ''
         if (path.includes('/area-do-produtor/inicio')) return 'Visão Geral'
-        if (path.includes('/area-do-produtor/evento') && !path.includes('/dashboard'))
+        if (path.includes('/area-do-produtor/eventos') && !path.includes('/dashboard'))
             return path.includes('/novo') ? 'Criar Evento' : 'Gerenciar Eventos'
         if (path.includes('/area-do-produtor/modalidades'))
             return 'Catálogo de Modalidades'
@@ -50,7 +50,7 @@ export function DashboardHeader() {
             return 'Configurações do Sistema'
 
         // Event Panel routes
-        if (path.includes('/area-do-produtor/evento/')) {
+        if (path.includes('/area-do-produtor/eventos/')) {
             if (path.includes('/dashboard')) return 'Visão Geral'
             if (path.includes('/publicacoes')) return 'Avisos e Boletins'
             return 'Painel do Evento'
@@ -92,7 +92,7 @@ export function DashboardHeader() {
                                 <Button
                                     variant="ghost"
                                     className="w-full justify-start"
-                                    onClick={() => router.push('/area-do-produtor/evento')}
+                                    onClick={() => router.push('/area-do-produtor/eventos')}
                                 >
                                     Eventos
                                 </Button>

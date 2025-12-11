@@ -5,11 +5,16 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 export interface Modality {
     id: string
     name: string
-    category: string
-    gender: 'M' | 'F' | 'Misto'
+    category: string // Categoria de idade/peso etc? O original usa 'category' e 'eventCategory', confuso.
+    gender: 'M' | 'F' | 'Misto' | string
+    type?: string // 'Coletivo' | 'Individual'
+    eventCategory?: string // Pode ser duplicado? Vamos manter.
     minAge?: number
     maxAge?: number
-    // Adicionar outros campos conforme necessário
+    minAthletes?: number
+    maxAthletes?: number
+    maxTeams?: number
+    maxEventsPerAthlete?: number
 }
 
 interface ModalityContextType {
