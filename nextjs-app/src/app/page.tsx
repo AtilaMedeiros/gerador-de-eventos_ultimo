@@ -120,7 +120,7 @@ export default function LoginPage() {
                                                 placeholder="admin@exemplo.com"
                                                 autoComplete="email"
                                                 disabled={isLoading}
-                                                className="h-12 bg-white dark:bg-secondary/20"
+                                                className="h-12 bg-white dark:bg-white"
                                                 {...field}
                                             />
                                         </FormControl>
@@ -151,7 +151,7 @@ export default function LoginPage() {
                                                     placeholder="••••••••"
                                                     autoComplete="current-password"
                                                     disabled={isLoading}
-                                                    className="h-12 pr-10 bg-white dark:bg-secondary/20"
+                                                    className="h-12 pr-10 bg-white dark:bg-white"
                                                     {...field}
                                                 />
                                                 <Button

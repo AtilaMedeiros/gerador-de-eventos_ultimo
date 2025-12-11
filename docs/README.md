@@ -162,6 +162,30 @@ Esta documentação profissional fornece toda a informação necessária para **
 
 ---
 
+#### 10. **[MIGRATION_GUIDELINES.md](./MIGRATION_GUIDELINES.md)** - Diretrizes de Migração (React → Next.js)
+**Para**: Desenvolvedores na Migração  
+**Contém**:
+- Estrutura clara dos dois projetos (Origem vs Destino)
+- Regras de fidelidade visual e funcional
+- Roadmap da migração
+- Checklists de validação
+
+**Quando ler**: Antes de migrar qualquer componente ou página para o Next.js
+
+---
+
+#### 11. **[pitfall.md](./pitfall.md)** - Pitfalls e Aprendizados
+**Para**: Todos os Desenvolvedores  
+**Contém**:
+- Catálogo de problemas recorrentes e soluções
+- Padrões visuais a evitar (ex: cores pastel vs vibrantes)
+- Erros técnicos comuns (ex: dark mode inputs)
+- Template para registro de novos erros
+
+**Quando ler**: Diariamente, para consultar e registrar novos aprendizados
+
+---
+
 ## 🗂️ Estrutura de Documentação
 
 ```

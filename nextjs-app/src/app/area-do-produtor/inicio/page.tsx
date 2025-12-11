@@ -264,21 +264,21 @@ export default function ProducerDashboard() {
                     title="Término do Evento"
                     date={eventEndDate}
                     icon={Calendar}
-                    colorClass="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                    colorClass="!bg-slate-500/5 dark:!bg-slate-900 border-slate-200 dark:border-slate-800"
                     iconClass="text-slate-600 dark:text-slate-400"
                 />
                 <CountdownCard
                     title="Inscrição Individual"
                     date={regIndEnd}
                     icon={Users}
-                    colorClass="bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800"
+                    colorClass="!bg-purple-500/5 dark:!bg-purple-900/10 border-purple-100 dark:border-purple-800/50"
                     iconClass="text-purple-600 dark:text-purple-400"
                 />
                 <CountdownCard
                     title="Inscrição Coletiva"
                     date={regColEnd}
                     icon={School}
-                    colorClass="bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800"
+                    colorClass="!bg-amber-500/5 dark:!bg-amber-900/10 border-amber-100 dark:border-amber-800/50"
                     iconClass="text-amber-600 dark:text-amber-400"
                 />
             </div>
