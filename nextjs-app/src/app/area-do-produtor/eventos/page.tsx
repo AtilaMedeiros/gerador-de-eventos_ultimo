@@ -16,7 +16,8 @@ import {
     Trophy,
     Users,
     User,
-    CalendarHeart
+    CalendarHeart,
+    UserPlus
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -377,6 +378,38 @@ export default function EventsList() {
 
                                 {/* Action Icons */}
                                 <div className="grid grid-cols-2 gap-2 z-10 w-full md:w-auto mt-4 md:mt-0 md:pl-6 border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <button
+                                                aria-label="Communication"
+                                                className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    router.push(`/area-do-produtor/eventos/${event.id}/publicacoes`)
+                                                }}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true"><path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"></path><path d="M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14"></path><path d="M8 6v8"></path></svg>
+                                            </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left">Comunicação</TooltipContent>
+                                    </Tooltip>
+
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <button
+                                                aria-label="Produtor Assistente / Observador"
+                                                className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    router.push(`/area-do-produtor/eventos/${event.id}/produtor`)
+                                                }}
+                                            >
+                                                <UserPlus className="h-5 w-5" />
+                                            </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left">Produtor Assistente / Observador</TooltipContent>
+                                    </Tooltip>
+
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <button

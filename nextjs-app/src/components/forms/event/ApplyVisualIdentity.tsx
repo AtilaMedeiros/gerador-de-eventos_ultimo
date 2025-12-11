@@ -106,7 +106,7 @@ export default function ApplyVisualIdentity({
     const currentTheme = themes.find((t) => t.id === selectedThemeId)
 
     return (
-        <div className={cn("w-full max-w-[1600px] mx-auto flex flex-col pt-6", isWizard ? "h-full" : "h-[calc(100vh-5rem)]")}>
+        <div className={cn("w-full max-w-7xl mx-auto flex flex-col pt-6 px-6", isWizard ? "h-full" : "h-[calc(100vh-5rem)]")}>
             {/* Header */}
             {!isWizard && (
                 <div className="flex items-center justify-between mb-8 shrink-0 px-1">
@@ -146,7 +146,7 @@ export default function ApplyVisualIdentity({
                                 Selecione um tema abaixo para visualizar.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="px-4 pb-4 grid gap-4 overflow-y-auto scrollbar-thin flex-1 max-h-[600px]">
+                        <CardContent className="p-6 pt-0 px-4 pb-4 grid gap-4 max-h-[600px] overflow-y-auto scrollbar-thin">
                             {themes.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum tema encontrado.</p>}
 
                             {themes.map((theme) => (
