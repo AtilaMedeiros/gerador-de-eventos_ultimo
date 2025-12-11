@@ -1,6 +1,6 @@
 'use server'
 
-import { Event } from '@/contexts/EventContext'
+import { Event } from '@/types/event'
 
 // Simula armazenamento (migrar para banco de dados depois)
 export async function getEvents(): Promise<Event[]> {

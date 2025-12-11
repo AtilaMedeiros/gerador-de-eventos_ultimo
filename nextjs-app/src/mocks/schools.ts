@@ -1,0 +1,60 @@
+import { School } from '@/types/participant'
+
+export const mockSchools: School[] = [
+    {
+        id: 'school-1',
+        name: 'Escola Municipal Exemplo',
+        inep: '12345678',
+        cnpj: '00.000.000/0000-00',
+        municipality: 'Fortaleza',
+        address: 'Rua das Flores, 123',
+        neighborhood: 'Centro',
+        cep: '60000-000',
+        type: 'Publica',
+        sphere: 'Municipal',
+        directorName: 'Maria Diretora',
+        landline: '(85) 3222-2222',
+        mobile: '(85) 99999-9999',
+        email: 'escola@exemplo.com',
+        responsibleName: 'Prof. Silva',
+        eventId: 'evt-001',
+    },
+    {
+        id: 'school-2',
+        name: 'Colégio Estadual Inovação',
+        inep: '87654321',
+        cnpj: '11.111.111/1111-11',
+        municipality: 'Eusébio',
+        address: 'Av. do Conhecimento, 456',
+        neighborhood: 'Jardins',
+        cep: '61760-000',
+        type: 'Publica',
+        sphere: 'Estadual',
+        directorName: 'João Coordenador',
+        landline: '(85) 3333-3333',
+        mobile: '(85) 98888-8888',
+        email: 'contato@inovacao.ce.gov.br',
+        responsibleName: 'Coord. Santos',
+        eventId: 'evt-001',
+    },
+    {
+        id: 'school-3',
+        name: 'Escola Privada Saber Mais',
+        inep: '11223344',
+        cnpj: '22.222.222/2222-22',
+        municipality: 'Fortaleza',
+        address: 'Rua da Educação, 789',
+        neighborhood: 'Aldeota',
+        cep: '60100-000',
+        type: 'Privada',
+        sphere: 'Municipal', // Privada usually doesn't have sphere like this but keeping for type consistency
+        directorName: 'Ana Pedagoga',
+        landline: '(85) 3444-4444',
+        mobile: '(85) 97777-7777',
+        email: 'direcao@sabermais.com.br',
+        responsibleName: 'Dir. Ana',
+        eventId: 'evt-002',
+    }
+]
+
+export const mockSchool = mockSchools[0]

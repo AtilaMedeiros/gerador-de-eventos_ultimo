@@ -19,22 +19,16 @@ import {
     FormMessage,
     FormDescription,
 } from '@/components/ui/form'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
+
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { useModality } from '@/contexts/ModalityContext'
 
 const modalitySchema = z.object({
     name: z.string().min(3, 'Nome é obrigatório'),
-    category: z.string().min(3, 'Categoria é obrigatória'), // Esporte principal ex: Futebol
-    gender: z.enum(['Feminino', 'Masculino', 'Misto']),
+    category: z.string().optional(), // Esporte principal agora opcional ou deduzido
+    gender: z.enum(['Feminino', 'Masculino']),
     type: z.enum(['Coletiva', 'Individual']),
-    eventCategory: z.string().optional(), // Categoria do evento ex: Sub-15
+    proof: z.string().optional(), // Especificação da Prova ex: 100m Rasos
     minAge: z.coerce.number().min(0).optional(),
     maxAge: z.coerce.number().min(0).optional(),
     minAthletes: z.coerce.number().min(1).optional(),
@@ -49,8 +43,7 @@ export default function ModalityFormPage() {
     const router = useRouter()
     const params = useParams()
     const id = params?.id as string | undefined
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { modalities, createModality, updateModality } = useModality()
+
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     // Client-side safety
@@ -61,14 +54,13 @@ export default function ModalityFormPage() {
     const editingModality = isEditing && isClient ? modalities.find(m => m.id === id) : null
 
     const form = useForm<ModalityFormValues>({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        resolver: zodResolver(modalitySchema) as any,
+        resolver: zodResolver(modalitySchema),
         defaultValues: {
             name: '',
             category: '',
-            gender: 'Misto',
+            gender: 'Masculino',
             type: 'Coletiva',
-            eventCategory: '',
+            proof: '',
             minAge: 0,
             maxAge: 99,
             minAthletes: 1,
@@ -83,9 +75,9 @@ export default function ModalityFormPage() {
             form.reset({
                 name: editingModality.name,
                 category: editingModality.category,
-                gender: editingModality.gender as 'Misto' | 'Feminino' | 'Masculino',
+                gender: editingModality.gender as 'Feminino' | 'Masculino',
                 type: (editingModality.type as 'Coletiva' | 'Individual') || 'Coletiva',
-                eventCategory: editingModality.eventCategory || '',
+                proof: editingModality.proof || '',
                 minAge: editingModality.minAge || 0,
                 maxAge: editingModality.maxAge || 99,
                 minAthletes: editingModality.minAthletes || 1,
@@ -129,11 +121,7 @@ export default function ModalityFormPage() {
         }
     }
 
-    const categories = [
-        'Atletismo', 'Badminton', 'Basquetebol', 'Ciclismo', 'Futebol', 'Futsal',
-        'Ginástica', 'Handebol', 'Judô', 'Karatê', 'Natação', 'Tênis de Mesa',
-        'Voleibol', 'Vôlei de Praia', 'Xadrez'
-    ]
+
 
     const handleTypeChange = (val: string) => {
         form.setValue('type', val as 'Coletiva' | 'Individual');
@@ -205,7 +193,7 @@ export default function ModalityFormPage() {
                                         name="name"
                                         render={({ field }) => (
                                             <FormItem className="col-span-2">
-                                                <FormLabel>Nome Exibição *</FormLabel>
+                                                <FormLabel>Nome da Modalidade *</FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="Ex: Futsal Sub-15 Masculino" {...field} className="text-lg font-medium" />
                                                 </FormControl>
@@ -214,34 +202,13 @@ export default function ModalityFormPage() {
                                             </FormItem>
                                         )}
                                     />
+
                                     <FormField
                                         control={form.control}
-                                        name="category"
+                                        name="proof"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Esporte Base *</FormLabel>
-                                                <Select onValueChange={field.onChange} value={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Selecione..." />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {categories.map((cat) => (
-                                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="eventCategory"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Categoria do Evento</FormLabel>
+                                                <FormLabel>Especificação da Prova / Categoria</FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="Ex: Sub-15, Adulto" {...field} />
                                                 </FormControl>
@@ -257,7 +224,7 @@ export default function ModalityFormPage() {
                                         name="type"
                                         render={({ field }) => (
                                             <FormItem className="space-y-3">
-                                                <FormLabel>Tipo de Modalidade</FormLabel>
+                                                <FormLabel>Tipo de Disputa</FormLabel>
                                                 <FormControl>
                                                     <RadioGroup
                                                         onValueChange={handleTypeChange}
@@ -269,7 +236,7 @@ export default function ModalityFormPage() {
                                                                 <RadioGroupItem value="Coletiva" />
                                                             </FormControl>
                                                             <FormLabel className="font-normal cursor-pointer flex-1">
-                                                                Coletiva
+                                                                Coletiva (Equipe)
                                                             </FormLabel>
                                                         </FormItem>
                                                         <FormItem className="flex items-center space-x-2 space-y-0 border rounded-lg p-3 cursor-pointer hover:bg-muted/50 transition-colors w-full">
@@ -291,7 +258,7 @@ export default function ModalityFormPage() {
                                         name="gender"
                                         render={({ field }) => (
                                             <FormItem className="space-y-3">
-                                                <FormLabel>Naipe/Sexo</FormLabel>
+                                                <FormLabel>Naipe</FormLabel>
                                                 <FormControl>
                                                     <RadioGroup
                                                         onValueChange={field.onChange}
@@ -302,20 +269,15 @@ export default function ModalityFormPage() {
                                                             <FormControl>
                                                                 <RadioGroupItem value="Masculino" />
                                                             </FormControl>
-                                                            <FormLabel className="font-normal cursor-pointer">M</FormLabel>
+                                                            <FormLabel className="font-normal cursor-pointer">Masculino</FormLabel>
                                                         </FormItem>
                                                         <FormItem className="flex items-center space-x-2 space-y-0">
                                                             <FormControl>
                                                                 <RadioGroupItem value="Feminino" />
                                                             </FormControl>
-                                                            <FormLabel className="font-normal cursor-pointer">F</FormLabel>
+                                                            <FormLabel className="font-normal cursor-pointer">Feminino</FormLabel>
                                                         </FormItem>
-                                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                                            <FormControl>
-                                                                <RadioGroupItem value="Misto" />
-                                                            </FormControl>
-                                                            <FormLabel className="font-normal cursor-pointer">Misto</FormLabel>
-                                                        </FormItem>
+
                                                     </RadioGroup>
                                                 </FormControl>
                                                 <FormMessage />
@@ -333,7 +295,7 @@ export default function ModalityFormPage() {
                                         <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-md">
                                             <Ruler className="h-4 w-4 text-green-600 dark:text-green-400" />
                                         </div>
-                                        <h3 className="font-semibold text-lg">Faixa Etária (Anos)</h3>
+                                        <h3 className="font-semibold text-lg">Faixa Etária</h3>
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <FormField
@@ -341,7 +303,7 @@ export default function ModalityFormPage() {
                                             name="minAge"
                                             render={({ field }) => (
                                                 <FormItem className="w-full">
-                                                    <FormLabel>Mínima</FormLabel>
+                                                    <FormLabel>Idade Mínima (Anos)</FormLabel>
                                                     <FormControl>
                                                         <Input type="number" min={0} {...field} />
                                                     </FormControl>
@@ -355,7 +317,7 @@ export default function ModalityFormPage() {
                                             name="maxAge"
                                             render={({ field }) => (
                                                 <FormItem className="w-full">
-                                                    <FormLabel>Máxima</FormLabel>
+                                                    <FormLabel>Idade Máxima (Anos)</FormLabel>
                                                     <FormControl>
                                                         <Input type="number" min={0} {...field} />
                                                     </FormControl>
@@ -380,7 +342,7 @@ export default function ModalityFormPage() {
                                             name="minAthletes"
                                             render={({ field }) => (
                                                 <FormItem className="w-full">
-                                                    <FormLabel>Mín. Atletas</FormLabel>
+                                                    <FormLabel>Mín. Atletas por Equipe</FormLabel>
                                                     <FormControl>
                                                         <Input type="number" min={1} {...field} />
                                                     </FormControl>
@@ -394,7 +356,7 @@ export default function ModalityFormPage() {
                                             name="maxAthletes"
                                             render={({ field }) => (
                                                 <FormItem className="w-full">
-                                                    <FormLabel>Máx. Atletas</FormLabel>
+                                                    <FormLabel>Máx. Atletas por Equipe</FormLabel>
                                                     <FormControl>
                                                         <Input type="number" min={1} {...field} />
                                                     </FormControl>
@@ -419,11 +381,11 @@ export default function ModalityFormPage() {
                                             name="maxTeams"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>Máximo de Equipes (0 = Ilimitado)</FormLabel>
+                                                    <FormLabel>Máximo de Equipes</FormLabel>
                                                     <FormControl>
                                                         <Input type="number" min={0} {...field} />
                                                     </FormControl>
-                                                    <FormDescription>Limite total de inscrições nesta modalidade</FormDescription>
+                                                    <FormDescription>0 = Ilimitado. Limite total de inscrições.</FormDescription>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}

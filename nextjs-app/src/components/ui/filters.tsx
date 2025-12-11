@@ -92,9 +92,10 @@ export function Filters({ fields, filters, onChange, addButton, className }: Fil
                                 {field.activeLabel}
                             </span>
                         )}
-                        {field.type === 'text' || field.type === 'email' ? (
+                        {field.type === 'text' || field.type === 'email' || field.type === 'number' ? (
                             <input
-                                className="bg-transparent border-none outline-none w-32 text-foreground placeholder:text-muted-foreground/50 text-sm font-medium focus:w-48 transition-all duration-300"
+                                type={field.type}
+                                className="bg-transparent border-none outline-none w-32 text-foreground placeholder:text-muted-foreground/50 text-sm font-medium focus:w-48 transition-all duration-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 value={filter.value}
                                 onChange={(e) => updateFilter(filter.id, e.target.value)}
                                 placeholder={field.placeholder || "Digite..."}

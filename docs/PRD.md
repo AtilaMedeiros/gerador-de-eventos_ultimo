@@ -471,6 +471,16 @@ interface Technician {
 #### 9.1 Página do Evento
 **Rota**: `/evento/:slug/:id`
 
+**Padrão de URL (Slug + ID)**:
+Cada evento possui uma URL pública única formada por uma versão amigável do nome (slug) seguida do ID numérico/UUID.
+*   **Formato:** `https://domain.com/evento/{slug}/{id_evento}`
+*   **Exemplos:**
+    *   `.../evento/jogo-de-futebol/1`
+    *   `.../evento/copa-escolar-2025/123`
+*   **Geração de Slug**: Minúsculas, sem acentos, espaços substituídos por hífens.
+
+**Objetivo**: URLs legíveis e SEO-friendly com identificação única robusta via ID.
+
 **Componentes**:
 - **PublicHeader**: Menu navegação, logo
 - **PublicHero**: Imagem destaque, título, CTA

@@ -225,40 +225,6 @@ export default function EventsList() {
                                 }
                             />
                         </div>
-
-                        {/* View Toggle */}
-                        <div className="flex items-center gap-1 p-1 bg-white border border-gray-200 rounded-lg shadow-sm h-10">
-                            <button
-                                className={cn(
-                                    "p-1.5 rounded transition-colors",
-                                    viewMode === 'cards' ? "bg-primary/10 text-primary" : "hover:bg-gray-100 text-gray-400"
-                                )}
-                                title="Visualização em cards"
-                                onClick={() => setViewMode('cards')}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect width="7" height="7" x="3" y="3" rx="1"></rect>
-                                    <rect width="7" height="7" x="14" y="3" rx="1"></rect>
-                                    <rect width="7" height="7" x="14" y="14" rx="1"></rect>
-                                    <rect width="7" height="7" x="3" y="14" rx="1"></rect>
-                                </svg>
-                            </button>
-                            <div className="w-px h-5 bg-gray-200"></div>
-                            <button
-                                className={cn(
-                                    "p-1.5 rounded transition-colors",
-                                    viewMode === 'list' ? "bg-primary/10 text-primary" : "hover:bg-gray-100 text-gray-400"
-                                )}
-                                title="Visualização em lista"
-                                onClick={() => setViewMode('list')}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="3" x2="21" y1="6" y2="6"></line>
-                                    <line x1="3" x2="21" y1="12" y2="12"></line>
-                                    <line x1="3" x2="21" y1="18" y2="18"></line>
-                                </svg>
-                            </button>
-                        </div>
                     </div>
                 </div>
 
@@ -330,10 +296,18 @@ export default function EventsList() {
                                                     "flex items-center gap-2 px-3 py-1 rounded-sm text-xs font-semibold w-fit",
                                                     (event as any).status === 'published'
                                                         ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-                                                        : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                                                        : (event as any).status === 'closed'
+                                                            ? "bg-slate-500/15 text-slate-700 dark:text-slate-400"
+                                                            : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
                                                 )}>
                                                     <span className="w-1.5 h-1.5 bg-current rounded-full"></span>
-                                                    <span>{(event as any).status === 'published' ? 'Publicado' : 'Rascunho'}</span>
+                                                    <span>
+                                                        {(event as any).status === 'published'
+                                                            ? 'Publicado'
+                                                            : (event as any).status === 'closed'
+                                                                ? 'Encerrado'
+                                                                : 'Rascunho'}
+                                                    </span>
                                                 </div>
                                                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                                                     {(event as any).producerName || 'Organização'}
@@ -470,7 +444,7 @@ export default function EventsList() {
                     )}
                 </div>
 
-            </div>
-        </TooltipProvider>
+            </div >
+        </TooltipProvider >
     )
 }

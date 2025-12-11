@@ -1,21 +1,10 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { mockModalities } from '@/mocks/modalities'
 
-export interface Modality {
-    id: string
-    name: string
-    category: string // Categoria de idade/peso etc? O original usa 'category' e 'eventCategory', confuso.
-    gender: 'M' | 'F' | 'Misto' | string
-    type?: string // 'Coletivo' | 'Individual'
-    eventCategory?: string // Pode ser duplicado? Vamos manter.
-    minAge?: number
-    maxAge?: number
-    minAthletes?: number
-    maxAthletes?: number
-    maxTeams?: number
-    maxEventsPerAthlete?: number
-}
+import { Modality } from '@/types/modality'
+export type { Modality }
 
 interface ModalityContextType {
     modalities: Modality[]
@@ -38,6 +27,10 @@ export function ModalityProvider({ children }: { children: ReactNode }) {
             const stored = localStorage.getItem('ge_modalities')
             if (stored) {
                 setModalities(JSON.parse(stored))
+            } else {
+                // Mock data initialization
+                setModalities(mockModalities)
+                localStorage.setItem('ge_modalities', JSON.stringify(mockModalities))
             }
         } catch (error) {
             console.error('Erro ao carregar modalidades:', error)
@@ -48,7 +41,7 @@ export function ModalityProvider({ children }: { children: ReactNode }) {
 
     const saveModalities = (updated: Modality[]) => {
         try {
-            localStorage.setItem('ge_modalities', JSON.stringify(updated))
+            localStorage.setItem('ge_modalities_v2', JSON.stringify(updated))
             setModalities(updated)
         } catch (error) {
             console.error('Erro ao salvar modalidades:', error)

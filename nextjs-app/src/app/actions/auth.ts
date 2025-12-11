@@ -4,14 +4,10 @@ import { cookies } from 'next/headers'
 
 // ==================== TIPOS ====================
 
-export type UserRole = 'produtor' | 'participante'
+import { User, UserRole } from '@/types/auth'
+import { mockUsers } from '@/mocks/users'
 
-export interface User {
-  id: string
-  email: string
-  name: string
-  role: UserRole
-}
+export type { User, UserRole }
 
 export interface LoginCredentials {
   email: string
@@ -32,7 +28,7 @@ function generateToken(user: User): string {
   return Buffer.from(JSON.stringify({ userId: user.id, email: user.email })).toString('base64')
 }
 
-function verifyPassword(inputPassword: string, storedHash?: string): boolean {
+function verifyPassword(inputPassword: string, _storedHash?: string): boolean {
   // TEMPORÁRIO: Validação simples
   // TODO: Implementar bcrypt
   return inputPassword.length >= 6
@@ -43,23 +39,10 @@ async function findUser(email: string, role: UserRole): Promise<User | null> {
   // TODO: Buscar do banco de dados (Supabase/Firebase/Prisma)
   // Por enquanto, retorna null para forçar usuário a usar dados reais
 
-  // EXEMPLO de usuário teste:
-  if (email === 'produtor@teste.com' && role === 'produtor') {
-    return {
-      id: '1',
-      email: 'produtor@teste.com',
-      name: 'Produtor Teste',
-      role: 'produtor',
-    }
-  }
-
-  if (email === 'participante@teste.com' && role === 'participante') {
-    return {
-      id: '2',
-      email: 'participante@teste.com',
-      name: 'Escola Teste',
-      role: 'participante',
-    }
+  // Busca no mock (substituindo ifs hardcoded)
+  const user = mockUsers.find(u => u.email === email && u.role === role)
+  if (user) {
+    return user
   }
 
   return null

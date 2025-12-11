@@ -64,16 +64,37 @@ const filterFields: FilterFieldConfig[] = [
         icon: <Users className="size-3.5" />,
         type: 'text', // Can be select in future
         placeholder: 'Masculino, Feminino...',
+    },
+    {
+        key: 'proof',
+        label: 'Prova',
+        icon: <Trophy className="size-3.5" />,
+        type: 'text',
+        placeholder: 'Ex: Série A, Torneio...',
+    },
+    {
+        key: 'minAge',
+        label: 'Idade Mínima',
+        icon: <Activity className="size-3.5" />,
+        type: 'number',
+        placeholder: 'Ex: 12',
+    },
+    {
+        key: 'maxTeams',
+        label: 'Vagas Equipe',
+        icon: <Users className="size-3.5" />,
+        type: 'number',
+        placeholder: 'Ex: 16',
     }
 ]
 
 export default function ModalitiesPage() {
     const router = useRouter()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { modalities, deleteModality, createModality } = useModality()
 
     // Client-side hydration safety
     const [isClient, setIsClient] = useState(false)
+    // eslint-disable-next-line
     useEffect(() => setIsClient(true), [])
 
     const [searchTerm, setSearchTerm] = useState('')
@@ -95,8 +116,8 @@ export default function ModalitiesPage() {
             mod.name.toLowerCase().includes(searchLower) ||
             (mod.type || '').toLowerCase().includes(searchLower) ||
             mod.gender.toLowerCase().includes(searchLower) ||
-            (mod.eventCategory &&
-                mod.eventCategory.toLowerCase().includes(searchLower)) ||
+            (mod.proof &&
+                mod.proof.toLowerCase().includes(searchLower)) ||
             (mod.minAge || 0).toString().includes(searchLower) ||
             (mod.maxAge || 0).toString().includes(searchLower) ||
             (mod.minAthletes || 0).toString().includes(searchLower) ||
@@ -120,6 +141,12 @@ export default function ModalitiesPage() {
                     return (mod.type || '').toLowerCase().includes(value)
                 case 'gender':
                     return mod.gender.toLowerCase().includes(value)
+                case 'proof':
+                    return (mod.proof || '').toLowerCase().includes(value)
+                case 'minAge':
+                    return mod.minAge?.toString() === value
+                case 'maxTeams':
+                    return mod.maxTeams?.toString() === value
                 default:
                     return true
             }
@@ -200,6 +227,7 @@ export default function ModalitiesPage() {
         if (isClient) {
             const saved = localStorage.getItem('ge_modalities_col_widths_v3')
             if (saved) {
+                // eslint-disable-next-line
                 setColWidths(JSON.parse(saved))
             }
         }
@@ -427,9 +455,9 @@ export default function ModalitiesPage() {
                                             <span className="text-sm group-hover:text-primary transition-colors leading-tight">
                                                 {mod.name}
                                             </span>
-                                            {mod.eventCategory && (
+                                            {mod.proof && (
                                                 <span className="text-[10px] text-muted-foreground font-light leading-tight">
-                                                    {mod.eventCategory}
+                                                    {mod.proof}
                                                 </span>
                                             )}
                                         </div>

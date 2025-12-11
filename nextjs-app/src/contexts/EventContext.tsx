@@ -3,41 +3,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { toast } from 'sonner'
 
-export interface Event {
-    id: string
-    name: string
-    slug?: string // Optional in original but used in next app
-    startDate: string | Date // Flexible to handle string from JSON
-    endDate: string | Date
-    location: string
-    registrations?: number
-    capacity?: number
-    status?: 'published' | 'draft' | 'closed' | string
+import { Event } from '@/types/event'
+import { mockEvents } from '@/mocks/events'
 
-    // Form fields details
-    description?: string
-    producerName?: string
-    producerDescription?: string
-
-    // Visual Identity
-    themeId?: string
-    coverImage?: string
-    logo?: string
-
-    // Registration dates
-    registrationCollectiveStart?: Date | string
-    registrationCollectiveEnd?: Date | string
-    registrationIndividualStart?: Date | string
-    registrationIndividualEnd?: Date | string
-
-    // Partner Logos
-    realizerLogos?: string[]
-    supporterLogos?: string[]
-
-    // Times
-    startTime?: string
-    endTime?: string
-}
+export type { Event }
 
 interface EventContextType {
     events: Event[]
@@ -55,27 +24,6 @@ interface EventContextType {
 
 const EventContext = createContext<EventContextType | undefined>(undefined)
 
-const INITIAL_EVENTS: Event[] = [
-    {
-        id: '1',
-        name: 'Tech Summit 2025',
-        startDate: new Date('2025-10-15T09:00:00'),
-        endDate: new Date('2025-10-17T18:00:00'),
-        startTime: '09:00',
-        endTime: '18:00',
-        location: 'Centro de Convenções',
-        registrations: 850,
-        capacity: 1000,
-        status: 'published',
-        description: 'O maior evento de tecnologia da região.',
-        producerName: 'Tech Events',
-        themeId: 'default',
-        registrationCollectiveStart: new Date('2025-09-01T00:00:00'),
-        registrationCollectiveEnd: new Date('2025-10-10T23:59:00'),
-        registrationIndividualStart: new Date('2025-09-15T00:00:00'),
-        registrationIndividualEnd: new Date('2025-10-14T23:59:00'),
-    },
-]
 
 export function EventProvider({ children }: { children: ReactNode }) {
     const [events, setEvents] = useState<Event[]>([])
@@ -87,16 +35,16 @@ export function EventProvider({ children }: { children: ReactNode }) {
     const loadEvents = async () => {
         setIsLoading(true)
         try {
-            const storedEvents = localStorage.getItem('ge_events')
+            const storedEvents = localStorage.getItem('ge_events_v3')
             if (storedEvents) {
                 const parsed = JSON.parse(storedEvents)
                 // Ensure dates are Date objects if needed, but keeping as string is safer for JSON serialization
                 setEvents(parsed)
             } else {
-                setEvents(INITIAL_EVENTS) // Fallback for demo
+                setEvents(mockEvents) // Fallback for demo
             }
 
-            const storedAssociations = localStorage.getItem('ge_event_modalities')
+            const storedAssociations = localStorage.getItem('ge_event_modalities_v2')
             if (storedAssociations) {
                 setEventModalitiesState(JSON.parse(storedAssociations))
             }
@@ -110,13 +58,13 @@ export function EventProvider({ children }: { children: ReactNode }) {
     // Salvar eventos no localStorage
     useEffect(() => {
         if (!isLoading && events.length > 0) {
-            localStorage.setItem('ge_events', JSON.stringify(events))
+            localStorage.setItem('ge_events_v3', JSON.stringify(events))
         }
     }, [events, isLoading])
 
     useEffect(() => {
         if (!isLoading) {
-            localStorage.setItem('ge_event_modalities', JSON.stringify(eventModalities))
+            localStorage.setItem('ge_event_modalities_v2', JSON.stringify(eventModalities))
         }
     }, [eventModalities, isLoading])
 
