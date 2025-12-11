@@ -4,13 +4,15 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
+import { DashboardSidebar } from '@/components/DashboardSidebar'
+import { DashboardHeader } from '@/components/DashboardHeader'
 
 export default function ProducerLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
-    const { user, isLoading, isAuthenticated } = useAuth()
+    const { isLoading, isAuthenticated } = useAuth()
     const router = useRouter()
 
     useEffect(() => {
@@ -32,9 +34,12 @@ export default function ProducerLayout({
     }
 
     return (
-        <div className="min-h-screen">
-            {/* TODO: Adicionar Sidebar e Header */}
-            <main>{children}</main>
+        <div className="flex min-h-screen">
+            <DashboardSidebar />
+            <div className="flex-1 flex flex-col">
+                <DashboardHeader />
+                <main className="flex-1 p-6">{children}</main>
+            </div>
         </div>
     )
 }

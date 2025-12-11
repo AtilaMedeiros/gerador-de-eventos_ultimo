@@ -42,7 +42,7 @@ function verifyPassword(inputPassword: string, storedHash?: string): boolean {
 async function findUser(email: string, role: UserRole): Promise<User | null> {
   // TODO: Buscar do banco de dados (Supabase/Firebase/Prisma)
   // Por enquanto, retorna null para forçar usuário a usar dados reais
-  
+
   // EXEMPLO de usuário teste:
   if (email === 'produtor@teste.com' && role === 'produtor') {
     return {
@@ -52,7 +52,7 @@ async function findUser(email: string, role: UserRole): Promise<User | null> {
       role: 'produtor',
     }
   }
-  
+
   if (email === 'participante@teste.com' && role === 'participante') {
     return {
       id: '2',
@@ -61,7 +61,7 @@ async function findUser(email: string, role: UserRole): Promise<User | null> {
       role: 'participante',
     }
   }
-  
+
   return null
 }
 
@@ -70,7 +70,7 @@ async function findUser(email: string, role: UserRole): Promise<User | null> {
 export async function loginProducer(credentials: LoginCredentials): Promise<AuthResult> {
   try {
     const user = await findUser(credentials.email, 'produtor')
-    
+
     if (!user || !verifyPassword(credentials.password)) {
       return {
         success: false,
@@ -82,7 +82,8 @@ export async function loginProducer(credentials: LoginCredentials): Promise<Auth
     const token = generateToken(user)
 
     // Configurar cookies
-    cookies().set('auth-token', token, {
+    const cookieStore = await cookies()
+    cookieStore.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -90,7 +91,7 @@ export async function loginProducer(credentials: LoginCredentials): Promise<Auth
       path: '/',
     })
 
-    cookies().set('user-role', 'produtor', {
+    cookieStore.set('user-role', 'produtor', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -98,7 +99,7 @@ export async function loginProducer(credentials: LoginCredentials): Promise<Auth
       path: '/',
     })
 
-    cookies().set('user-data', JSON.stringify(user), {
+    cookieStore.set('user-data', JSON.stringify(user), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -122,7 +123,7 @@ export async function loginProducer(credentials: LoginCredentials): Promise<Auth
 export async function loginParticipant(credentials: LoginCredentials): Promise<AuthResult> {
   try {
     const user = await findUser(credentials.email, 'participante')
-    
+
     if (!user || !verifyPassword(credentials.password)) {
       return {
         success: false,
@@ -132,7 +133,8 @@ export async function loginParticipant(credentials: LoginCredentials): Promise<A
 
     const token = generateToken(user)
 
-    cookies().set('auth-token', token, {
+    const cookieStore = await cookies()
+    cookieStore.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -140,7 +142,7 @@ export async function loginParticipant(credentials: LoginCredentials): Promise<A
       path: '/',
     })
 
-    cookies().set('user-role', 'participante', {
+    cookieStore.set('user-role', 'participante', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -148,7 +150,7 @@ export async function loginParticipant(credentials: LoginCredentials): Promise<A
       path: '/',
     })
 
-    cookies().set('user-data', JSON.stringify(user), {
+    cookieStore.set('user-data', JSON.stringify(user), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -170,14 +172,16 @@ export async function loginParticipant(credentials: LoginCredentials): Promise<A
 }
 
 export async function logout() {
-  cookies().delete('auth-token')
-  cookies().delete('user-role')
-  cookies().delete('user-data')
+  const cookieStore = await cookies()
+  cookieStore.delete('auth-token')
+  cookieStore.delete('user-role')
+  cookieStore.delete('user-data')
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const userDataCookie = cookies().get('user-data')
-  
+  const cookieStore = await cookies()
+  const userDataCookie = cookieStore.get('user-data')
+
   if (!userDataCookie) {
     return null
   }
@@ -191,12 +195,14 @@ export async function getCurrentUser(): Promise<User | null> {
 }
 
 export async function isAuthenticated(): Promise<boolean> {
-  const token = cookies().get('auth-token')
+  const cookieStore = await cookies()
+  const token = cookieStore.get('auth-token')
   return !!token
 }
 
 export async function getUserRole(): Promise<UserRole | null> {
-  const roleCookie = cookies().get('user-role')
+  const cookieStore = await cookies()
+  const roleCookie = cookieStore.get('user-role')
   return roleCookie?.value as UserRole || null
 }
 
@@ -212,7 +218,7 @@ export interface RegisterData {
 export async function registerParticipant(data: RegisterData): Promise<AuthResult> {
   try {
     // TODO: Criar usuário no banco de dados
-    
+
     // Por enquanto, retorna sucesso simulado
     const newUser: User = {
       id: Date.now().toString(),

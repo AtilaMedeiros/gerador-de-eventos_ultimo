@@ -23,6 +23,7 @@ interface EventContextType {
     updateEvent: (id: string, event: Partial<Event>) => Promise<void>
     deleteEvent: (id: string) => Promise<void>
     selectEvent: (id: string) => void
+    getEventById: (id: string) => Event | undefined
     refreshEvents: () => Promise<void>
 }
 
@@ -100,6 +101,10 @@ export function EventProvider({ children }: { children: ReactNode }) {
         await loadEvents()
     }
 
+    const getEventById = (id: string) => {
+        return events.find(e => e.id === id)
+    }
+
     return (
         <EventContext.Provider
             value={{
@@ -110,6 +115,7 @@ export function EventProvider({ children }: { children: ReactNode }) {
                 updateEvent,
                 deleteEvent,
                 selectEvent,
+                getEventById,
                 refreshEvents,
             }}
         >

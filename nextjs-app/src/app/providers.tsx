@@ -3,9 +3,8 @@
 import { EventProvider } from '@/contexts/EventContext'
 import { ModalityProvider } from '@/contexts/ModalityContext'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { ParticipantProvider } from '@/contexts/ParticipantContext'
 import { ThemeProvider } from 'next-themes'
-import { TooltipProvider } from '@/components/ui/tooltip'
-import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -19,11 +18,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <AuthProvider>
                 <EventProvider>
                     <ModalityProvider>
-                        <TooltipProvider>
+                        <ParticipantProvider>
                             {children}
-                            <Toaster />
                             <Sonner />
-                        </TooltipProvider>
+                        </ParticipantProvider>
                     </ModalityProvider>
                 </EventProvider>
             </AuthProvider>

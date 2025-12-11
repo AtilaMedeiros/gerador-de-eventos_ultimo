@@ -1,14 +1,17 @@
-/* Tailwind config for Next.js - TailwindCSS 4 */
+/* Tailwind config for Next.js - Migrated from React project */
 import type { Config } from 'tailwindcss'
+import animatePlugin from 'tailwindcss-animate'
+import typographyPlugin from '@tailwindcss/typography'
 
 export default {
     darkMode: ['class'],
     content: [
-        './app/**/*.{ts,tsx,mdx}',
-        './src/**/*.{ts,tsx,mdx}',
-        './components/**/*.{ts,tsx,mdx}',
+        './pages/**/*.{ts,tsx}',
+        './components/**/*.{ts,tsx}',
+        './app/**/*.{ts,tsx}',
+        './src/**/*.{ts,tsx}',
     ],
-
+    prefix: '',
     theme: {
         container: {
             center: true,
@@ -21,20 +24,17 @@ export default {
                 '2xl': '1400px',
             },
         },
-
         extend: {
             fontFamily: {
-                sans: ['var(--font-inter)', 'sans-serif'],
-                display: ['var(--font-inter)', 'sans-serif'],
+                sans: ['Inter', 'sans-serif'],
+                display: ['Inter', 'sans-serif'],
             },
-
             colors: {
                 border: 'hsl(var(--border))',
                 input: 'hsl(var(--input))',
                 ring: 'hsl(var(--ring))',
                 background: 'hsl(var(--background))',
                 foreground: 'hsl(var(--foreground))',
-
                 primary: {
                     DEFAULT: 'hsl(var(--primary))',
                     foreground: 'hsl(var(--primary-foreground))',
@@ -88,6 +88,7 @@ export default {
                     4: 'hsl(var(--chart-4))',
                     5: 'hsl(var(--chart-5))',
                 },
+                // Custom colors for News Carousel
                 sport: {
                     black: '#080808',
                     dark: '#121212',
@@ -95,20 +96,18 @@ export default {
                 },
                 'accent-blue': '#2563EB',
             },
-
             borderRadius: {
                 lg: 'var(--radius)',
                 md: 'calc(var(--radius) - 2px)',
                 sm: 'calc(var(--radius) - 4px)',
             },
-
             boxShadow: {
                 subtle: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
                 card: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-                elevation: '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
+                elevation:
+                    '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
                 'inner-light': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
             },
-
             keyframes: {
                 marquee: {
                     '0%': { transform: 'translateX(100%)' },
@@ -131,7 +130,6 @@ export default {
                     '100%': { width: '100%' },
                 },
             },
-
             animation: {
                 marquee: 'marquee 20s linear infinite',
                 'accordion-down': 'accordion-down 0.2s ease-out',
@@ -140,9 +138,5 @@ export default {
             },
         },
     },
-
-    plugins: [
-        require('tailwindcss-animate'),
-        require('@tailwindcss/typography'),
-    ],
+    plugins: [animatePlugin, typographyPlugin],
 } satisfies Config
