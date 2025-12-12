@@ -16,7 +16,7 @@ export function PublicAbout({ description }: PublicAboutProps) {
             <div className="container mx-auto px-4 relative z-10">
                 <div className="max-w-5xl mx-auto space-y-12">
                     <div className="text-center">
-                        <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-slate-900 relative inline-block mb-4">
+                        <h2 className="text-3xl md:text-5xl font-semibold tracking-tighter text-slate-900 relative inline-block mb-4">
                             Sobre o Evento
                         </h2>
                     </div>

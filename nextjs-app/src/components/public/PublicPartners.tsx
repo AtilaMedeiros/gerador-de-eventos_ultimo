@@ -17,7 +17,7 @@ export function PublicPartners({ realizers = [], supporters = [] }: PublicPartne
         <section className="py-24 bg-white">
             <div className="container mx-auto px-4 text-center">
                 <div className="mb-12 space-y-4">
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+                    <h2 className="text-3xl font-semibold tracking-tighter text-slate-900">
                         Nossos Parceiros
                     </h2>
                     <p className="text-slate-500 max-w-2xl mx-auto">
