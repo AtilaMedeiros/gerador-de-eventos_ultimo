@@ -17,7 +17,7 @@ import {
 import { useCallback } from 'react'
 import { GiSoccerKick } from 'react-icons/gi'
 
-export function DashboardSidebar() {
+export function ProducerSidebar() {
   const location = useLocation()
 
   const isActive = useCallback(

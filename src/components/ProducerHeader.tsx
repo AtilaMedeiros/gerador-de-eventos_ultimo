@@ -15,7 +15,7 @@ import { useEvent } from '@/contexts/EventContext'
 
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 
-export function DashboardHeader() {
+export function ProducerHeader() {
   const location = useLocation()
   const navigate = useNavigate()
   const params = useParams()
@@ -24,7 +24,7 @@ export function DashboardHeader() {
 
   // Try to get eventId from params or parse it from location if needed
   // The route structure is /area-do-produtor/evento/:eventId/...
-  // If DashboardHeader is rendered inside the route context, params.eventId should be available.
+  // If ProducerHeader is rendered inside the route context, params.eventId should be available.
   // However, if it's a shared component used in different contexts, we might need to be careful.
   const eventId = params.eventId || location.pathname.split('/evento/')[1]?.split('/')[0]
   const event = eventId ? getEventById(eventId) : undefined

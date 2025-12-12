@@ -10,7 +10,7 @@ import { CommunicationProvider } from '@/contexts/CommunicationContext'
 import { ParticipantProvider } from '@/contexts/ParticipantContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
 
-import Layout from './components/Layout'
+import ProducerLayout from './components/ProducerLayout'
 import NotFound from './pages/NotFound'
 import Login from './pages/Login'
 import DashboardHome from './pages/producer/DashboardHome'
@@ -141,7 +141,7 @@ const App = () => (
                       path="/area-do-produtor"
                       element={
                         <ProtectedRoute>
-                          <Layout />
+                          <ProducerLayout />
                         </ProtectedRoute>
                       }
                     >
@@ -209,7 +209,7 @@ const App = () => (
                       path="/area-do-produtor/evento/:eventId"
                       element={
                         <ProtectedRoute>
-                          <Layout />
+                          <ProducerLayout />
                         </ProtectedRoute>
                       }
                     >

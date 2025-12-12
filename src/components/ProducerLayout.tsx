@@ -1,14 +1,14 @@
 /* Layout Component - Wraps the dashboard content */
 import { Outlet } from 'react-router-dom'
-import { DashboardSidebar } from './DashboardSidebar'
-import { DashboardHeader } from './DashboardHeader'
+import { ProducerSidebar } from './ProducerSidebar'
+import { ProducerHeader } from './ProducerHeader'
 
-export default function Layout() {
+export default function ProducerLayout() {
   return (
     <div className="flex min-h-screen bg-gray-50/50 dark:bg-background">
-      <DashboardSidebar />
+      <ProducerSidebar />
       <main className="flex flex-col flex-1 w-full transition-all duration-300 ease-in-out min-w-0">
-        <DashboardHeader />
+        <ProducerHeader />
         <div className="flex-1 p-6 md:p-8 container mx-auto max-w-7xl animate-fade-in space-y-6">
           <Outlet />
         </div>
