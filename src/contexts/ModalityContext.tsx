@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { toast } from 'sonner'
+import { INITIAL_MODALITIES } from '@/banco/modalidades'
 
 export interface Modality {
   id: string
@@ -15,58 +16,7 @@ export interface Modality {
   maxAge: number
 }
 
-const INITIAL_MODALITIES: Modality[] = [
-  {
-    id: '1',
-    name: 'Futsal',
-    type: 'coletiva',
-    gender: 'masculino',
-    minAthletes: 5,
-    maxAthletes: 12,
-    maxEventsPerAthlete: 1,
-    maxTeams: 16,
-    minAge: 14,
-    maxAge: 17,
-  },
-  {
-    id: '2',
-    name: 'Natação 50m Livre',
-    type: 'individual',
-    gender: 'feminino',
-    eventCategory: '50m Livre',
-    minAthletes: 1,
-    maxAthletes: 1,
-    maxEventsPerAthlete: 3,
-    maxTeams: 0,
-    minAge: 10,
-    maxAge: 99,
-  },
-  {
-    id: '3',
-    name: 'Vôlei',
-    type: 'coletiva',
-    gender: 'feminino', // Changed from misto
-    minAthletes: 6,
-    maxAthletes: 14,
-    maxEventsPerAthlete: 1,
-    maxTeams: 8,
-    minAge: 16,
-    maxAge: 99,
-  },
-  {
-    id: '4',
-    name: 'Atletismo 100m',
-    type: 'individual',
-    gender: 'masculino',
-    eventCategory: '100m Rasos',
-    minAthletes: 1,
-    maxAthletes: 1,
-    maxEventsPerAthlete: 3,
-    maxTeams: 0,
-    minAge: 12,
-    maxAge: 99,
-  },
-]
+// Initial Mock Data moved to src/banco/modalidades.ts
 
 interface ModalityContextType {
   modalities: Modality[]
@@ -81,7 +31,7 @@ const ModalityContext = createContext<ModalityContextType | undefined>(
 )
 
 export function ModalityProvider({ children }: { children: React.ReactNode }) {
-  const [modalities, setModalities] = useState<Modality[]>(INITIAL_MODALITIES)
+  const [modalities, setModalities] = useState<Modality[]>(INITIAL_MODALITIES as unknown as Modality[])
 
   useEffect(() => {
     const stored = localStorage.getItem('ge_modalities_v2') // Changed Key

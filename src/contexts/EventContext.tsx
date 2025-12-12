@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { toast } from 'sonner'
+import { INITIAL_EVENTS } from '@/banco/eventos'
 
 export interface Event {
   id: string
@@ -35,59 +36,7 @@ export interface Event {
   endTime?: string
 }
 
-// Initial Mock Data
-const INITIAL_EVENTS: Event[] = [
-  {
-    id: '1',
-    name: 'Tech Summit 2025',
-    startDate: new Date('2025-10-15T09:00:00'),
-    endDate: new Date('2025-10-17T18:00:00'),
-    startTime: '09:00',
-    endTime: '18:00',
-    location: 'Centro de Convenções',
-    registrations: 850,
-    capacity: 1000,
-    status: 'published',
-    description: 'O maior evento de tecnologia da região.',
-    producerName: 'Tech Events',
-    themeId: 'default',
-    registrationCollectiveStart: new Date('2025-09-01T00:00:00'),
-    registrationCollectiveEnd: new Date('2025-10-10T23:59:00'),
-    registrationIndividualStart: new Date('2025-09-15T00:00:00'),
-    registrationIndividualEnd: new Date('2025-10-14T23:59:00'),
-  },
-  {
-    id: '2',
-    name: 'Maratona Escolar de Verão',
-    startDate: new Date('2025-11-22T08:00:00'),
-    endDate: new Date('2025-11-22T16:00:00'),
-    startTime: '08:00',
-    endTime: '16:00',
-    location: 'Ginásio Municipal',
-    registrations: 120,
-    capacity: 500,
-    status: 'draft',
-    description: 'Competição escolar anual.',
-    producerName: 'Secretaria de Esportes',
-    themeId: 'summer-2025',
-    registrationCollectiveStart: new Date('2025-11-01T00:00:00'),
-    registrationCollectiveEnd: new Date('2025-11-20T23:59:00'),
-  },
-  {
-    id: '3',
-    name: 'Torneio de Robótica',
-    startDate: new Date('2025-12-05T10:00:00'),
-    endDate: new Date('2025-12-08T20:00:00'),
-    startTime: '10:00',
-    endTime: '20:00',
-    location: 'Auditório Central',
-    registrations: 300,
-    capacity: 300,
-    status: 'closed',
-    description: 'Torneio de robótica para ensino médio.',
-    producerName: 'RoboEdu',
-  },
-]
+// Initial Mock Data moved to src/banco/eventos.ts
 
 interface EventContextType {
   events: Event[]
@@ -102,7 +51,7 @@ interface EventContextType {
 const EventContext = createContext<EventContextType | undefined>(undefined)
 
 export function EventProvider({ children }: { children: React.ReactNode }) {
-  const [events, setEvents] = useState<Event[]>(INITIAL_EVENTS)
+  const [events, setEvents] = useState<Event[]>(INITIAL_EVENTS as unknown as Event[])
   const [eventModalities, setEventModalitiesState] = useState<
     Record<string, string[]>
   >({})
@@ -129,12 +78,25 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
             ? new Date(ev.registrationIndividualEnd)
             : undefined,
         }))
-        setEvents(restored)
-      } catch (e) {
-        console.error('Failed to load events from storage', e)
-      }
-    }
 
+        // Merge INITIAL_EVENTS to ensure new mocks (like IDs 4, 5, 6) appear even if localStorage exists
+        const restoredIds = new Set(restored.map(e => e.id))
+        const missingMocks = INITIAL_EVENTS.filter(mock => !restoredIds.has(mock.id)) as unknown as Event[]
+
+        if (missingMocks.length > 0) {
+          const merged = [...restored, ...missingMocks]
+          setEvents(merged)
+        } else {
+          setEvents(restored)
+        }
+      } catch (error) {
+        console.error('Falha ao carregar eventos:', error)
+        setEvents(INITIAL_EVENTS as unknown as Event[])
+      }
+    } else {
+      // If no storage, verify we have defaults (state init handles this, but explicit set ensures consistency)
+      setEvents(INITIAL_EVENTS as unknown as Event[])
+    }
     const storedAssociations = localStorage.getItem('ge_event_modalities')
     if (storedAssociations) {
       try {

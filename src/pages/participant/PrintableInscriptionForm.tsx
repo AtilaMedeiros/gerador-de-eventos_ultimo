@@ -4,6 +4,11 @@ import { useParticipant, type School, type Athlete, type Technician } from '@/co
 import { useEvent, type Event } from '@/contexts/EventContext'
 import { useModality, type Modality } from '@/contexts/ModalityContext'
 import { format } from 'date-fns'
+import { MOCK_PREVIEW_EVENT } from '@/banco/eventos'
+import { MOCK_PREVIEW_SCHOOL } from '@/banco/escolas'
+import { MOCK_PREVIEW_MODALITIES } from '@/banco/modalidades'
+import { MOCK_PREVIEW_ATHLETES } from '@/banco/atletas'
+import { MOCK_PREVIEW_TECHNICIANS } from '@/banco/tecnicos'
 
 export default function PrintableInscriptionForm() {
   const { eventId, modalityId } = useParams()
@@ -16,60 +21,12 @@ export default function PrintableInscriptionForm() {
   // ----------------------------------------------------------------------
   const isMock = modalityId?.startsWith('mock')
 
-  // Generate Mock Data if needed
-  const mockEvent: Event = {
-    id: 'mock-event',
-    name: 'Jogos Escolares de Exemplo 2024',
-    slug: 'jogos-escolares-2024',
-    start_date: new Date(),
-    end_date: new Date(),
-    location: 'Ginásio Poliesportivo Central',
-    status: 'published',
-    description: 'Evento de demonstração',
-    cover_image: '',
-    organizer_id: 'org-1'
-  }
-
-  const mockSchool: School = {
-    id: 'school-mock',
-    name: 'Escola Modelo de Teste',
-    inep: '12345678',
-    cnpj: '00.000.000/0000-00',
-    municipality: 'São Paulo',
-    address: 'Av. Paulista, 1000',
-    neighborhood: 'Bela Vista',
-    cep: '01310-100',
-    type: 'Privada',
-    sphere: 'Estadual',
-    directorName: 'Carlos Silva',
-    landline: '(11) 3000-0000',
-    mobile: '(11) 99999-9999',
-    email: 'contato@escolamodelo.com.br'
-  }
-
-  const mockModalities: Record<string, Partial<Modality>> = {
-    'mock1': { name: 'Futsal Sub-15', gender: 'Masculino', minAge: 13, maxAge: 15, type: 'coletiva' },
-    'mock2': { name: 'Vôlei de Praia', gender: 'Feminino', minAge: 14, maxAge: 16, type: 'coletiva' },
-    'mock3': { name: 'Xadrez', gender: 'Misto', minAge: 8, maxAge: 18, type: 'individual' },
-    'mock4': { name: 'Atletismo 100m', gender: 'Masculino', minAge: 15, maxAge: 17, type: 'individual' },
-    'mock5': { name: 'Handebol', gender: 'Feminino', minAge: 12, maxAge: 14, type: 'coletiva' },
-  }
-
-  const mockAthletes: Athlete[] = Array.from({ length: 12 }).map((_, i) => ({
-    id: `athlete-${i}`,
-    name: `Atleta Exemplo ${i + 1}`,
-    sex: 'Masculino',
-    dob: new Date(2010, 5, 15),
-    rg: `12.345.67${i}-X`,
-    cpf: `123.456.789-0${i}`,
-    schoolId: 'school-mock',
-    motherName: 'Mãe Exemplo',
-    motherCpf: '000.000.000-00'
-  }))
-
-  const mockTechnicians: Technician[] = [
-    { id: 't1', name: 'Técnico Responsável', sex: 'Masculino', dob: new Date(1980, 0, 1), cpf: '000.000.000-00', cref: '123456-G/SP', email: 'tec@teste.com', phone: '(11) 99999-8888', schoolId: 'school-mock' }
-  ]
+  // Import from banco
+  const mockEvent = MOCK_PREVIEW_EVENT as unknown as Event
+  const mockSchool = MOCK_PREVIEW_SCHOOL as unknown as School
+  const mockModalities = MOCK_PREVIEW_MODALITIES as unknown as Record<string, Partial<Modality>>
+  const mockAthletes = MOCK_PREVIEW_ATHLETES as unknown as Athlete[]
+  const mockTechnicians = MOCK_PREVIEW_TECHNICIANS as unknown as Technician[]
 
   // ----------------------------------------------------------------------
   // DATA RESOLUTION

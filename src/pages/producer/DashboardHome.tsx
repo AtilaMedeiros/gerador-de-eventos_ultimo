@@ -35,6 +35,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useEvent } from '@/contexts/EventContext'
 import { useModality } from '@/contexts/ModalityContext'
 import { cn } from '@/lib/utils'
+import { MOCK_INSCRIPTIONS_SEED } from '@/banco/inscricoes'
+import { MOCK_SCHOOL } from '@/banco/escolas'
 
 export default function DashboardHome() {
   const navigate = useNavigate()
@@ -49,9 +51,13 @@ export default function DashboardHome() {
 
   // 2. Mock & Derived Data
   const totalAthletes = activeEvent?.registrations || 0
-  const totalSchools = Math.round(totalAthletes / 12) + 5 // Mock realistic school count based on athletes
-  const publicSchools = Math.round(totalSchools * 0.65)
-  const privateSchools = totalSchools - publicSchools
+
+  // Real calculation based on MOCK_SCHOOL (currently singleton, but array-ready logic)
+  const allSchools = [MOCK_SCHOOL]
+  const totalSchools = allSchools.length
+
+  const publicSchools = allSchools.filter(s => s.type === 'Publica').length
+  const privateSchools = allSchools.filter(s => s.type === 'Privada').length
 
   // Mock Activity Feed
   const activities = useMemo(
@@ -95,24 +101,32 @@ export default function DashboardHome() {
     if (!activeEvent) return { collective: [], individual: [] }
 
     const linkedIds = getEventModalities(activeEvent.id)
-    // Fallback to show some modalities if none are linked yet for the demo
     const relevantModalities =
       linkedIds.length > 0
         ? modalities.filter((m) => linkedIds.includes(m.id))
         : modalities.slice(0, 6)
 
+    // Calculate real stats from inscriptions
+    const getCount = (modId: string, type: 'coletiva' | 'individual') => {
+      // For this mock, we count inscriptions. 
+      // In creating a real app, 'teams' count might be different from athlete count for collective.
+      // But here we rely on inscriptions count as a proxy or direct count.
+      const count = MOCK_INSCRIPTIONS_SEED.filter(i => i.modalityId === modId && i.eventId === activeEvent.id).length
+      return count
+    }
+
     const collective = relevantModalities
       .filter((m) => m.type === 'coletiva')
       .map((m) => ({
         ...m,
-        registeredCount: Math.floor(Math.random() * 20) + 4, // Mock Teams
+        registeredCount: getCount(m.id, 'coletiva'),
       }))
 
     const individual = relevantModalities
       .filter((m) => m.type === 'individual')
       .map((m) => ({
         ...m,
-        registeredCount: Math.floor(Math.random() * 150) + 20, // Mock Athletes
+        registeredCount: getCount(m.id, 'individual'),
       }))
 
     return { collective, individual }

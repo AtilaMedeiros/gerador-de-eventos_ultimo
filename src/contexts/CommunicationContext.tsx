@@ -1,5 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { toast } from 'sonner'
+import { MOCK_NOTICES } from '@/banco/avisos'
+import { MOCK_BULLETINS } from '@/banco/boletins'
+import { MOCK_RESULTS } from '@/banco/resultados'
+import { MOCK_REGULATIONS } from '@/banco/regulamentos'
 
 // Types for Communication Data
 export interface Notice {
@@ -76,263 +80,13 @@ const CommunicationContext = createContext<
   CommunicationContextType | undefined
 >(undefined)
 
-const MOCK_NOTICES: Notice[] = [
-  {
-    id: '1',
-    eventId: '2',
-    title: 'Mudança de Horário - Finais',
-    category: 'Urgente',
-    description: 'Atenção a todos os participantes: As finais do futsal foram adiantadas para as 14h devido à previsão de chuva.',
-    date: new Date('2024-03-15'),
-    time: '10:00',
-    author: 'Organização',
-    createdAt: new Date('2024-03-15T10:00:00'),
-  },
-  {
-    id: '2',
-    eventId: '2',
-    title: 'Estacionamento Liberado',
-    category: 'Informativo',
-    description: 'O estacionamento do complexo esportivo estará liberado gratuitamente para todos os atletas e comissão técnica.',
-    date: new Date('2024-03-14'),
-    time: '09:30',
-    author: 'Staff',
-    createdAt: new Date('2024-03-14T09:30:00'),
-  },
-  {
-    id: '3',
-    eventId: '2',
-    title: 'Entrega de Kits',
-    category: 'Plantão',
-    description: 'A entrega dos kits será realizada no ginásio principal até às 18h de hoje.',
-    date: new Date('2024-03-13'),
-    time: '08:00',
-    author: 'Coordenação',
-    createdAt: new Date('2024-03-13T08:00:00'),
-  },
-  {
-    id: '4',
-    eventId: '2',
-    title: 'Reunião Técnica',
-    category: 'Últimas Notícias',
-    description: 'Reunião técnica obrigatória para todos os representantes de equipe hoje às 19h.',
-    date: new Date('2024-03-12'),
-    time: '18:00',
-    author: 'Direção Técnica',
-    createdAt: new Date('2024-03-12T18:00:00'),
-  },
-  {
-    id: '5',
-    eventId: '2',
-    title: 'Achados e Perdidos',
-    category: 'Informativo',
-    description: 'Um par de tênis Nike foi encontrado na quadra 2. Retirar na secretaria do evento.',
-    date: new Date('2024-03-16'),
-    time: '11:00',
-    author: 'Secretaria',
-    createdAt: new Date('2024-03-16T11:00:00'),
-  },
-  {
-    id: '6',
-    eventId: '2',
-    title: 'Festa de Encerramento',
-    category: 'Últimas Notícias',
-    description: 'A festa de encerramento contará com música ao vivo e premiações especiais. Não percam!',
-    date: new Date('2024-03-20'),
-    time: '20:00',
-    author: 'Marketing',
-    createdAt: new Date('2024-03-20T20:00:00'),
-  }
-]
+// MOCK_NOTICES moved to src/banco/avisos.ts
 
-const MOCK_BULLETINS: Bulletin[] = [
-  {
-    id: '1',
-    eventId: '2',
-    title: 'Boletim 01 - Programação Geral',
-    category: 'Programação',
-    description: 'Confira a programação completa dos jogos da primeira fase.',
-    date: new Date('2024-03-10'),
-    time: '08:00',
-    author: 'Direção Técnica',
-    fileName: 'boletim_01.pdf',
-    createdAt: new Date('2024-03-10T08:00:00'),
-  },
-  {
-    id: '2',
-    eventId: '2',
-    title: 'Boletim 02 - Resultados Dia 1',
-    category: 'Resultados Oficiais',
-    description: 'Resultados de todas as partidas realizadas no primeiro dia de competição.',
-    date: new Date('2024-03-11'),
-    time: '22:00',
-    author: 'Arbitragem',
-    fileName: 'resultados_dia_1.pdf',
-    createdAt: new Date('2024-03-11T22:00:00'),
-  },
-  {
-    id: '3',
-    eventId: '2',
-    title: 'Boletim 03 - Alteração de Tabela',
-    category: 'Nota Oficial',
-    description: 'Nota oficial sobre a alteração na tabela de jogos do vôlei feminino.',
-    date: new Date('2024-03-12'),
-    time: '14:00',
-    author: 'Coordenação',
-    fileName: 'nota_oficial_01.pdf',
-    createdAt: new Date('2024-03-12T14:00:00'),
-  },
-  {
-    id: '4',
-    eventId: '2',
-    title: 'Boletim 04 - Classificação Parcial',
-    category: 'Resultados Oficiais',
-    description: 'Classificação atualizada de todos os grupos após a segunda rodada.',
-    date: new Date('2024-03-13'),
-    time: '10:00',
-    author: 'Técnica',
-    fileName: 'classificacao_parcial.pdf',
-    createdAt: new Date('2024-03-13T10:00:00'),
-  },
-  {
-    id: '5',
-    eventId: '2',
-    title: 'Boletim 05 - Programação Finais',
-    category: 'Programação',
-    description: 'Horários e locais definidos para as grandes finais.',
-    date: new Date('2024-03-14'),
-    time: '16:00',
-    author: 'Organização',
-    fileName: 'finais.pdf',
-    createdAt: new Date('2024-03-14T16:00:00'),
-  },
-  {
-    id: '6',
-    eventId: '2',
-    title: 'Boletim 06 - Encerramento',
-    category: 'Boletim Diário',
-    description: 'Informações sobre a cerimônia de encerramento e premiação.',
-    date: new Date('2024-03-15'),
-    time: '09:00',
-    author: 'Cerimonial',
-    fileName: 'cerimonia.pdf',
-    createdAt: new Date('2024-03-15T09:00:00'),
-  }
-]
+// MOCK_BULLETINS moved to src/banco/boletins.ts
 
-const MOCK_REGULATIONS: Regulation[] = [
-  {
-    id: '1',
-    eventId: '2',
-    title: 'Regulamento Geral Jogos 2024',
-    category: 'Geral',
-    description: 'Documento completo com todas as normas e diretrizes dos jogos deste ano.',
-    date: new Date('2024-01-15'),
-    time: '08:00',
-    author: 'Presidência',
-    fileName: 'regulamento_geral_2024.pdf',
-    createdAt: new Date('2024-01-15T08:00:00'),
-  },
-  {
-    id: '2',
-    eventId: '2',
-    title: 'Regulamento Específico - Futsal',
-    category: 'Específico',
-    description: 'Regras específicas para a modalidade de Futsal.',
-    date: new Date('2024-01-20'),
-    time: '09:00',
-    author: 'Coord. Futsal',
-    fileName: 'reg_futsal.pdf',
-    createdAt: new Date('2024-01-20T09:00:00'),
-  },
-  {
-    id: '3',
-    eventId: '2',
-    title: 'Código de Justiça Desportiva',
-    category: 'Código de Justiça',
-    description: 'Código disciplinar aplicável a todas as infrações durante o evento.',
-    date: new Date('2024-01-10'),
-    time: '10:00',
-    author: 'Jurídico',
-    fileName: 'cjd_2024.pdf',
-    createdAt: new Date('2024-01-10T10:00:00'),
-  },
-  {
-    id: '4',
-    eventId: '2',
-    title: 'Norma Complementar 01 - Uniformes',
-    category: 'Norma Complementar',
-    description: 'Esclarecimentos sobre a padronização e uso de uniformes.',
-    date: new Date('2024-02-01'),
-    time: '14:00',
-    author: 'Técnica',
-    fileName: 'nc_01_uniformes.pdf',
-    createdAt: new Date('2024-02-01T14:00:00'),
-  },
-  {
-    id: '5',
-    eventId: '2',
-    title: 'Regulamento Específico - Vôlei',
-    category: 'Específico',
-    description: 'Regras específicas para a modalidade de Voleibol.',
-    date: new Date('2024-01-22'),
-    time: '09:00',
-    author: 'Coord. Vôlei',
-    fileName: 'reg_volei.pdf',
-    createdAt: new Date('2024-01-22T09:00:00'),
-  },
-  {
-    id: '6',
-    eventId: '2',
-    title: 'Edital de Convocação',
-    category: 'Edital',
-    description: 'Convocação para o congresso técnico inicial.',
-    date: new Date('2024-02-15'),
-    time: '18:00',
-    author: 'Diretoria',
-    fileName: 'edital_convocacao.pdf',
-    createdAt: new Date('2024-02-15T18:00:00'),
-  }
-]
+// MOCK_REGULATIONS moved to src/banco/regulamentos.ts
 
-const MOCK_RESULTS: Result[] = [
-  {
-    id: '1',
-    eventId: '2',
-    title: 'Resultado Final - Futsal Masculino',
-    category: 'Resultado Geral',
-    description: 'Placar final e estatísticas da partida entre Escola A vs Escola B.',
-    date: new Date('2024-03-20'),
-    time: '16:00',
-    author: 'Arbitragem',
-    fileName: 'futsal_masc_final.pdf',
-    createdAt: new Date('2024-03-20T16:00:00'),
-  },
-  {
-    id: '2',
-    eventId: '2',
-    title: 'Ranking de Medalhas',
-    category: 'Ranking',
-    description: 'Quadro de medalhas atualizado após o terceiro dia de competições.',
-    date: new Date('2024-03-21'),
-    time: '18:00',
-    author: 'Comitê Olímpico',
-    fileName: 'quadro_medalhas.pdf',
-    createdAt: new Date('2024-03-21T18:00:00'),
-  },
-  {
-    id: '3',
-    eventId: '2',
-    title: 'Classificação Geral - Natação',
-    category: 'Classificação',
-    description: 'Tempos e colocações de todas as baterias de 50m e 100m livres.',
-    date: new Date('2024-03-19'),
-    time: '11:00',
-    author: 'Federação Aquática',
-    fileName: 'natacao_res.pdf',
-    createdAt: new Date('2024-03-19T11:00:00'),
-  }
-]
+// MOCK_RESULTS moved to src/banco/resultados.ts
 
 export function CommunicationProvider({
   children,
@@ -364,7 +118,7 @@ export function CommunicationProvider({
 
         // Merge mocks if Event 2 is missing
         if (!initialNotices.some((n) => n.eventId === '2')) {
-          initialNotices = [...initialNotices, ...MOCK_NOTICES]
+          initialNotices = [...initialNotices, ...MOCK_NOTICES as unknown as Notice[]]
         }
 
         setNotices(initialNotices)
@@ -385,7 +139,7 @@ export function CommunicationProvider({
 
         // Merge mocks if Event 2 is missing
         if (!initialBulletins.some((b) => b.eventId === '2')) {
-          initialBulletins = [...initialBulletins, ...MOCK_BULLETINS]
+          initialBulletins = [...initialBulletins, ...MOCK_BULLETINS as unknown as Bulletin[]]
         }
 
         setBulletins(initialBulletins)
@@ -405,7 +159,7 @@ export function CommunicationProvider({
 
         // Merge mocks if Event 2 is missing
         if (!initialResults.some((r) => r.eventId === '2')) {
-          initialResults = [...initialResults, ...MOCK_RESULTS]
+          initialResults = [...initialResults, ...MOCK_RESULTS as unknown as Result[]]
         }
         setResults(initialResults)
 
@@ -425,7 +179,7 @@ export function CommunicationProvider({
 
         // Merge mocks if Event 2 is missing
         if (!initialRegulations.some((r) => r.eventId === '2')) {
-          initialRegulations = [...initialRegulations, ...MOCK_REGULATIONS]
+          initialRegulations = [...initialRegulations, ...MOCK_REGULATIONS as unknown as Regulation[]]
         }
 
         setRegulations(initialRegulations)
@@ -433,9 +187,9 @@ export function CommunicationProvider({
       } catch (e) {
         console.error('Failed to load communication data', e)
         // Fallback to mocks on error
-        setNotices(MOCK_NOTICES)
-        setBulletins(MOCK_BULLETINS)
-        setRegulations(MOCK_REGULATIONS)
+        setNotices(MOCK_NOTICES as unknown as Notice[])
+        setBulletins(MOCK_BULLETINS as unknown as Bulletin[])
+        setRegulations(MOCK_REGULATIONS as unknown as Regulation[])
       }
     }
     loadData()

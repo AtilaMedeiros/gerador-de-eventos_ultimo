@@ -2,6 +2,10 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useAuth } from './AuthContext'
 import { useEvent } from './EventContext'
 import { toast } from 'sonner'
+import { MOCK_SCHOOL } from '@/banco/escolas'
+import { MOCK_ATHLETES_SEED } from '@/banco/atletas'
+import { MOCK_TECHNICIANS_SEED } from '@/banco/tecnicos'
+import { MOCK_INSCRIPTIONS_SEED } from '@/banco/inscricoes'
 
 export interface School {
   id: string
@@ -79,152 +83,13 @@ const ParticipantContext = createContext<ParticipantContextType | undefined>(
   undefined,
 )
 
-const MOCK_SCHOOL: School = {
-  id: 'school-1',
-  name: 'Escola Municipal Exemplo',
-  inep: '12345678',
-  cnpj: '00.000.000/0000-00',
-  municipality: 'Fortaleza',
-  address: 'Rua das Flores, 123',
-  neighborhood: 'Centro',
-  cep: '60000-000',
-  type: 'Publica',
-  sphere: 'Municipal',
-  directorName: 'Maria Diretora',
-  landline: '(85) 3222-2222',
-  mobile: '(85) 99999-9999',
-  email: 'escola@exemplo.com',
-}
+// MOCK_SCHOOL moved to src/banco/escolas.ts
 
-const MOCK_ATHLETES_SEED: Athlete[] = [
-  {
-    id: '1',
-    name: 'Lucas Pereira',
-    sex: 'Masculino',
-    dob: new Date('2008-05-15T12:00:00'),
-    cpf: '123.456.789-00',
-    schoolId: 'school-1',
-    motherName: 'Maria Pereira',
-    motherCpf: '987.654.321-00',
-    rg: '12345678'
-  },
-  {
-    id: '2',
-    name: 'Beatriz Costa',
-    sex: 'Feminino',
-    dob: new Date('2010-08-20T12:00:00'),
-    cpf: '987.654.321-00',
-    schoolId: 'school-1',
-    motherName: 'Ana Costa',
-    motherCpf: '111.222.333-44',
-    rg: '87654321'
-  },
-  {
-    id: '3',
-    name: 'Gabriel Almeida',
-    sex: 'Masculino',
-    dob: new Date('2005-01-10T12:00:00'),
-    cpf: '111.222.333-44',
-    schoolId: 'school-1',
-    motherName: 'Carla Almeida',
-    motherCpf: '555.666.777-88',
-    rg: '11223344'
-  },
-  {
-    id: '4',
-    name: 'Mariana Silva',
-    sex: 'Feminino',
-    dob: new Date('2008-11-05T12:00:00'),
-    cpf: '555.666.777-88',
-    schoolId: 'school-1',
-    motherName: 'Joana Silva',
-    motherCpf: '999.888.777-66',
-    rg: '12345678'
-  },
-  {
-    id: '5',
-    name: 'João Pedro',
-    sex: 'Masculino',
-    dob: new Date('2012-03-25T12:00:00'),
-    cpf: '999.888.777-66',
-    schoolId: 'school-1',
-    motherName: 'Pedro Santos',
-    motherCpf: '222.333.444-55',
-    rg: '55667788'
-  }
-]
+// MOCK_ATHLETES_SEED moved to src/banco/atletas.ts
 
-const MOCK_TECHNICIANS_SEED: Technician[] = [
-  {
-    id: 'tech-1',
-    schoolId: 'school-1',
-    name: 'Carlos Oliveira',
-    sex: 'Masculino',
-    dob: new Date('1985-05-10T12:00:00'),
-    cpf: '111.111.111-11',
-    cref: '123456-G/CE',
-    email: 'carlos.oliveira@escola.com',
-    phone: '(85) 98888-8888',
-  },
-  {
-    id: 'tech-2',
-    schoolId: 'school-1',
-    name: 'Fernanda Santos',
-    sex: 'Feminino',
-    dob: new Date('1990-08-15T12:00:00'),
-    cpf: '222.222.222-22',
-    cref: '654321-G/CE',
-    email: 'fernanda.santos@escola.com',
-    phone: '(85) 97777-7777',
-  }
-]
+// MOCK_TECHNICIANS_SEED moved to src/banco/tecnicos.ts
 
-const MOCK_INSCRIPTIONS_SEED: Inscription[] = [
-  // Futsal (Coletiva, Masculino, 14-17)
-  // Lucas (17y), Gabriel (19y - older, but let's assume valid for mock), João (13y - too young)
-  {
-    id: 'insc-1',
-    schoolId: 'school-1',
-    athleteId: '1', // Lucas
-    eventId: '1', // Default Event
-    modalityId: '1', // Futsal
-    status: 'Confirmada',
-  },
-  {
-    id: 'insc-2',
-    schoolId: 'school-1',
-    athleteId: '3', // Gabriel
-    eventId: '1',
-    modalityId: '1', // Futsal
-    status: 'Confirmada',
-  },
-  // Natação (Individual, Feminino, 10-99)
-  // Beatriz (15y), Mariana (17y)
-  {
-    id: 'insc-3',
-    schoolId: 'school-1',
-    athleteId: '2', // Beatriz
-    eventId: '1',
-    modalityId: '2', // Natação
-    status: 'Confirmada',
-  },
-  {
-    id: 'insc-4',
-    schoolId: 'school-1',
-    athleteId: '4', // Mariana
-    eventId: '1',
-    modalityId: '2', // Natação
-    status: 'Confirmada',
-  },
-  {
-    id: 'insc-5',
-    schoolId: 'school-1',
-    athleteId: '5', // João Pedro
-    eventId: '1', // Default Event
-    modalityId: '4', // Atletismo
-    status: 'Confirmada',
-  },
-]
+// MOCK_INSCRIPTIONS_SEED moved to src/banco/inscricoes.ts
 
 export function ParticipantProvider({
   children,
@@ -252,7 +117,7 @@ export function ParticipantProvider({
       if (storedSchool) {
         setSchool(JSON.parse(storedSchool))
       } else {
-        setSchool(MOCK_SCHOOL)
+        setSchool(MOCK_SCHOOL as unknown as School)
       }
 
       const storedAthletes = localStorage.getItem('ge_athletes')
@@ -266,10 +131,10 @@ export function ParticipantProvider({
             })),
           )
         } else {
-          setAthletes(MOCK_ATHLETES_SEED)
+          setAthletes(MOCK_ATHLETES_SEED as unknown as Athlete[])
         }
       } else {
-        setAthletes(MOCK_ATHLETES_SEED)
+        setAthletes(MOCK_ATHLETES_SEED as unknown as Athlete[])
       }
 
       const storedTechs = localStorage.getItem('ge_technicians')
@@ -283,24 +148,22 @@ export function ParticipantProvider({
             })),
           )
         } else {
-          setTechnicians(MOCK_TECHNICIANS_SEED)
+          setTechnicians(MOCK_TECHNICIANS_SEED as unknown as Technician[])
         }
       } else {
-        setTechnicians(MOCK_TECHNICIANS_SEED)
+        setTechnicians(MOCK_TECHNICIANS_SEED as unknown as Technician[])
       }
 
       const storedInscriptions = localStorage.getItem('ge_inscriptions')
       if (storedInscriptions) {
         const parsed = JSON.parse(storedInscriptions)
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Basic check if data seems valid (has IDs)
           setInscriptions(parsed)
         } else {
-          // If array is empty, force mock seed
-          setInscriptions(MOCK_INSCRIPTIONS_SEED)
+          setInscriptions(MOCK_INSCRIPTIONS_SEED as unknown as Inscription[])
         }
       } else {
-        setInscriptions(MOCK_INSCRIPTIONS_SEED)
+        setInscriptions(MOCK_INSCRIPTIONS_SEED as unknown as Inscription[])
       }
     } else {
       setSchool(null)

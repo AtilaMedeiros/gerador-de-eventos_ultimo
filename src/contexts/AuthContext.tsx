@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { toast } from 'sonner'
+import { getMockUserByEmail } from '@/banco/usuarios'
 
 export interface User {
   id: string
@@ -48,46 +49,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return false
     }
 
-    let mockUser: User
-
-    // Mock different users based on email
-    if (email.includes('admin')) {
-      mockUser = {
-        id: '1',
-        name: 'João Produtor',
-        email: email,
-        role: 'producer',
-        permissions: ['criar_evento', 'editar_evento', 'ver_relatorios'],
-      }
-    } else if (email.includes('escola')) {
-      mockUser = {
-        id: '2',
-        name: 'Diretor da Escola',
-        email: email,
-        role: 'school_admin',
-        permissions: ['gerir_escola', 'gerir_atletas', 'gerir_tecnicos'],
-        schoolId: 'school-1',
-      }
-    } else if (email.includes('tecnico')) {
-      mockUser = {
-        id: '3',
-        name: 'Técnico Esportivo',
-        email: email,
-        role: 'technician',
-        permissions: ['ver_atletas'],
-        schoolId: 'school-1',
-      }
-    } else {
-      // Default fallback for demo
-      mockUser = {
-        id: '2',
-        name: 'Diretor da Escola',
-        email: email,
-        role: 'school_admin',
-        permissions: ['gerir_escola', 'gerir_atletas', 'gerir_tecnicos'],
-        schoolId: 'school-1',
-      }
-    }
+    // Mock user retrieval
+    const foundUser = getMockUserByEmail(email)
+    const mockUser: User = { ...foundUser } as User
 
     setUser(mockUser)
     localStorage.setItem('ge_user', JSON.stringify(mockUser))

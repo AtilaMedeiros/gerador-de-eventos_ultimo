@@ -33,6 +33,8 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { useEvent } from '@/contexts/EventContext'
 import { useModality } from '@/contexts/ModalityContext'
 import { cn } from '@/lib/utils'
+import { MOCK_INSCRIPTIONS_SEED } from '@/banco/inscricoes'
+import { MOCK_SCHOOL } from '@/banco/escolas'
 
 export default function EventPanelDashboard() {
   const { eventId } = useParams()
@@ -44,9 +46,13 @@ export default function EventPanelDashboard() {
 
   // 2. Mock & Derived Data
   const totalAthletes = activeEvent?.registrations || 0
-  // Mock school count proportional to athletes or random if 0
-  const totalSchools =
-    totalAthletes > 0 ? Math.round(totalAthletes / 15) + 2 : 0
+
+  // Real calculation based on schools participating in this event
+  // We check inscriptions to see which schools are present
+  const schoolIds = new Set(MOCK_INSCRIPTIONS_SEED.filter(i => i.eventId === activeEvent?.id).map(i => i.schoolId))
+  const totalSchools = schoolIds.size > 0 ? schoolIds.size : (MOCK_SCHOOL ? 1 : 0) // Fallback to at least 1 if MOCK_SCHOOL exists and we want to show something, or strict 0.
+  // Actually, let's be strict:
+  // const totalSchools = schoolIds.size
 
   // Mock Activity Feed
   const activities = useMemo(
@@ -82,18 +88,22 @@ export default function EventPanelDashboard() {
       linkedIds.includes(m.id),
     )
 
+    const getCount = (modId: string) => {
+      return MOCK_INSCRIPTIONS_SEED.filter(i => i.modalityId === modId && i.eventId === activeEvent.id).length
+    }
+
     const collective = relevantModalities
       .filter((m) => m.type === 'coletiva')
       .map((m) => ({
         ...m,
-        registeredCount: Math.floor(Math.random() * 12), // Mock Teams
+        registeredCount: getCount(m.id),
       }))
 
     const individual = relevantModalities
       .filter((m) => m.type === 'individual')
       .map((m) => ({
         ...m,
-        registeredCount: Math.floor(Math.random() * 50), // Mock Athletes
+        registeredCount: getCount(m.id),
       }))
 
     return { collective, individual }
