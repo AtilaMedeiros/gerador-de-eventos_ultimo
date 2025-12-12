@@ -104,11 +104,26 @@ export function PublicHeader({ title }: PublicHeaderProps) {
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center gap-3 group cursor-pointer">
-          <img
-            src={isScrolled ? "/logo-fortaleza-educacao.png" : "/logo-fortaleza-branca.png"}
-            alt="Logo Fortaleza"
-            className="h-12 w-auto object-contain"
-          />
+          <div className="grid grid-cols-1 grid-rows-1 justify-items-center items-center">
+            {/* Logo Colorida (Aparece ao rolar) */}
+            <img
+              src="/logo-fortaleza-educacao.png"
+              alt="Logo Fortaleza"
+              className={cn(
+                "h-12 w-auto object-contain col-start-1 row-start-1 transition-opacity duration-[3000ms] ease-in-out",
+                isScrolled ? "opacity-100" : "opacity-0"
+              )}
+            />
+            {/* Logo Branca (Aparece no topo) */}
+            <img
+              src="/logo-fortaleza-branca.png"
+              alt="Logo Fortaleza"
+              className={cn(
+                "h-12 w-auto object-contain col-start-1 row-start-1 transition-opacity duration-[3000ms] ease-in-out",
+                isScrolled ? "opacity-0" : "opacity-100"
+              )}
+            />
+          </div>
         </div>
 
         {/* Desktop Nav */}
