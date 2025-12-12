@@ -105,7 +105,7 @@ export function PublicHeader({ title }: PublicHeaderProps) {
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center gap-3 group cursor-pointer">
           <img
-            src="/logo-fortaleza-educacao.png"
+            src={isScrolled ? "/logo-fortaleza-educacao.png" : "/logo-fortaleza-branca.png"}
             alt="Logo Fortaleza"
             className="h-12 w-auto object-contain"
           />
