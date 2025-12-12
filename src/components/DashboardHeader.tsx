@@ -96,7 +96,7 @@ export function DashboardHeader() {
                   variant="ghost"
                   className="w-full justify-start"
                   onClick={() =>
-                    navigate('/area-do-produtor/cadastro-basico/evento')
+                    navigate('/area-do-produtor/evento')
                   }
                 >
                   Eventos
