@@ -40,6 +40,8 @@ import { useEvent } from '@/contexts/EventContext'
 import { EventService } from '@/backend/services/event.service'
 
 import { INITIAL_SCHOOLS } from '@/backend/banco/escolas' // Import mock data
+import { StatusLegendTooltip } from '@/components/StatusLegendTooltip'
+import { SchoolService } from '@/backend/services/school.service'
 
 // ... (imports)
 
@@ -137,24 +139,9 @@ export default function SchoolsList() {
     }, [])
 
     // Derived state merging schools with real event status from Context
+    // Uses SchoolService to expand schools (1 school linked to N events = N rows)
     const schools = useMemo(() => {
-        return schoolsList.map((school) => {
-            // Find linked event in real events list
-            const linkedEvent = events.find(e => e.id === school.eventId || e.name === school.eventName)
-
-            return {
-                ...school,
-                // If linked event found, use its real status and name, else fallback or use stored
-                event: linkedEvent ? linkedEvent.name : (school.eventName || 'Evento Desconhecido'),
-                adminStatus: linkedEvent ? linkedEvent.adminStatus : 'CANCELADO', // Default closed if no event found
-                computedTimeStatus: linkedEvent ? linkedEvent.computedTimeStatus : 'ENCERRADO',
-                // properties for compatibility with table keys
-                director: school.directorName,
-                phone: school.landline,
-                whatsapp: school.mobile,
-                responsible: school.responsibleName
-            }
-        })
+        return SchoolService.expandSchoolsByEvents(schoolsList, events)
     }, [events, schoolsList])
 
     // Apply Filters
@@ -259,20 +246,19 @@ export default function SchoolsList() {
 
     // Column Resizing Logic
     const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
-        const saved = localStorage.getItem('ge_schools_col_widths_v2')
+        const saved = localStorage.getItem('ge_schools_col_widths_v5')
         return saved ? JSON.parse(saved) : {
             name: 200,
-            type: 80,
+            event: 180,
             director: 110,
-            phone: 120,
-            email: 160,
+            contact: 180,
             responsible: 110,
             actions: 130
         }
     })
 
     useEffect(() => {
-        localStorage.setItem('ge_schools_col_widths_v2', JSON.stringify(colWidths))
+        localStorage.setItem('ge_schools_col_widths_v5', JSON.stringify(colWidths))
     }, [colWidths])
 
     const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)
@@ -398,16 +384,17 @@ export default function SchoolsList() {
                                     className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                                 />
                             </TableHead>
-                            <TableHead style={{ width: colWidths.type }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('type' as any)}>
-                                <div className="flex items-center justify-center overflow-hidden">
-                                    <span className="truncate">Tipo</span> {getSortIcon('type')}
+                            <TableHead style={{ width: colWidths.event }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('event')}>
+                                <div className="flex items-center overflow-hidden">
+                                    <span className="truncate">Evento</span> {getSortIcon('event')}
                                 </div>
                                 <div
-                                    onMouseDown={(e) => handleMouseDown(e, 'type')}
+                                    onMouseDown={(e) => handleMouseDown(e, 'event')}
                                     onClick={(e) => e.stopPropagation()}
                                     className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                                 />
                             </TableHead>
+
                             <TableHead style={{ width: colWidths.director }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('director' as any)}>
                                 <div className="flex items-center justify-center overflow-hidden">
                                     <span className="truncate">Diretor</span> {getSortIcon('director')}
@@ -418,22 +405,12 @@ export default function SchoolsList() {
                                     className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                                 />
                             </TableHead>
-                            <TableHead style={{ width: colWidths.phone }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('phone' as any)}>
+                            <TableHead style={{ width: colWidths.contact }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('email' as any)}>
                                 <div className="flex items-center justify-center overflow-hidden">
-                                    <span className="truncate">Telefone</span> {getSortIcon('phone')}
+                                    <span className="truncate">Contato</span> {getSortIcon('email')}
                                 </div>
                                 <div
-                                    onMouseDown={(e) => handleMouseDown(e, 'phone')}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
-                                />
-                            </TableHead>
-                            <TableHead style={{ width: colWidths.email }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('email' as any)}>
-                                <div className="flex items-center justify-center overflow-hidden">
-                                    <span className="truncate">Email</span> {getSortIcon('email')}
-                                </div>
-                                <div
-                                    onMouseDown={(e) => handleMouseDown(e, 'email')}
+                                    onMouseDown={(e) => handleMouseDown(e, 'contact')}
                                     onClick={(e) => e.stopPropagation()}
                                     className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                                 />
@@ -456,7 +433,7 @@ export default function SchoolsList() {
                         {currentSchools.length > 0 ? (
                             currentSchools.map((school) => (
                                 <TableRow
-                                    key={school.id}
+                                    key={school._uniqueKey}
                                     className="hover:bg-primary/5 transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group"
                                 >
                                     <TableCell className="font-medium h-12 py-0">
@@ -466,41 +443,90 @@ export default function SchoolsList() {
                                                 <span className="text-sm group-hover:text-primary transition-colors leading-tight">
                                                     {school.name}
                                                 </span>
-                                                {school.inep && (
-                                                    <span className="text-[10px] text-muted-foreground">INEP: {school.inep}</span>
-                                                )}
+                                                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-0.5">
+                                                    {school.inep && (
+                                                        <span>INEP: {school.inep}</span>
+                                                    )}
+                                                    {school.inep && <span>-</span>}
+                                                    <span className="capitalize">{school.type}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
-                                        <div className="flex items-center justify-center h-full">
-                                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-secondary/10 text-secondary-foreground border border-secondary/20">
-                                                {school.type}
+                                        <div className="flex flex-col justify-center h-full gap-0.5">
+                                            <span className="text-sm font-medium leading-tight truncate w-full" title={school.event}>
+                                                {school.event}
                                             </span>
+                                            <StatusLegendTooltip>
+                                                <div className="flex items-center gap-3 text-[11px] mt-0.5">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className={`h-1.5 w-1.5 rounded-full ${school.adminStatus === 'PUBLICADO' ? 'bg-blue-600 dark:bg-blue-500' :
+                                                            school.adminStatus === 'RASCUNHO' ? 'bg-orange-400' :
+                                                                school.adminStatus === 'REABERTO' ? 'bg-green-500' :
+                                                                    school.adminStatus === 'SUSPENSO' ? 'bg-gray-400' :
+                                                                        school.adminStatus === 'CANCELADO' ? 'bg-red-500' :
+                                                                            'bg-muted-foreground'
+                                                            }`} />
+                                                        <span className="text-muted-foreground capitalize">
+                                                            {school.adminStatus === 'PUBLICADO' ? 'Publicado' :
+                                                                school.adminStatus === 'RASCUNHO' ? 'Rascunho' :
+                                                                    school.adminStatus === 'CANCELADO' ? 'Cancelado' :
+                                                                        school.adminStatus === 'SUSPENSO' ? 'Suspenso' :
+                                                                            school.adminStatus === 'REABERTO' ? 'Reaberto' : (school.adminStatus || '').toLowerCase()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className={`h-1.5 w-1.5 rounded-full ${school.computedTimeStatus === 'ATIVO' ? 'bg-blue-600 dark:bg-blue-500' :
+                                                            school.computedTimeStatus === 'AGENDADO' ? 'bg-orange-400' :
+                                                                school.computedTimeStatus === 'ENCERRADO' ? 'bg-red-500' :
+                                                                    'bg-muted-foreground'
+                                                            }`} />
+                                                        <span className="text-muted-foreground capitalize">
+                                                            {school.computedTimeStatus === 'ATIVO' ? 'Em andamento' :
+                                                                school.computedTimeStatus === 'AGENDADO' ? 'Agendado' :
+                                                                    school.computedTimeStatus === 'ENCERRADO' ? 'Encerrado' : '-'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </StatusLegendTooltip>
                                         </div>
                                     </TableCell>
+
                                     <TableCell className="h-12 py-0">
                                         <div className="flex items-center justify-center h-full gap-2 text-muted-foreground">
                                             <UserCheck className="h-3.5 w-3.5" />
                                             <span className="text-sm">{school.director}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="h-12 py-0">
-                                        <div className="flex flex-col items-center justify-center h-full gap-0.5">
-                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                                <Phone className="h-3 w-3" />
-                                                {school.phone}
-                                            </div>
-                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground/80">
-                                                <FaWhatsapp className="h-3.5 w-3.5 text-emerald-500" />
-                                                {school.whatsapp}
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="h-12 py-0">
-                                        <div className="flex items-center justify-center h-full gap-2 text-muted-foreground">
-                                            {/* <Mail className="h-3.5 w-3.5" /> */}
-                                            <span className="text-sm truncate max-w-[180px]" title={school.email}>{school.email}</span>
+                                    <TableCell className="h-auto py-2">
+                                        <div className="flex flex-col justify-center h-full gap-1.5 pl-4">
+                                            {school.email && (
+                                                <div
+                                                    className="flex items-center gap-2 text-xs group/item cursor-pointer hover:text-primary transition-colors text-muted-foreground"
+                                                    onClick={() => window.location.href = `mailto:${school.email}`}
+                                                    title="Enviar Email"
+                                                >
+                                                    <Mail className="h-3.5 w-3.5 shrink-0 group-hover/item:text-primary" />
+                                                    <span className="truncate max-w-[160px]">{school.email}</span>
+                                                </div>
+                                            )}
+                                            {school.phone && (
+                                                <div className="flex items-center gap-2 text-xs text-muted-foreground/80">
+                                                    <Phone className="h-3.5 w-3.5 shrink-0" />
+                                                    <span className="truncate">{school.phone}</span>
+                                                </div>
+                                            )}
+                                            {school.whatsapp && (
+                                                <div
+                                                    className="flex items-center gap-2 text-xs text-muted-foreground/80 group/item cursor-pointer hover:text-emerald-500 transition-colors"
+                                                    onClick={() => window.open(`https://wa.me/55${school.whatsapp.replace(/\D/g, '')}`, '_blank')}
+                                                    title="Conversar no WhatsApp"
+                                                >
+                                                    <FaWhatsapp className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                                                    <span className="truncate">{school.whatsapp}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
@@ -524,8 +550,8 @@ export default function SchoolsList() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-8 w-8 shrink-0 hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
-                                                onClick={() => navigate(`/area-do-produtor/escolas/${school.id}/participantes`)} // Assumed route or action
-                                                title="Participante Técnico"
+                                                onClick={() => navigate(`/area-do-produtor/escolas/${school.id}/tecnicos`)}
+                                                title="Técnicos da Escola"
                                             >
                                                 <UserPlus className="h-4 w-4" />
                                             </Button>

@@ -65,4 +65,55 @@ export class SchoolService {
         // Just reuse update logic
         return this.updateSchool(schoolId, { eventIds })
     }
+
+    /**
+     * Expands the list of schools so that a school appears once for each event it is linked to.
+     * This implements the business rule that a school linked to N events should appear as N rows.
+     */
+    static expandSchoolsByEvents(schools: School[], allEvents: any[]): any[] {
+        const expanded: any[] = []
+
+        schools.forEach(school => {
+            // Normalize event IDs (prefer eventIds, fallback to eventId)
+            let rawIds: string[] = Array.isArray(school.eventIds) ? [...school.eventIds] : []
+            if (school.eventId) rawIds.push(school.eventId)
+
+            // Deduplicate
+            const linkedIds = Array.from(new Set(rawIds))
+
+            if (linkedIds.length === 0) {
+                // No linked events: show once
+                expanded.push({
+                    ...school,
+                    _uniqueKey: school.id,
+                    event: 'Evento não vinculado',
+                    adminStatus: '',
+                    computedTimeStatus: '',
+                    // Map display fields
+                    director: school.directorName,
+                    phone: school.landline,
+                    whatsapp: school.mobile,
+                    responsible: school.responsibleName
+                })
+            } else {
+                // Multiple linked events: expand rows
+                linkedIds.forEach(eventId => {
+                    const event = allEvents.find(e => e.id === eventId)
+                    expanded.push({
+                        ...school,
+                        _uniqueKey: `${school.id}-${eventId}`,
+                        event: event ? event.name : 'Evento Desconhecido',
+                        adminStatus: event ? event.adminStatus : 'CANCELADO',
+                        computedTimeStatus: event ? event.computedTimeStatus : 'ENCERRADO',
+                        // Map display fields
+                        director: school.directorName,
+                        phone: school.landline,
+                        whatsapp: school.mobile,
+                        responsible: school.responsibleName
+                    })
+                })
+            }
+        })
+        return expanded
+    }
 }

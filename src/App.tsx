@@ -25,7 +25,7 @@ import UsersList from './pages/producer/basic-registration/UsersList'
 import UserForm from './pages/producer/basic-registration/UserForm'
 import SchoolsList from './pages/producer/basic-registration/SchoolsList'
 import SchoolForm from './pages/producer/basic-registration/SchoolForm'
-import SchoolParticipants from './pages/producer/basic-registration/SchoolParticipants'
+import SchoolTechnicians from './pages/producer/basic-registration/SchoolTechnicians'
 import LinkSchoolEvents from './pages/producer/basic-registration/LinkSchoolEvents'
 import AdminAthletesList from './pages/producer/basic-registration/AthletesList'
 import AdminAthleteForm from './pages/producer/basic-registration/AthleteForm'
@@ -158,7 +158,7 @@ const App = () => (
                       <Route path="escolas" element={<SchoolsList />} />
                       <Route path="escolas/novo" element={<SchoolForm />} />
                       <Route path="escolas/:id" element={<SchoolForm />} />
-                      <Route path="escolas/:id/participantes" element={<SchoolParticipants />} />
+                      <Route path="escolas/:id/tecnicos" element={<SchoolTechnicians />} />
                       <Route path="escolas/:id/vincular-eventos" element={<LinkSchoolEvents />} />
 
                       {/* Atletas */}
