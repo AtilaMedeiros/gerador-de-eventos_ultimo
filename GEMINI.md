@@ -71,6 +71,21 @@ O projeto não consome uma API externa. Os dados são gerenciados via React Cont
   - **Local Correto:** Todos os mocks devem ser centralizados em `src/backend/banco/`.
   - **Refatoração:** Ao encontrar mocks em arquivos `.tsx` ou `.ts` fora de `src/backend/banco/`, mova-os imediatamente.
 
+### 6. Sistema de Cores e Status de Eventos
+Cada combinação de status (Temporal + Administrativo) representa um estado consolidado, exibido em um botão único.
+
+| Combinação | Cor | Significado |
+| :--- | :--- | :--- |
+| **AGENDADO + RASCUNHO** | `Cinza (#9CA3AF)` | Evento em criação, ainda não público. |
+| **AGENDADO + PUBLICADO** | `Azul (#3B82F6)` | Evento confirmado e visível, aguardando início. |
+| **ATIVO + PUBLICADO** | `Verde (#22C55E)` | Evento acontecendo normalmente. |
+| **ATIVO + SUSPENSO** | `Laranja (#FB923C)` | Evento em andamento, interrompido. |
+| **ENCERRADO + PUBLICADO** | `Cinza Escuro (#6B7280)` | Finalizado, disponível para consulta. |
+| **ENCERRADO + REABERTO** | `Amarelo (#F59E0B)` | Finalizado, aberto para ajustes. |
+| **ENCERRADO + CANCELADO** | `Vermelho (#EF4444)` | Encerrado definitivamente ou invalidado. |
+
+**Regra:** A cor sempre reflete a condição mais crítica da dupla.
+
 ## 🐛 Troubleshooting Comum
 - **Porta Ocupada:** O servidor roda na porta 8080. Se der erro, mate o processo (`kill -9 <PID>`) ou use outra porta.
 - **Erro de Alias:** Se `@/` não for reconhecido, verifique `vite.config.ts` e `tsconfig.json`. Reinicie o servidor dev.

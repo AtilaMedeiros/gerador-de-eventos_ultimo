@@ -45,6 +45,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { useEvent, Event } from '@/contexts/EventContext'
 import { cn } from '@/lib/utils'
+import { EventStatusBadge } from '@/components/EventStatusBadge'
 
 const generateSlug = (text: string) => {
   return text
@@ -112,7 +113,7 @@ const filterFields: FilterFieldConfig[] = [
   },
   {
     key: 'isActive',
-    label: 'Eventos Publicados',
+    label: 'Apenas Eventos Ativos',
     activeLabel: '',
     icon: <CalendarHeart className="size-5" />,
     type: 'boolean',
@@ -180,8 +181,11 @@ export default function EventsList() {
         case 'isActive': {
           // If 'false' (unchecked), show all events.
           if (value === 'false') return true
-          // If 'true' (checked), show only published events.
-          return event.status === 'published'
+          // Logic: (Time: Scheduled OR Active) AND (Admin: Published OR Draft)
+          const isTimeActive = ['AGENDADO', 'ATIVO'].includes(event.computedTimeStatus || '')
+          const isAdminActive = ['PUBLICADO', 'RASCUNHO'].includes(event.adminStatus || '')
+
+          return isTimeActive && isAdminActive
         }
         default:
           return true
@@ -331,24 +335,38 @@ export default function EventsList() {
                         {event.name}
                       </h2>
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span className="text-sm">{event.location || 'Local não definido'}</span>
+                        <User className="h-4 w-4" />
+                        <span className="text-sm font-medium">{event.producerName || 'Organização'}</span>
                       </div>
                     </div>
 
                     <div className="flex flex-col items-start md:items-end gap-1.5 -mt-2">
-                      <div className={cn(
-                        "flex items-center gap-2 px-3 py-1 rounded-sm text-xs font-semibold w-fit",
-                        event.status === 'published'
-                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-                          : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
-                      )}>
-                        <span className="w-1.5 h-1.5 bg-current rounded-full"></span>
-                        <span>{event.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
+                      <div className="flex flex-col gap-0.5 items-end">
+                        <div className="flex items-center gap-1.5 text-[10px]">
+                          <span className="font-semibold text-muted-foreground uppercase tracking-wider">Status:</span>
+                          <span className={`font-bold uppercase ${event.adminStatus === 'PUBLICADO' ? 'text-emerald-600 dark:text-emerald-400' :
+                            event.adminStatus === 'CANCELADO' ? 'text-red-600 dark:text-red-400' :
+                              'text-muted-foreground'
+                            }`}>
+                            {event.adminStatus === 'PUBLICADO' ? 'Publicado' :
+                              event.adminStatus === 'RASCUNHO' ? 'Rascunho' :
+                                event.adminStatus === 'CANCELADO' ? 'Cancelado' :
+                                  event.adminStatus === 'SUSPENSO' ? 'Suspenso' :
+                                    event.adminStatus === 'REABERTO' ? 'Reaberto' : event.adminStatus}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10px]">
+                          <span className="font-semibold text-muted-foreground uppercase tracking-wider">Data:</span>
+                          <span className={`font-bold uppercase ${event.computedTimeStatus === 'ATIVO' ? 'text-blue-600 dark:text-blue-400' :
+                            event.computedTimeStatus === 'AGENDADO' ? 'text-amber-600 dark:text-amber-400' :
+                              'text-muted-foreground'
+                            }`}>
+                            {event.computedTimeStatus === 'ATIVO' ? 'Em andamento' :
+                              event.computedTimeStatus === 'AGENDADO' ? 'Agendado' :
+                                event.computedTimeStatus === 'ENCERRADO' ? 'Encerrado' : '-'}
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                        {event.producerName || 'Organização'}
-                      </span>
                     </div>
                   </div>
                 </div>

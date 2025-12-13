@@ -249,7 +249,7 @@ export default function AssociateModalities({
       <ArrowDown className="ml-2 h-4 w-4 text-primary" />
   }
 
-  const totalTableWidth = useMemo(() => Object.values(colWidths).reduce((acc, width) => acc + width, 0) + 150, [colWidths])
+  const totalTableWidth = useMemo(() => Object.values(colWidths).reduce((acc, width) => acc + width, 0) + 180, [colWidths])
 
   const handleSave = () => {
     if (eventId) {
@@ -439,7 +439,7 @@ export default function AssociateModalities({
                             className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                           />
                         </TableHead>
-                        <TableHead className="px-4 align-middle relative text-right font-semibold text-primary/80 h-12">
+                        <TableHead className="w-[130px] px-4 align-middle relative text-right font-semibold text-primary/80 h-12">
                           Ações
                         </TableHead>
                       </TableRow>
@@ -490,7 +490,7 @@ export default function AssociateModalities({
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                                    className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
                                     title="Editar"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -503,7 +503,7 @@ export default function AssociateModalities({
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="hover:bg-secondary/20 hover:text-secondary-foreground rounded-full transition-colors"
+                                    className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
                                     title="Copiar"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -519,7 +519,7 @@ export default function AssociateModalities({
                                         variant="ghost"
                                         size="icon"
                                         title="Excluir"
-                                        className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
                                         onClick={(e) => e.stopPropagation()}
                                       >
                                         <Trash2 className="h-4 w-4" />

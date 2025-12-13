@@ -35,6 +35,7 @@ import { useModality } from '@/contexts/ModalityContext'
 import { cn } from '@/lib/utils'
 import { MOCK_INSCRIPTIONS_SEED } from '@/backend/banco/inscricoes'
 import { MOCK_SCHOOL } from '@/backend/banco/escolas'
+import { EventStatusBadge } from '@/components/EventStatusBadge'
 
 export default function EventPanelDashboard() {
   const { eventId } = useParams()
@@ -136,6 +137,12 @@ export default function EventPanelDashboard() {
             <span className="font-semibold text-primary">
               {activeEvent.name}
             </span>
+            <div className="inline-block ml-3 align-middle">
+              <EventStatusBadge
+                adminStatus={activeEvent.adminStatus}
+                timeStatus={activeEvent.computedTimeStatus}
+              />
+            </div>
           </p>
         </div>
         <Button

@@ -37,7 +37,8 @@ export class EventService {
     /**
      * Calculates the temporal status of an event.
      */
-    static getTimeStatus(startDate: Date, endDate: Date): 'AGENDADO' | 'ATIVO' | 'ENCERRADO' {
+    static getTimeStatus(startDate: Date | undefined, endDate: Date | undefined): 'AGENDADO' | 'ATIVO' | 'ENCERRADO' {
+        if (!startDate || !endDate) return 'AGENDADO'
         const now = new Date()
         if (isBefore(now, startDate)) return 'AGENDADO'
         if (isAfter(now, endDate)) return 'ENCERRADO'

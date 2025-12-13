@@ -24,6 +24,7 @@ import { ptBR } from 'date-fns/locale'
 
 import { useEvent } from '@/contexts/EventContext'
 import { SchoolService } from '@/backend/services/school.service'
+import { EventStatusBadge } from '@/components/EventStatusBadge'
 
 const filterFields: FilterFieldConfig[] = [
     {
@@ -312,14 +313,31 @@ export default function LinkSchoolEvents() {
                                     </div>
 
                                     <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                                        <div className={`
-                                            flex items-center gap-1.5 px-3 py-1 text-xs font-semibold transition-colors rounded-[5px] border
-                                            ${event.status === 'published'
-                                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'}
-                                        `}>
-                                            <div className={`h-1.5 w-1.5 rounded-full ${event.status === 'published' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                                            {event.status === 'published' ? 'Publicado' : 'Rascunho'}
+                                        <div className="flex flex-col gap-0.5">
+                                            <div className="flex items-center gap-1.5 text-[10px]">
+                                                <span className="font-semibold text-muted-foreground uppercase tracking-wider">Status:</span>
+                                                <span className={`font-bold uppercase ${event.adminStatus === 'PUBLICADO' ? 'text-emerald-600 dark:text-emerald-400' :
+                                                        event.adminStatus === 'CANCELADO' ? 'text-red-600 dark:text-red-400' :
+                                                            'text-muted-foreground'
+                                                    }`}>
+                                                    {event.adminStatus === 'PUBLICADO' ? 'Publicado' :
+                                                        event.adminStatus === 'RASCUNHO' ? 'Rascunho' :
+                                                            event.adminStatus === 'CANCELADO' ? 'Cancelado' :
+                                                                event.adminStatus === 'SUSPENSO' ? 'Suspenso' :
+                                                                    event.adminStatus === 'REABERTO' ? 'Reaberto' : event.adminStatus}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-[10px]">
+                                                <span className="font-semibold text-muted-foreground uppercase tracking-wider">Data:</span>
+                                                <span className={`font-bold uppercase ${event.computedTimeStatus === 'ATIVO' ? 'text-blue-600 dark:text-blue-400' :
+                                                        event.computedTimeStatus === 'AGENDADO' ? 'text-amber-600 dark:text-amber-400' :
+                                                            'text-muted-foreground'
+                                                    }`}>
+                                                    {event.computedTimeStatus === 'ATIVO' ? 'Em andamento' :
+                                                        event.computedTimeStatus === 'AGENDADO' ? 'Agendado' :
+                                                            event.computedTimeStatus === 'ENCERRADO' ? 'Encerrado' : '-'}
+                                                </span>
+                                            </div>
                                         </div>
 
                                         <div className="flex items-center gap-2">
