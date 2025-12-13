@@ -443,7 +443,7 @@ export default function SchoolsList() {
                                                 <span className="text-sm group-hover:text-primary transition-colors leading-tight">
                                                     {school.name}
                                                 </span>
-                                                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-0.5">
+                                                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
                                                     {school.inep && (
                                                         <span>INEP: {school.inep}</span>
                                                     )}

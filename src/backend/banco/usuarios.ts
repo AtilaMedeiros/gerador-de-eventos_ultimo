@@ -1,10 +1,12 @@
-export type GlobalRole = 'admin' | 'producer' | 'school_admin' | 'technician'
+export type GlobalRole = 'admin' | 'producer' | 'school_admin' | 'technician' | 'participant'
 
 export interface User {
     id: string
     name: string
     email: string
     role: GlobalRole
+    cpf?: string
+    phone?: string
     schoolId?: string // Only for school_admin or technician
     permissions?: string[] // Optional legacy or specific global permissions
 }
@@ -15,6 +17,8 @@ export const INITIAL_USERS: User[] = [
         name: 'João Produtor',
         email: 'admin@exemplo.com',
         role: 'producer',
+        cpf: '000.000.000-01',
+        phone: '(11) 90000-0001'
     },
     {
         id: '2',
@@ -22,6 +26,8 @@ export const INITIAL_USERS: User[] = [
         email: 'escola@exemplo.com',
         role: 'school_admin',
         schoolId: 'school-1',
+        cpf: '000.000.000-02',
+        phone: '(85) 99999-9999'
     },
     {
         id: '3',
@@ -29,6 +35,33 @@ export const INITIAL_USERS: User[] = [
         email: 'tecnico@exemplo.com',
         role: 'technician',
         schoolId: 'school-1',
+        cpf: '000.000.000-03',
+        phone: '(85) 98888-8888'
+    },
+    // Merged from MOCK_USERS_LIST and adapted
+    {
+        id: '4',
+        name: 'Ana Silva',
+        cpf: '123.456.789-00',
+        phone: '(11) 98765-4321',
+        email: 'ana.silva@email.com',
+        role: 'admin',
+    },
+    {
+        id: '5',
+        name: 'Carlos Oliveira',
+        cpf: '234.567.890-11',
+        phone: '(21) 99876-5432',
+        email: 'carlos.o@email.com',
+        role: 'producer',
+    },
+    {
+        id: '6',
+        name: 'Marcos Santos',
+        cpf: '345.678.901-22',
+        phone: '(31) 91234-5678',
+        email: 'marcos.s@email.com',
+        role: 'participant',
     },
 ]
 

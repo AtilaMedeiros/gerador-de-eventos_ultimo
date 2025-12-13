@@ -89,8 +89,19 @@ export default function AssociateModalities({
 
   // Column Resizing Logic
   const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
-    const saved = localStorage.getItem('ge_associate_modalities_col_widths')
-    return saved ? JSON.parse(saved) : {
+    try {
+      const saved = localStorage.getItem('ge_associate_modalities_col_widths')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed && typeof parsed === 'object') {
+          return parsed
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load column widths', e)
+    }
+
+    return {
       name: 200,
       type: 120,
       gender: 120,
