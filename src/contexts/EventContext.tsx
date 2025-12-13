@@ -110,23 +110,47 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
       }))
       setEvents(detailedMocks)
     }
-    const storedAssociations = localStorage.getItem('ge_event_modalities')
-    if (storedAssociations) {
-      try {
-        setEventModalitiesState(JSON.parse(storedAssociations))
-      } catch (e) {
-        console.error('Failed to load event modalities from storage', e)
-      }
+    // Load Initial Modalities Map using Service
+    const storedAssociations = EventService.getAllEventModalitiesMap()
+
+    // Auto-link logic for demo purposes (Run once)
+    // Auto-link logic for demo purposes (Updated for 8 events with random modalities)
+    const hasInitialized = localStorage.getItem('ge_initialized_modalities_v2')
+
+    // We check if we have events loaded (either from restored or initial)
+    // The previous block sets 'events' state, but inside this useEffect, 'events' might refer to closure unless we depend on it.
+    // However, for initialization we can use INITIAL_EVENTS for IDs reference if we assume a fresh start or just map indices.
+
+    if (!hasInitialized) {
+      // IDs of the 8 mock events: '1' to '8'
+      const eventIds = ['1', '2', '3', '4', '5', '6', '7', '8']
+      // Available Modality IDs: '1' to '10'
+      const allModalityIds = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+
+      const newMap = { ...storedAssociations } // Start with what we have (usually empty on fresh start)
+
+      eventIds.forEach(eid => {
+        // Shuffle and pick 4 to 6
+        const shuffled = [...allModalityIds].sort(() => 0.5 - Math.random())
+        const count = Math.floor(Math.random() * 3) + 4 // 4, 5, or 6
+        const selected = shuffled.slice(0, count)
+
+        newMap[eid] = selected
+        EventService.saveEventModalities(eid, selected)
+      })
+
+      setEventModalitiesState(newMap)
+      localStorage.setItem('ge_initialized_modalities_v2', 'true')
+    } else {
+      setEventModalitiesState(storedAssociations)
     }
-  }, [])
+  }, []) // Remove duplicate useEffect for storedAssociations
 
   useEffect(() => {
     localStorage.setItem('ge_events', JSON.stringify(events))
   }, [events])
 
-  useEffect(() => {
-    localStorage.setItem('ge_event_modalities', JSON.stringify(eventModalities))
-  }, [eventModalities])
+  // Removed auto-save useEffect for modalities to delegate to Service
 
   const addEvent = (eventData: Omit<Event, 'id'>, suppressToast = false) => {
     const newEvent: Event = EventService.prepareNewEvent(eventData)
@@ -174,6 +198,10 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
   }
 
   const setEventModalities = (eventId: string, modalityIds: string[]) => {
+    // 1. Update Service (Persistence)
+    EventService.saveEventModalities(eventId, modalityIds)
+
+    // 2. Update Local State (Reactivity)
     setEventModalitiesState((prev) => ({
       ...prev,
       [eventId]: modalityIds,

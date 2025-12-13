@@ -68,4 +68,34 @@ export class EventService {
                 : 'AGENDADO'
         }
     }
+    /**
+     * Retrieves the entire map of event modalities.
+     */
+    static getAllEventModalitiesMap(): Record<string, string[]> {
+        const storedAssociations = localStorage.getItem('ge_event_modalities')
+        if (!storedAssociations) return {}
+        try {
+            return JSON.parse(storedAssociations)
+        } catch (e) {
+            console.error('Failed to parse event modalities map', e)
+            return {}
+        }
+    }
+
+    /**
+     * Retrieves associated modalities for an event.
+     */
+    static getEventModalities(eventId: string): string[] {
+        const map = this.getAllEventModalitiesMap()
+        return map[eventId] || []
+    }
+
+    /**
+     * Saves associated modalities for an event.
+     */
+    static saveEventModalities(eventId: string, modalityIds: string[]) {
+        const map = this.getAllEventModalitiesMap()
+        map[eventId] = modalityIds
+        localStorage.setItem('ge_event_modalities', JSON.stringify(map))
+    }
 }

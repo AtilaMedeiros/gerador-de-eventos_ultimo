@@ -5,6 +5,7 @@ export interface SchoolTechnician {
     schoolId: string
     userId: string
     allowedModalityIds: string[]
+    active?: boolean
     createdAt: Date
     // Helper fields for UI display (populated if needed, optionally)
     userName?: string
@@ -112,5 +113,22 @@ export class TechnicianLinkService {
         const allLinks = this.getStoredLinks()
         const filtered = allLinks.filter(l => l.id !== linkId)
         this.saveLinks(filtered)
+    }
+
+    static toggleTechnicianStatus(linkId: string): boolean {
+        const allLinks = this.getStoredLinks()
+        const index = allLinks.findIndex(l => l.id === linkId)
+
+        if (index === -1) {
+            throw new Error('Vínculo não encontrado')
+        }
+
+        const currentActive = allLinks[index].active ?? true
+        const newActive = !currentActive
+
+        allLinks[index].active = newActive
+        this.saveLinks(allLinks)
+
+        return newActive
     }
 }
