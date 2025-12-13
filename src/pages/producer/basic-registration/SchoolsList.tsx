@@ -464,16 +464,14 @@ export default function SchoolsList() {
                                                         <div className={`h-1.5 w-1.5 rounded-full ${school.adminStatus === 'PUBLICADO' ? 'bg-blue-600 dark:bg-blue-500' :
                                                             school.adminStatus === 'RASCUNHO' ? 'bg-orange-400' :
                                                                 school.adminStatus === 'REABERTO' ? 'bg-green-500' :
-                                                                    school.adminStatus === 'SUSPENSO' ? 'bg-gray-400' :
-                                                                        school.adminStatus === 'CANCELADO' ? 'bg-red-500' :
-                                                                            'bg-muted-foreground'
+                                                                    school.adminStatus === 'DESATIVADO' ? 'bg-red-500' :
+                                                                        'bg-muted-foreground'
                                                             }`} />
                                                         <span className="text-muted-foreground capitalize">
                                                             {school.adminStatus === 'PUBLICADO' ? 'Publicado' :
                                                                 school.adminStatus === 'RASCUNHO' ? 'Rascunho' :
-                                                                    school.adminStatus === 'CANCELADO' ? 'Cancelado' :
-                                                                        school.adminStatus === 'SUSPENSO' ? 'Suspenso' :
-                                                                            school.adminStatus === 'REABERTO' ? 'Reaberto' : (school.adminStatus || '').toLowerCase()}
+                                                                    school.adminStatus === 'DESATIVADO' ? 'Desativado' :
+                                                                        school.adminStatus === 'REABERTO' ? 'Reaberto' : (school.adminStatus || '').toLowerCase()}
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center gap-1.5">

@@ -36,12 +36,12 @@ export function EventStatusBadge({
     }
     const timeLabel = getTimeLabel(time)
 
-    // 1. CANCELADO (Dominant)
-    if (admin === 'CANCELADO') {
+    // 1. DESATIVADO (Dominant)
+    if (admin === 'DESATIVADO') {
         badgeConfig = {
             bg: 'bg-red-500/15 dark:bg-red-900/30',
             text: 'text-red-700 dark:text-red-400',
-            label: `Cancelado • ${timeLabel}`,
+            label: `Desativado • ${timeLabel}`,
         }
     }
     // 2. REABERTO (Specific to ENCERRADO + REABERTO, but dominant if Reaberto)
@@ -52,14 +52,7 @@ export function EventStatusBadge({
             label: `Reaberto • ${timeLabel}`,
         }
     }
-    // 3. SUSPENSO (Specific to ATIVO + SUSPENSO, but dominant if Suspenso)
-    else if (admin === 'SUSPENSO') {
-        badgeConfig = {
-            bg: 'bg-orange-500/15 dark:bg-orange-900/30',
-            text: 'text-orange-700 dark:text-orange-400',
-            label: `Suspenso • ${timeLabel}`,
-        }
-    }
+
     // 4. RASCUNHO (Dominant over time unless completely invalid)
     else if (admin === 'RASCUNHO') {
         badgeConfig = {

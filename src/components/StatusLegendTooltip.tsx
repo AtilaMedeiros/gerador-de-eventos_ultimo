@@ -42,13 +42,9 @@ export function StatusLegendTooltip({ children }: { children: React.ReactNode })
                     color="text-emerald-500 dark:text-emerald-400"
                     desc="Ajustes temporários."
                   />
+
                   <StatusItem
-                    label="Suspenso"
-                    color="text-zinc-500 dark:text-zinc-400"
-                    desc="Indisponível agora."
-                  />
-                  <StatusItem
-                    label="Cancelado"
+                    label="Desativado"
                     color="text-red-500 dark:text-red-400"
                     desc="Invalidado, sem uso."
                   />

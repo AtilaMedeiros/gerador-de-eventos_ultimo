@@ -23,6 +23,8 @@ import {
   Building,
   CalendarHeart,
   Megaphone,
+  CalendarX2,
+  CalendarCheck2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -125,7 +127,7 @@ const filterFields: FilterFieldConfig[] = [
 export default function EventsList() {
   const navigate = useNavigate()
   const { hasPermission } = useAuth()
-  const { events, deleteEvent } = useEvent()
+  const { events, deleteEvent, updateEvent } = useEvent()
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState<Filter[]>([
     createFilter('isActive', 'equals', 'true')
@@ -156,6 +158,20 @@ export default function EventsList() {
     e.stopPropagation()
     if (confirm('Tem certeza que deseja excluir este evento?')) {
       deleteEvent(id)
+    }
+  }
+
+  const handleDeactivate = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    if (confirm('Tem certeza que deseja desativar este evento?')) {
+      updateEvent(id, { adminStatus: 'DESATIVADO' })
+    }
+  }
+
+  const handleReopen = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    if (confirm('Tem certeza que deseja reabrir este evento?')) {
+      updateEvent(id, { adminStatus: 'REABERTO' })
     }
   }
 
@@ -348,15 +364,13 @@ export default function EventsList() {
                               <span className={`font-bold uppercase ${event.adminStatus === 'PUBLICADO' ? 'text-blue-600 dark:text-blue-500' :
                                 event.adminStatus === 'RASCUNHO' ? 'text-orange-400' :
                                   event.adminStatus === 'REABERTO' ? 'text-green-500' :
-                                    event.adminStatus === 'SUSPENSO' ? 'text-gray-400' :
-                                      event.adminStatus === 'CANCELADO' ? 'text-red-500' :
-                                        'text-muted-foreground'
+                                    event.adminStatus === 'DESATIVADO' ? 'text-red-500' :
+                                      'text-muted-foreground'
                                 }`}>
                                 {event.adminStatus === 'PUBLICADO' ? 'Publicado' :
                                   event.adminStatus === 'RASCUNHO' ? 'Rascunho' :
-                                    event.adminStatus === 'CANCELADO' ? 'Cancelado' :
-                                      event.adminStatus === 'SUSPENSO' ? 'Suspenso' :
-                                        event.adminStatus === 'REABERTO' ? 'Reaberto' : event.adminStatus}
+                                    event.adminStatus === 'DESATIVADO' ? 'Desativado' :
+                                      event.adminStatus === 'REABERTO' ? 'Reaberto' : event.adminStatus}
                               </span>
                             </div>
                             <div className="flex items-center gap-1.5 text-[10px]">
@@ -440,6 +454,32 @@ export default function EventsList() {
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="left">Produtor Assistente / Observador</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      aria-label="Reabrir Evento"
+                      className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-green-500/10 hover:text-green-600"
+                      onClick={(e) => handleReopen(e, event.id)}
+                    >
+                      <CalendarCheck2 className="h-5 w-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">Reabrir Evento</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      aria-label="Desativar Evento"
+                      className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-red-500/10 hover:text-red-600"
+                      onClick={(e) => handleDeactivate(e, event.id)}
+                    >
+                      <CalendarX2 className="h-5 w-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">Desativar Evento</TooltipContent>
                 </Tooltip>
 
                 <Tooltip>

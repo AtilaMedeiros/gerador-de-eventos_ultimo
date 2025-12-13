@@ -75,7 +75,7 @@ export default function AthletesList() {
 
     // Derived state merging athletes with real events (Simulated Association for Display)
     const enrichedAthletes = useMemo(() => {
-        if (!events || events.length === 0) return athletes.map(a => ({ ...a, event: 'N/A', adminStatus: 'CANCELADO' }))
+        if (!events || events.length === 0) return athletes.map(a => ({ ...a, event: 'N/A', adminStatus: 'DESATIVADO' }))
 
         return athletes.map((athlete, index) => {
             const assignedEvent = events[index % events.length]
@@ -419,6 +419,14 @@ export default function AthletesList() {
                                                         <div className="flex items-center gap-1 text-[10px] text-amber-500 font-medium mt-0.5">
                                                             <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                                                             Rascunho
+                                                        </div>
+                                                    )
+                                                }
+                                                if (status === 'DESATIVADO') {
+                                                    return (
+                                                        <div className="flex items-center gap-1 text-[10px] text-red-500 font-medium mt-0.5">
+                                                            <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                                            Desativado
                                                         </div>
                                                     )
                                                 }

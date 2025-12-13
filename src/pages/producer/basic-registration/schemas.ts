@@ -58,7 +58,7 @@ export const eventFormSchema = z
       .min(1, 'Hora fim individual é obrigatória'),
 
     // Status
-    adminStatus: z.enum(['RASCUNHO', 'PUBLICADO', 'REABERTO', 'SUSPENSO', 'CANCELADO']),
+    adminStatus: z.enum(['RASCUNHO', 'PUBLICADO', 'REABERTO', 'DESATIVADO']),
   })
   .superRefine((data, ctx) => {
     const start = combineDateTime(data.dataInicio, data.horaInicio)

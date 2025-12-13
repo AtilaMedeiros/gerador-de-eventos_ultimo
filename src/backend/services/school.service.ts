@@ -103,7 +103,7 @@ export class SchoolService {
                         ...school,
                         _uniqueKey: `${school.id}-${eventId}`,
                         event: event ? event.name : 'Evento Desconhecido',
-                        adminStatus: event ? event.adminStatus : 'CANCELADO',
+                        adminStatus: event ? event.adminStatus : 'DESATIVADO',
                         computedTimeStatus: event ? event.computedTimeStatus : 'ENCERRADO',
                         // Map display fields
                         director: school.directorName,

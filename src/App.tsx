@@ -66,6 +66,8 @@ import TechnicianInscription from './pages/participant/technicians/TechnicianIns
 import InscriptionForms from './pages/participant/InscriptionForms'
 import PrintableInscriptionForm from './pages/participant/PrintableInscriptionForm'
 
+import { CreatedByBadge } from '@/components/CreatedByBadge'
+
 const App = () => (
   <BrowserRouter
     future={{ v7_startTransition: false, v7_relativeSplatPath: false }}
@@ -79,6 +81,7 @@ const App = () => (
                 <TooltipProvider>
                   <Toaster />
                   <Sonner />
+                  <CreatedByBadge />
                   <Routes>
                     {/* Public Routes */}
                     <Route path="/" element={<Login />} />

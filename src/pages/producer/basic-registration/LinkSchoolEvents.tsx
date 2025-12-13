@@ -329,15 +329,13 @@ export default function LinkSchoolEvents() {
                                                     <span className={`font-bold uppercase ${event.adminStatus === 'PUBLICADO' ? 'text-blue-600 dark:text-blue-500' :
                                                         event.adminStatus === 'RASCUNHO' ? 'text-orange-400' :
                                                             event.adminStatus === 'REABERTO' ? 'text-green-500' :
-                                                                event.adminStatus === 'SUSPENSO' ? 'text-gray-400' :
-                                                                    event.adminStatus === 'CANCELADO' ? 'text-red-500' :
-                                                                        'text-muted-foreground'
+                                                                event.adminStatus === 'DESATIVADO' ? 'text-red-500' :
+                                                                    'text-muted-foreground'
                                                         }`}>
                                                         {event.adminStatus === 'PUBLICADO' ? 'Publicado' :
                                                             event.adminStatus === 'RASCUNHO' ? 'Rascunho' :
-                                                                event.adminStatus === 'CANCELADO' ? 'Cancelado' :
-                                                                    event.adminStatus === 'SUSPENSO' ? 'Suspenso' :
-                                                                        event.adminStatus === 'REABERTO' ? 'Reaberto' : event.adminStatus}
+                                                                event.adminStatus === 'DESATIVADO' ? 'Desativado' :
+                                                                    event.adminStatus === 'REABERTO' ? 'Reaberto' : event.adminStatus}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 text-[10px]">
