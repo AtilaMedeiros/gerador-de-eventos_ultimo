@@ -100,8 +100,15 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
         setEvents(INITIAL_EVENTS as unknown as Event[])
       }
     } else {
-      // If no storage, verify we have defaults (state init handles this, but explicit set ensures consistency)
-      setEvents(INITIAL_EVENTS as unknown as Event[])
+      // Initialize with mocks, but ensure we compute the status for them too
+      const detailedMocks = (INITIAL_EVENTS as unknown as Event[]).map(ev => ({
+        ...ev,
+        startDate: new Date(ev.startDate),
+        endDate: new Date(ev.endDate),
+        adminStatus: ev.adminStatus || 'RASCUNHO',
+        computedTimeStatus: EventService.getTimeStatus(new Date(ev.startDate), new Date(ev.endDate))
+      }))
+      setEvents(detailedMocks)
     }
     const storedAssociations = localStorage.getItem('ge_event_modalities')
     if (storedAssociations) {
@@ -134,9 +141,21 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
     suppressToast = false,
   ) => {
     setEvents((prev) =>
-      prev.map((event) =>
-        event.id === id ? { ...event, ...eventData } : event,
-      ),
+      prev.map((event) => {
+        if (event.id !== id) return event
+
+        const updatedEvent = { ...event, ...eventData }
+
+        // Auto-recalculate time status if dates changed
+        if (eventData.startDate || eventData.endDate) {
+          updatedEvent.computedTimeStatus = EventService.getTimeStatus(
+            new Date(updatedEvent.startDate),
+            new Date(updatedEvent.endDate)
+          )
+        }
+
+        return updatedEvent
+      }),
     )
     if (!suppressToast) toast.success('Evento atualizado com sucesso!')
   }

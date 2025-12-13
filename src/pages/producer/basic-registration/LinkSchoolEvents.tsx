@@ -316,9 +316,12 @@ export default function LinkSchoolEvents() {
                                         <div className="flex flex-col gap-0.5">
                                             <div className="flex items-center gap-1.5 text-[10px]">
                                                 <span className="font-semibold text-muted-foreground uppercase tracking-wider">Status:</span>
-                                                <span className={`font-bold uppercase ${event.adminStatus === 'PUBLICADO' ? 'text-emerald-600 dark:text-emerald-400' :
-                                                        event.adminStatus === 'CANCELADO' ? 'text-red-600 dark:text-red-400' :
-                                                            'text-muted-foreground'
+                                                <span className={`font-bold uppercase ${event.adminStatus === 'PUBLICADO' ? 'text-blue-600 dark:text-blue-500' :
+                                                    event.adminStatus === 'RASCUNHO' ? 'text-orange-400' :
+                                                        event.adminStatus === 'REABERTO' ? 'text-green-500' :
+                                                            event.adminStatus === 'SUSPENSO' ? 'text-gray-400' :
+                                                                event.adminStatus === 'CANCELADO' ? 'text-red-500' :
+                                                                    'text-muted-foreground'
                                                     }`}>
                                                     {event.adminStatus === 'PUBLICADO' ? 'Publicado' :
                                                         event.adminStatus === 'RASCUNHO' ? 'Rascunho' :
@@ -329,8 +332,9 @@ export default function LinkSchoolEvents() {
                                             </div>
                                             <div className="flex items-center gap-1.5 text-[10px]">
                                                 <span className="font-semibold text-muted-foreground uppercase tracking-wider">Data:</span>
-                                                <span className={`font-bold uppercase ${event.computedTimeStatus === 'ATIVO' ? 'text-blue-600 dark:text-blue-400' :
-                                                        event.computedTimeStatus === 'AGENDADO' ? 'text-amber-600 dark:text-amber-400' :
+                                                <span className={`font-bold uppercase ${event.computedTimeStatus === 'ATIVO' ? 'text-blue-600 dark:text-blue-500' :
+                                                    event.computedTimeStatus === 'AGENDADO' ? 'text-orange-400' :
+                                                        event.computedTimeStatus === 'ENCERRADO' ? 'text-red-500' :
                                                             'text-muted-foreground'
                                                     }`}>
                                                     {event.computedTimeStatus === 'ATIVO' ? 'Em andamento' :

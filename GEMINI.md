@@ -72,19 +72,46 @@ O projeto não consome uma API externa. Os dados são gerenciados via React Cont
   - **Refatoração:** Ao encontrar mocks em arquivos `.tsx` ou `.ts` fora de `src/backend/banco/`, mova-os imediatamente.
 
 ### 6. Sistema de Cores e Status de Eventos
-Cada combinação de status (Temporal + Administrativo) representa um estado consolidado, exibido em um botão único.
 
-| Combinação | Cor | Significado |
+ORIENTAÇÃO COMPLETA DE STATUS — EVENTOS ESPORTIVOS
+
+O sistema utiliza dois status independentes e complementares:
+- **STATUS**: administrativo (controle humano e operacional)
+- **DATA**: ciclo do evento (controle temporal)
+
+Esses status NÃO se substituem e NÃO devem ser mesclados em um único campo no modelo de dados.
+
+#### 1) STATUS (ADMINISTRATIVO)
+- **Frontend**: Exibido como "Status"
+- **Backend**: Armazenado como "administrativo"
+- **Responsabilidade**: Controlar visibilidade, edição e decisões operacionais. Independente da data.
+
+| Status | Cor | Descrição |
 | :--- | :--- | :--- |
-| **AGENDADO + RASCUNHO** | `Cinza (#9CA3AF)` | Evento em criação, ainda não público. |
-| **AGENDADO + PUBLICADO** | `Azul (#3B82F6)` | Evento confirmado e visível, aguardando início. |
-| **ATIVO + PUBLICADO** | `Verde (#22C55E)` | Evento acontecendo normalmente. |
-| **ATIVO + SUSPENSO** | `Laranja (#FB923C)` | Evento em andamento, interrompido. |
-| **ENCERRADO + PUBLICADO** | `Cinza Escuro (#6B7280)` | Finalizado, disponível para consulta. |
-| **ENCERRADO + REABERTO** | `Amarelo (#F59E0B)` | Finalizado, aberto para ajustes. |
-| **ENCERRADO + CANCELADO** | `Vermelho (#EF4444)` | Encerrado definitivamente ou invalidado. |
+| **RASCUNHO** | `Laranja (#FB923C)` | Evento em criação, ainda em elaboração e não visível ao público. |
+| **PUBLICADO** | `Azul (#2563EB)` | Evento visível e acessível aos usuários. |
+| **REABERTO** | `Verde (#22C55E)` | Evento publicado ou encerrado, temporariamente liberado para ajustes. |
+| **SUSPENSO** | `Cinza Claro (#9CA3AF)` | Evento publicado, porém temporariamente indisponível. |
+| **CANCELADO** | `Vermelho (#EF4444)` | Evento invalidado por decisão administrativa. |
 
-**Regra:** A cor sempre reflete a condição mais crítica da dupla.
+> **Regras:**
+> - STATUS pode mudar independentemente da DATA.
+> - CANCELADO prevalece sobre qualquer outro STATUS administrativo.
+
+#### 2) DATA (CICLO DO EVENTO)
+- **Frontend**: Exibido como "Data"
+- **Backend**: Armazenado como "data" ou "ciclo"
+- **Responsabilidade**: Representar exclusivamente o estado temporal (baseado em início/término).
+
+| Status | Cor | Descrição |
+| :--- | :--- | :--- |
+| **AGENDADO** | `Laranja (#FB923C)` | Evento com data futura, ainda não iniciado. |
+| **EM ANDAMENTO** | `Azul (#3B82F6)` | Evento acontecendo no momento atual. |
+| **ENCERRADO** | `Vermelho (#EF4444)` | Evento finalizado, com ciclo de data concluído. |
+
+> **Regras:**
+> - Uma vez ENCERRADO, o evento NÃO deve voltar para EM ANDAMENTO.
+> - DATA não controla visibilidade nem edição.
 
 ## 🐛 Troubleshooting Comum
 - **Porta Ocupada:** O servidor roda na porta 8080. Se der erro, mate o processo (`kill -9 <PID>`) ou use outra porta.
