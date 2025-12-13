@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import {
-    ArrowLeft, UserPlus, Search, Trash2, Shield, Users, School, Trophy, CheckCircle2, X, AlertCircle, User as UserIcon, Calendar, Speech
+    ArrowLeft, UserPlus, Search, Trash2, Shield, Users, School, Trophy, CheckCircle2, X, AlertCircle, User as UserIcon, Calendar, Speech, Cake
 } from 'lucide-react'
 
 import { TbUserPause, TbUserCheck } from 'react-icons/tb'
@@ -261,12 +261,12 @@ export default function SchoolTechnicians() {
             <div className="flex flex-1 gap-6 overflow-hidden min-h-0">
 
                 {/* LEFT PANEL: LIST & SEARCH */}
-                <div className="w-[40%] flex flex-col gap-4 bg-card border rounded-xl overflow-hidden shadow-sm">
+                <div className="w-[30%] flex flex-col gap-4 bg-card border rounded-xl overflow-hidden shadow-sm">
                     {/* Header with Search */}
                     <div className="p-4 border-b bg-muted/30">
                         <div className="flex items-center justify-between mb-3">
                             <div>
-                                <h3 className="font-semibold text-lg tracking-tight">Técnicos da Escola</h3>
+                                <h3 className="font-semibold text-lg tracking-tight">Técnicos</h3>
                                 <p className="text-xs text-muted-foreground">Gerencie os vínculos</p>
                             </div>
                             <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full" onClick={() => setIsSearchOpen(true)}>
@@ -277,7 +277,7 @@ export default function SchoolTechnicians() {
                         <div className="relative">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="Buscar técnico..."
+                                placeholder="Buscar..."
                                 className="pl-9 bg-background/50"
                                 value={userSearchTerm}
                                 onClick={() => setIsSearchOpen(true)}
@@ -342,10 +342,10 @@ export default function SchoolTechnicians() {
                                     `}
                                 >
                                     <div className={`
-                                        h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0
+                                        h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0
                                         ${isDraft ? 'bg-muted text-muted-foreground' : 'bg-blue-100 text-blue-700'}
                                     `}>
-                                        <Speech className="h-5 w-5" />
+                                        <Speech className="h-4 w-4" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="font-medium text-sm truncate">{user.name}</div>
@@ -365,8 +365,8 @@ export default function SchoolTechnicians() {
                                     </div>
 
                                     {!isDraft && (
-                                        <Badge className="text-[10px] h-5 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 shadow-none border-0">
-                                            {link?.allowedModalityIds.length} Mods
+                                        <Badge className="text-[10px] h-5 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 shadow-none border-0 px-1.5">
+                                            {link?.allowedModalityIds.length}
                                         </Badge>
                                     )}
 
@@ -375,7 +375,7 @@ export default function SchoolTechnicians() {
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                className={`h-8 w-8 shrink-0 rounded-full transition-colors ${(link?.active ?? true)
+                                                className={`h-7 w-7 shrink-0 rounded-full transition-colors ${(link?.active ?? true)
                                                     ? "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
                                                     : "text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
                                                     }`}
@@ -383,9 +383,9 @@ export default function SchoolTechnicians() {
                                                 title={(link?.active ?? true) ? "Pausar Técnico" : "Ativar Técnico"}
                                             >
                                                 {(link?.active ?? true) ? (
-                                                    <TbUserPause className="h-5 w-5" />
+                                                    <TbUserPause className="h-4 w-4" />
                                                 ) : (
-                                                    <TbUserCheck className="h-5 w-5" />
+                                                    <TbUserCheck className="h-4 w-4" />
                                                 )}
                                             </Button>
                                         )}
@@ -393,13 +393,13 @@ export default function SchoolTechnicians() {
                                         <Button
                                             size="icon"
                                             variant="ghost"
-                                            className="h-8 w-8 shrink-0 transition-opacity text-muted-foreground hover:text-destructive"
+                                            className="h-7 w-7 shrink-0 transition-opacity text-muted-foreground hover:text-destructive"
                                             onClick={(e) => {
                                                 e.stopPropagation()
                                                 setTechnicianToDelete(user.id)
                                             }}
                                         >
-                                            <Trash2 className="h-4 w-4" />
+                                            <Trash2 className="h-3.5 w-3.5" />
                                         </Button>
                                     </div>
                                 </div>
@@ -409,7 +409,7 @@ export default function SchoolTechnicians() {
                 </div>
 
                 {/* RIGHT PANEL: EDITOR */}
-                <div className="w-[60%] bg-card border rounded-xl overflow-hidden shadow-sm flex flex-col">
+                <div className="w-[70%] bg-card border rounded-xl overflow-hidden shadow-sm flex flex-col">
                     {!activeUser ? (
                         <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground bg-muted/5">
                             <School className="h-16 w-16 mb-4 opacity-10" />
@@ -438,7 +438,7 @@ export default function SchoolTechnicians() {
 
                             {/* Modalities List */}
                             <ScrollArea className="flex-1 p-6 bg-muted/5">
-                                <div className="space-y-6 max-w-3xl">
+                                <div className="space-y-6 max-w-4xl mx-auto">
                                     {availableModalitiesByEvent.length === 0 && (
                                         <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
                                             <AlertCircle className="h-10 w-10 mb-2 opacity-50" />
@@ -449,7 +449,6 @@ export default function SchoolTechnicians() {
                                     {availableModalitiesByEvent.map(({ event, modalities }) => (
                                         <div key={event.id} className="space-y-3">
                                             <div className="grid gap-2">
-                                                {/* Select All Card */}
                                                 {(() => {
                                                     const currentEventModalityIds = modalities.map(m => m.id)
                                                     const allSelected = currentEventModalityIds.every(id => selectedModalities.includes(id))
@@ -530,11 +529,11 @@ export default function SchoolTechnicians() {
                                                                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 blur-3xl rounded-full pointer-events-none" />
                                                             )}
 
-                                                            <div className="flex items-start gap-4 p-4 relative z-10">
+                                                            <div className="flex items-center gap-3 p-3 relative z-10 w-full">
                                                                 {/* Custom Checkbox */}
                                                                 <div
                                                                     className={`
-                                                                        mt-1 h-6 w-6 shrink-0 rounded-full border-2 flex items-center justify-center transition-all duration-300
+                                                                        h-5 w-5 shrink-0 rounded-full border-2 flex items-center justify-center transition-all duration-300
                                                                         ${isSelected
                                                                             ? 'bg-primary border-primary scale-110 shadow-sm'
                                                                             : 'border-muted-foreground/30 bg-background group-hover:border-primary/50'
@@ -542,55 +541,59 @@ export default function SchoolTechnicians() {
                                                                     `}
                                                                 >
                                                                     {isSelected && (
-                                                                        <CheckCircle2 className="h-4 w-4 text-primary-foreground animate-in zoom-in duration-300" />
+                                                                        <CheckCircle2 className="h-3 w-3 text-primary-foreground animate-in zoom-in duration-300" />
                                                                     )}
                                                                 </div>
 
-                                                                <div className="flex-1 space-y-3">
-                                                                    {/* Header Row */}
-                                                                    <div className="flex justify-between items-start gap-2">
-                                                                        <div>
-                                                                            <h3 className={`font-bold text-lg tracking-tight leading-none ${isSelected ? 'text-primary' : 'text-foreground'}`}>
-                                                                                {mod.name}
-                                                                            </h3>
-                                                                            <div className="flex items-center gap-1.5 mt-1.5 text-sm text-muted-foreground font-medium">
-                                                                                <Trophy className="h-3.5 w-3.5 text-amber-500/70" />
-                                                                                <span className={isSelected ? 'text-foreground/90' : ''}>
-                                                                                    {mod.eventCategory || 'Categoria Única'}
-                                                                                </span>
+                                                                <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                                                    {/* Title Section */}
+                                                                    <div className="min-w-0">
+                                                                        <h3 className={`font-bold text-base tracking-tight leading-none truncate ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                                                                            {mod.name}
+                                                                        </h3>
+                                                                        <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground font-medium truncate">
+                                                                            <Trophy className="h-3 w-3 text-amber-500/70" />
+                                                                            <span className={isSelected ? 'text-foreground/90' : ''}>
+                                                                                {mod.eventCategory || 'Categoria Única'}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Compact Pills Layout - Row on desktop */}
+                                                                    <div className="flex flex-wrap items-center justify-start md:justify-end gap-2 shrink-0">
+                                                                        {/* Type Pill */}
+                                                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full border border-indigo-100 bg-indigo-50/50 dark:bg-indigo-900/10 dark:border-indigo-800">
+                                                                            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 shrink-0">
+                                                                                {mod.type === 'coletiva' ? <Users className="h-3 w-3" /> : <UserIcon className="h-3 w-3" />}
+                                                                            </div>
+                                                                            <div className="flex flex-col">
+                                                                                <span className="text-[8px] font-bold text-indigo-400 dark:text-indigo-300 tracking-wider uppercase leading-none mb-0.5">TIPO</span>
+                                                                                <span className="text-[10px] font-bold text-indigo-900 dark:text-indigo-100 capitalize leading-none">{mod.type}</span>
                                                                             </div>
                                                                         </div>
 
-                                                                        {/* Badges Row (Gender, Type, Age) */}
-                                                                        <div className="flex flex-wrap items-center justify-end gap-2">
-                                                                            <Badge className={`capitalize shadow-sm border font-bold px-2.5 h-6 rounded-[5px] ${getGenderStyle(mod.gender)}`}>
-                                                                                {mod.gender}
-                                                                            </Badge>
+                                                                        {/* Gender Pill */}
+                                                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full border border-orange-100 bg-orange-50/50 dark:bg-orange-900/10 dark:border-orange-800">
+                                                                            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 shrink-0">
+                                                                                <UserIcon className="h-3 w-3" />
+                                                                            </div>
+                                                                            <div className="flex flex-col">
+                                                                                <span className="text-[8px] font-bold text-orange-400 dark:text-orange-300 tracking-wider uppercase leading-none mb-0.5">NAIPE</span>
+                                                                                <span className="text-[10px] font-bold text-orange-900 dark:text-orange-100 capitalize leading-none">{mod.gender}</span>
+                                                                            </div>
+                                                                        </div>
 
-                                                                            <span className="
-                                                                        flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 h-6 rounded-[5px] border transition-colors shadow-sm
-                                                                        bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800
-                                                                    ">
-                                                                                {mod.type === 'coletiva' ? (
-                                                                                    <Users className="h-3 w-3 opacity-70" />
-                                                                                ) : (
-                                                                                    <UserIcon className="h-3 w-3 opacity-70" />
-                                                                                )}
-                                                                                <span className="capitalize">{mod.type}</span>
-                                                                            </span>
-
-                                                                            <span className="
-                                                                        flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 h-6 rounded-[5px] border transition-colors shadow-sm
-                                                                        bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800
-                                                                    ">
-                                                                                <Calendar className="h-3 w-3 opacity-70" />
-                                                                                <span>
-                                                                                    {mod.minAge === 0 && mod.maxAge === 99
-                                                                                        ? 'Livre'
-                                                                                        : `${mod.minAge}-${mod.maxAge}`
-                                                                                    }
+                                                                        {/* Age Pill */}
+                                                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full border border-pink-100 bg-pink-50/50 dark:bg-pink-900/10 dark:border-pink-800">
+                                                                            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 shrink-0">
+                                                                                <Cake className="h-3 w-3" />
+                                                                            </div>
+                                                                            <div className="flex flex-col">
+                                                                                <span className="text-[8px] font-bold text-pink-400 dark:text-pink-300 tracking-wider uppercase leading-none mb-0.5">IDADE</span>
+                                                                                <span className="text-[10px] font-bold text-pink-900 dark:text-pink-100 leading-none">
+                                                                                    {mod.minAge === 0 && mod.maxAge === 99 ? 'Livre' : `${mod.minAge}-${mod.maxAge}`}
                                                                                 </span>
-                                                                            </span>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
