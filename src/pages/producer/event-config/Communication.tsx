@@ -32,7 +32,7 @@ export default function Communication() {
   const hasAutoSelected = useRef(false)
   useEffect(() => {
     if (events.length > 0 && !urlEventId && !selectedEventId && !hasAutoSelected.current) {
-      const activeEvents = events.filter(e => e.status === 'published')
+      const activeEvents = events.filter(e => e.adminStatus === 'PUBLICADO')
       // If active events exist, sort by date desc
       if (activeEvents.length > 0) {
         const sorted = [...activeEvents].sort((a, b) =>

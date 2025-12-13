@@ -28,7 +28,7 @@ export function CommunicationContent({ eventId, events, onEventSelect }: Communi
     }, [eventId])
 
     const filteredEvents = isActive
-        ? events.filter(e => e.status === 'published')
+        ? events.filter(e => e.adminStatus === 'PUBLICADO')
         : events
 
     return (

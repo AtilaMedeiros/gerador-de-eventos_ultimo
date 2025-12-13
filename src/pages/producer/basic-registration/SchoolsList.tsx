@@ -145,7 +145,7 @@ export default function SchoolsList() {
                 ...school,
                 // If linked event found, use its real status and name, else fallback or use stored
                 event: linkedEvent ? linkedEvent.name : (school.eventName || 'Evento Desconhecido'),
-                status: linkedEvent ? linkedEvent.status : 'closed', // Default closed if no event found
+                adminStatus: linkedEvent ? linkedEvent.adminStatus : 'CANCELADO', // Default closed if no event found
                 // properties for compatibility with table keys
                 director: school.directorName,
                 phone: school.landline,
@@ -192,7 +192,7 @@ export default function SchoolsList() {
                     // Note: MOCK_SCHOOLS now uses 'status'.
                     // We cast school to any because TS might expect isEventActive if defined in interface elsewhere, 
                     // but here it is inferred from MOCK_SCHOOLS which we just updated.
-                    return (school as any).status === 'published'
+                    return (school as any).adminStatus === 'PUBLICADO'
                 }
                 case 'inep':
                     return school.inep?.includes(value)
@@ -259,12 +259,12 @@ export default function SchoolsList() {
     const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
         const saved = localStorage.getItem('ge_schools_col_widths_v2')
         return saved ? JSON.parse(saved) : {
-            name: 260,
-            type: 90,
-            director: 120,
-            phone: 140,
-            email: 220,
-            responsible: 120,
+            name: 200,
+            type: 80,
+            director: 110,
+            phone: 120,
+            email: 160,
+            responsible: 110,
             actions: 130
         }
     })

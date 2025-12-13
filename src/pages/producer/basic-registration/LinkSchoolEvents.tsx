@@ -151,7 +151,7 @@ export default function LinkSchoolEvents() {
                         <ArrowLeft className="h-5 w-5 text-muted-foreground" />
                     </Button>
                     <div>
-                        <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
+                        <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent flex items-center gap-2">
                             <School className="h-6 w-6 text-primary" />
                             Vincular Eventos
                         </h2>
@@ -176,7 +176,7 @@ export default function LinkSchoolEvents() {
                     <Button
                         onClick={handleSave}
                         disabled={isSubmitting}
-                        className="h-11 px-6 rounded-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg shadow-primary/20 transition-all hover:scale-105"
+                        className="h-11 px-6 rounded-[6px] bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.02]"
                     >
                         {isSubmitting ? (
                             <span className="flex items-center gap-2">
@@ -252,7 +252,7 @@ export default function LinkSchoolEvents() {
                                 </div>
                             )}
 
-                            <div className={`h-2 absolute top-0 left-0 right-0 bg-gradient-to-r from-primary to-purple-600 transition-opacity duration-300 ${isLinked ? 'opacity-100' : 'opacity-0'}`} />
+                            <div className={`h-2 absolute top-0 left-0 right-0 bg-gradient-to-r from-primary to-primary/60 transition-opacity duration-300 ${isLinked ? 'opacity-100' : 'opacity-0'}`} />
 
                             <CardHeader className="pb-3 pt-6">
                                 <div className="flex justify-between items-start gap-2">
@@ -261,26 +261,66 @@ export default function LinkSchoolEvents() {
                                     </CardTitle>
                                 </div>
                                 <CardDescription className="flex items-center gap-1 mt-1">
-                                    <MapPin className="h-3 w-3" /> {event.location}
+                                    {/* Location removed as requested */}
                                 </CardDescription>
                             </CardHeader>
 
                             <CardContent>
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-3 text-sm text-muted-foreground bg-background/50 p-2 rounded-lg">
-                                        <Calendar className="h-4 w-4 text-primary/70" />
+                                <div className="space-y-3">
+                                    {/* Event Date */}
+                                    <div className="flex items-center gap-3 text-sm text-muted-foreground bg-background/50 p-2 rounded-lg border border-border/50">
+                                        <div className="p-1.5 bg-primary/10 rounded-md">
+                                            <Calendar className="h-3.5 w-3.5 text-primary" />
+                                        </div>
                                         <div className="flex flex-col">
-                                            <span className="text-[10px] uppercase font-bold tracking-wider opacity-70">Data</span>
-                                            <span className="font-medium text-foreground">
-                                                {format(event.startDate, "dd 'de' MMM, yyyy", { locale: ptBR })}
+                                            <span className="text-[10px] uppercase font-bold tracking-wider opacity-70">Data do Evento</span>
+                                            <span className="font-medium text-foreground text-xs">
+                                                {format(event.startDate, "dd MMM", { locale: ptBR })} - {format(event.endDate, "dd MMM", { locale: ptBR })}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Inscription Dates Grid */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="flex flex-col gap-1 text-sm text-muted-foreground bg-background/50 p-2 rounded-lg border border-border/50">
+                                            <span className="text-[10px] uppercase font-bold tracking-wider opacity-70 flex items-center gap-1.5">
+                                                <CalendarHeart className="h-3 w-3 text-purple-500" />
+                                                <span className="truncate">Coletiva</span>
+                                            </span>
+                                            <span className="font-medium text-foreground text-xs truncate">
+                                                {event.registrationCollectiveStart ? (
+                                                    <>
+                                                        {format(new Date(event.registrationCollectiveStart), "dd MMM", { locale: ptBR })} - {format(new Date(event.registrationCollectiveEnd || event.endDate), "dd MMM", { locale: ptBR })}
+                                                    </>
+                                                ) : 'N/A'}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex flex-col gap-1 text-sm text-muted-foreground bg-background/50 p-2 rounded-lg border border-border/50">
+                                            <span className="text-[10px] uppercase font-bold tracking-wider opacity-70 flex items-center gap-1.5">
+                                                <CalendarHeart className="h-3 w-3 text-blue-500" />
+                                                <span className="truncate">Individual</span>
+                                            </span>
+                                            <span className="font-medium text-foreground text-xs truncate">
+                                                {event.registrationIndividualStart ? (
+                                                    <>
+                                                        {format(new Date(event.registrationIndividualStart), "dd MMM", { locale: ptBR })} - {format(new Date(event.registrationIndividualEnd || event.endDate), "dd MMM", { locale: ptBR })}
+                                                    </>
+                                                ) : 'N/A'}
                                             </span>
                                         </div>
                                     </div>
 
                                     <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                                        <Badge variant={event.status === 'published' ? 'default' : 'secondary'} className="capitalize">
+                                        <div className={`
+                                            flex items-center gap-1.5 px-3 py-1 text-xs font-semibold transition-colors rounded-[5px] border
+                                            ${event.status === 'published'
+                                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'}
+                                        `}>
+                                            <div className={`h-1.5 w-1.5 rounded-full ${event.status === 'published' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                                             {event.status === 'published' ? 'Publicado' : 'Rascunho'}
-                                        </Badge>
+                                        </div>
 
                                         <div className="flex items-center gap-2">
                                             <span className={`text-sm font-medium ${isLinked ? 'text-primary' : 'text-muted-foreground'}`}>
@@ -309,6 +349,6 @@ export default function LinkSchoolEvents() {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     )
 }

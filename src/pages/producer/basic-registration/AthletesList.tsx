@@ -74,14 +74,14 @@ export default function AthletesList() {
 
     // Derived state merging athletes with real events (Simulated Association for Display)
     const enrichedAthletes = useMemo(() => {
-        if (!events || events.length === 0) return athletes.map(a => ({ ...a, event: 'N/A', status: 'closed' }))
+        if (!events || events.length === 0) return athletes.map(a => ({ ...a, event: 'N/A', adminStatus: 'CANCELADO' }))
 
         return athletes.map((athlete, index) => {
             const assignedEvent = events[index % events.length]
             return {
                 ...athlete,
                 event: assignedEvent.name,
-                status: assignedEvent.status
+                adminStatus: assignedEvent.adminStatus
             }
         })
     }, [athletes, events])
@@ -114,7 +114,7 @@ export default function AthletesList() {
                         return athlete.event.toLowerCase().includes(value)
                     case 'isEventActive':
                         if (value === 'false') return true
-                        return athlete.status === 'published'
+                        return athlete.adminStatus === 'PUBLICADO'
                     default:
                         return true
                 }
@@ -403,8 +403,8 @@ export default function AthletesList() {
                                                 {athlete.event}
                                             </span>
                                             {(() => {
-                                                const status = athlete.status
-                                                if (status === 'published') {
+                                                const status = athlete.adminStatus
+                                                if (status === 'PUBLICADO') {
                                                     return (
                                                         <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-medium mt-0.5">
                                                             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -412,7 +412,7 @@ export default function AthletesList() {
                                                         </div>
                                                     )
                                                 }
-                                                if (status === 'draft') {
+                                                if (status === 'RASCUNHO') {
                                                     return (
                                                         <div className="flex items-center gap-1 text-[10px] text-amber-500 font-medium mt-0.5">
                                                             <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />

@@ -48,32 +48,10 @@ const PROVAS = {
 }
 
 // Mock Data for List
-const MOCK_LINKED_MODALITIES = [
-    {
-        id: 1,
-        type: 'Coletiva',
-        modality: 'Futebol',
-        prova: '-',
-        sex: 'Feminino',
-        ageRange: '12 a 14',
-    },
-    {
-        id: 2,
-        type: 'Individual',
-        modality: 'Natação',
-        prova: 'Nado Costas',
-        sex: 'Feminino',
-        ageRange: '12 a 14',
-    },
-    {
-        id: 3,
-        type: 'Individual',
-        modality: 'Natação',
-        prova: 'Nado Livre',
-        sex: 'Feminino',
-        ageRange: '12 a 14',
-    },
-]
+import { MOCK_LINKED_MODALITIES as IMPORTED_MOCK_LINKED_MODALITIES } from '@/backend/banco/modalidades'
+
+// Mock Data for List
+const MOCK_LINKED_MODALITIES = IMPORTED_MOCK_LINKED_MODALITIES
 
 const formSchema = z.object({
     type: z.enum(['Coletiva', 'Individual']),

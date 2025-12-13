@@ -60,7 +60,16 @@ O projeto não consome uma API externa. Os dados são gerenciados via React Cont
   1. Crie a página em `src/pages/`.
   2. Adicione a rota em `src/App.tsx` (verifique se é pública ou protegida).
   3. Se precisar de estado global, adicione/atualize um Contexto em `src/contexts/`.
+  2. Adicione a rota em `src/App.tsx` (verifique se é pública ou protegida).
+  3. Se precisar de estado global, adicione/atualize um Contexto em `src/contexts/`.
   4. Valide inputs com Zod.
+
+### 5. Regras de Negócio e Organização de Código
+- **Backend/Services:** Toda regra de negócio (lógica de domínio, validações complexas, cálculos de status) deve residir em `src/backend/services`. Se encontrar lógica de negócio solta em componentes ou hooks, refatore para um Service.
+- **Frontend:** `src/backend/services` NÃO deve conter lógica de UI ou dependências de React (hooks, componentes).
+- **Mocks:** Dados fictícios ("mock data") NUNCA devem ficar hardcoded dentro dos arquivos de código/componentes.
+  - **Local Correto:** Todos os mocks devem ser centralizados em `src/backend/banco/`.
+  - **Refatoração:** Ao encontrar mocks em arquivos `.tsx` ou `.ts` fora de `src/backend/banco/`, mova-os imediatamente.
 
 ## 🐛 Troubleshooting Comum
 - **Porta Ocupada:** O servidor roda na porta 8080. Se der erro, mate o processo (`kill -9 <PID>`) ou use outra porta.

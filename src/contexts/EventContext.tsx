@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { INITIAL_EVENTS } from '@/backend/banco/eventos'
+import { EventService } from '@/backend/services/event.service'
 
 export interface Event {
   id: string
@@ -10,7 +11,9 @@ export interface Event {
   location: string
   registrations: number
   capacity: number
-  status: string
+  adminStatus: 'RASCUNHO' | 'PUBLICADO' | 'REABERTO' | 'SUSPENSO' | 'CANCELADO'
+  computedTimeStatus?: 'AGENDADO' | 'ATIVO' | 'ENCERRADO'
+  status?: string // Deprecated, kept for temporary compat during migration if needed, but preferable to remove. Keeping type loose for now.
 
   // Form fields details
   description?: string
@@ -77,6 +80,9 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
           registrationIndividualEnd: ev.registrationIndividualEnd
             ? new Date(ev.registrationIndividualEnd)
             : undefined,
+          // Migration Logic
+          adminStatus: ev.adminStatus || (ev.status === 'published' ? 'PUBLICADO' : ev.status === 'closed' ? 'CANCELADO' : 'RASCUNHO'),
+          computedTimeStatus: EventService.getTimeStatus(new Date(ev.startDate), new Date(ev.endDate))
         }))
 
         // Merge INITIAL_EVENTS to ensure new mocks (like IDs 4, 5, 6) appear even if localStorage exists
@@ -116,10 +122,7 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
   }, [eventModalities])
 
   const addEvent = (eventData: Omit<Event, 'id'>, suppressToast = false) => {
-    const newEvent: Event = {
-      ...eventData,
-      id: crypto.randomUUID(),
-    }
+    const newEvent: Event = EventService.prepareNewEvent(eventData)
     setEvents((prev) => [newEvent, ...prev])
     if (!suppressToast) toast.success('Evento criado com sucesso!')
     return newEvent

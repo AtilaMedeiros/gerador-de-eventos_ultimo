@@ -64,7 +64,7 @@ export default function ParticipantHome() {
 
   // 1. Filter Active Events
   const activeEvents = useMemo(() => {
-    return events.filter((e) => e.status === 'published')
+    return events.filter((e) => e.adminStatus === 'PUBLICADO' && (e.computedTimeStatus === 'ATIVO' || e.computedTimeStatus === 'AGENDADO'))
   }, [events])
 
   // 2. Metrics

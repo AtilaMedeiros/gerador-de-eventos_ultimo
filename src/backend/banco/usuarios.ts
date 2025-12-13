@@ -84,3 +84,36 @@ export const getMockUserByEmail = (email: string): User => {
         schoolId: 'school-1', // Default link for safety
     }
 }
+
+export const MOCK_USERS_LIST = [
+    {
+        id: 1,
+        name: 'Ana Silva',
+        cpf: '123.456.789-00',
+        phone: '(11) 98765-4321',
+        email: 'ana.silva@email.com',
+        role: 'Administrador',
+        status: 'active',
+        lastAccess: 'Hoje, 10:30',
+    },
+    {
+        id: 2,
+        name: 'Carlos Oliveira',
+        cpf: '234.567.890-11',
+        phone: '(21) 99876-5432',
+        email: 'carlos.o@email.com',
+        role: 'Produtor',
+        status: 'active',
+        lastAccess: 'Ontem, 15:45',
+    },
+    {
+        id: 3,
+        name: 'Marcos Santos',
+        cpf: '345.678.901-22',
+        phone: '(31) 91234-5678',
+        email: 'marcos.s@email.com',
+        role: 'Participante',
+        status: 'inactive',
+        lastAccess: '10/05/2025',
+    },
+]

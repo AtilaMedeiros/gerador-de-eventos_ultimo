@@ -110,7 +110,7 @@ export default function ApplyVisualIdentity({
       return
     }
 
-    updateEvent(selectedEventId, { themeId: selectedThemeId, status: 'published' })
+    updateEvent(selectedEventId, { themeId: selectedThemeId, adminStatus: 'PUBLICADO' })
     toast.success('Evento publicado com sucesso!')
 
     if (isWizard && onFinish) {
@@ -120,7 +120,7 @@ export default function ApplyVisualIdentity({
 
   const handleDraft = () => {
     if (!selectedEventId) return
-    updateEvent(selectedEventId, { themeId: selectedThemeId, status: 'draft' })
+    updateEvent(selectedEventId, { themeId: selectedThemeId, adminStatus: 'RASCUNHO' })
     toast.success('Rascunho salvo com sucesso!')
   }
 

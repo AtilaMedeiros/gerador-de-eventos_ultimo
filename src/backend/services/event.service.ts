@@ -1,5 +1,6 @@
 import { EventRole, saveInfoPermission, getRoleForEvent, getStoredPermissions } from '@/backend/banco/permissoes'
 import { User } from '@/backend/banco/usuarios'
+import { isBefore, isAfter } from 'date-fns'
 
 export class EventService {
     /**
@@ -31,5 +32,29 @@ export class EventService {
     static getTeamMembers(eventId: string) {
         const perms = getStoredPermissions().filter(p => p.eventId === eventId)
         return perms
+    }
+
+    /**
+     * Calculates the temporal status of an event.
+     */
+    static getTimeStatus(startDate: Date, endDate: Date): 'AGENDADO' | 'ATIVO' | 'ENCERRADO' {
+        const now = new Date()
+        if (isBefore(now, startDate)) return 'AGENDADO'
+        if (isAfter(now, endDate)) return 'ENCERRADO'
+        return 'ATIVO'
+    }
+
+    /**
+     * Prepares initial event data with correct defaults.
+     */
+    static prepareNewEvent(data: any): any {
+        return {
+            ...data,
+            id: crypto.randomUUID(),
+            adminStatus: 'RASCUNHO',
+            computedTimeStatus: data.startDate && data.endDate
+                ? this.getTimeStatus(new Date(data.startDate), new Date(data.endDate))
+                : 'AGENDADO'
+        }
     }
 }

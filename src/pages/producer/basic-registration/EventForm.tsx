@@ -83,7 +83,7 @@ export default function EventForm({
       textoInstitucional: '',
       nomeProdutor: user?.name || 'Produtor',
       descricaoProdutor: '',
-      status: 'draft',
+      adminStatus: 'RASCUNHO',
       horaInicio: '08:00',
       horaFim: '18:00',
       inscricaoColetivaHoraInicio: '00:00',
@@ -106,7 +106,7 @@ export default function EventForm({
           textoInstitucional: event.description || '',
           nomeProdutor: event.producerName || user?.name || 'Produtor',
           descricaoProdutor: event.producerDescription || '',
-          status: event.status as any,
+          adminStatus: event.adminStatus || 'RASCUNHO',
           dataInicio: event.startDate,
           horaInicio: event.startTime || '08:00',
           dataFim: event.endDate,
@@ -146,7 +146,7 @@ export default function EventForm({
 
   const processSubmit = async (
     data: EventFormValues,
-    status: 'draft' | 'published',
+    status: 'RASCUNHO' | 'PUBLICADO',
   ) => {
     setIsSubmitting(true)
     let coverImage = undefined
@@ -187,7 +187,7 @@ export default function EventForm({
       location: 'Local a definir',
       registrations: 0,
       capacity: 1000,
-      status: status,
+      adminStatus: status,
       description: data.textoInstitucional,
       producerName: data.nomeProdutor,
       producerDescription: data.descricaoProdutor,
@@ -356,7 +356,7 @@ export default function EventForm({
             onClose={() => setShowPreview(false)}
             onPublish={() => {
               setShowPreview(false)
-              form.handleSubmit((d) => processSubmit(d, 'published'))()
+              form.handleSubmit((d) => processSubmit(d, 'PUBLICADO'))()
             }}
           />
         </DialogContent>
@@ -379,7 +379,7 @@ export default function EventForm({
               variant="outline"
               onClick={async () => {
                 const isValid = await form.trigger(['name'])
-                if (isValid) processSubmit(form.getValues(), 'draft')
+                if (isValid) processSubmit(form.getValues(), 'RASCUNHO')
                 else toast.error('Preencha o nome para salvar rascunho.')
               }}
               disabled={isSubmitting}
@@ -401,7 +401,7 @@ export default function EventForm({
 
         <Button
           onClick={form.handleSubmit(
-            (data) => processSubmit(data, 'published'),
+            (data) => processSubmit(data, 'PUBLICADO'),
             onInvalid,
           )}
           disabled={isSubmitting}

@@ -58,3 +58,30 @@ export const MOCK_PREVIEW_MODALITIES = {
     'mock4': { name: 'Atletismo 100m', gender: 'masculino', minAge: 15, maxAge: 17, type: 'individual' },
     'mock5': { name: 'Handebol', gender: 'feminino', minAge: 12, maxAge: 14, type: 'coletiva' },
 }
+
+export const MOCK_LINKED_MODALITIES = [
+    {
+        id: 1,
+        type: 'Coletiva',
+        modality: 'Futebol',
+        prova: '-',
+        sex: 'Feminino',
+        ageRange: '12 a 14',
+    },
+    {
+        id: 2,
+        type: 'Individual',
+        modality: 'Natação',
+        prova: 'Nado Costas',
+        sex: 'Feminino',
+        ageRange: '12 a 14',
+    },
+    {
+        id: 3,
+        type: 'Individual',
+        modality: 'Natação',
+        prova: 'Nado Livre',
+        sex: 'Feminino',
+        ageRange: '12 a 14',
+    },
+]
