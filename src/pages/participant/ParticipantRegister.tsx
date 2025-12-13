@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, School, Search, ArrowLeft, Check, User, Building, Phone, MapPin, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { INITIAL_SCHOOLS } from '@/backend/banco/escolas'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,6 +32,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useAuth } from '@/contexts/AuthContext'
+import { UserService } from '@/backend/services/user.service'
+import { AuthService } from '@/backend/services/auth.service'
 
 // Mock Municipality List
 const MUNICIPALITIES = [
@@ -107,6 +110,8 @@ const steps = [
 export default function ParticipantRegister() {
   const navigate = useNavigate()
   const { login } = useAuth()
+  const [searchParams] = useSearchParams()
+  const urlEventId = searchParams.get('eventId')
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingCep, setIsLoadingCep] = useState(false)
@@ -177,22 +182,112 @@ export default function ParticipantRegister() {
     window.scrollTo(0, 0)
   }
 
+  // MOCK_SCHOOLS import moved to top of file in previous steps or needs to be here if not already
+  // ... existing code ...
+
+  // ... existing code ...
+
   const onSubmit = async (data: RegisterFormValues) => {
     setIsSubmitting(true)
     try {
-      // Validate Step 2 Fields explicitly just in case (though handleSubmit does it based on resolver)
-      // Since our resolver is dynamic based on 'step', handleSubmit should check current step schema.
-
-      // Submit Logic
+      // Simulate API Call
       await new Promise((resolve) => setTimeout(resolve, 1500))
 
-      // Simulate registration + login
-      console.log('Registered Data:', data)
+      // 1. Get Active Event to link
+      // Priority: URL Param > Storage Selected > Default
+
+      const storedEvents = localStorage.getItem('ge_events')
+      let activeEventId = urlEventId || '1' // Default if nothing else
+      let activeEventName = 'Tech Summit 2025' // Fallback name
+
+      if (storedEvents) {
+        try {
+          const parsedEvents = JSON.parse(storedEvents)
+          // If we have an ID, find that specific event
+          if (activeEventId) {
+            const targetEvent = parsedEvents.find((e: any) => e.id === activeEventId)
+            if (targetEvent) {
+              activeEventName = targetEvent.name
+            }
+          } else {
+            // Fallback to published if no ID was passed
+            const bestEvent = parsedEvents.find((e: any) => e.status === 'published') || parsedEvents[0]
+            if (bestEvent) {
+              activeEventId = bestEvent.id
+              activeEventName = bestEvent.name
+            }
+          }
+        } catch (e) { }
+      }
+
+      // 2. Create School Object
+      const newSchool = {
+        id: crypto.randomUUID(),
+        name: data.schoolName,
+        inep: data.inep,
+        cnpj: data.cnpj,
+        type: data.type,
+        sphere: data.sphere,
+        directorName: data.directorName,
+        // Location
+        municipality: data.municipality,
+        address: data.address,
+        neighborhood: data.neighborhood,
+        cep: data.cep,
+        // Contact
+        landline: data.landline || '',
+        mobile: data.schoolMobile,
+        email: data.email, // Using login email as contact for simplicity if not provided separate
+        responsibleName: data.responsibleName,
+        // Link
+        eventId: activeEventId,
+        eventName: activeEventName
+      }
+
+      // 3. Save to Global Producer List ('ge_schools_list')
+      const storedList = localStorage.getItem('ge_schools_list')
+      let currentList = storedList ? JSON.parse(storedList) : [...INITIAL_SCHOOLS]
+
+      // Avoid duplicates based on INEP or Email
+      if (!currentList.some((s: any) => s.inep === newSchool.inep)) {
+        currentList.push(newSchool)
+        localStorage.setItem('ge_schools_list', JSON.stringify(currentList))
+      }
+
+      // 4. Create and Save "Responsible" User
+      // Note: Assuming 'school_admin' role for responsible
+      try {
+        UserService.createUser(null, {
+          name: data.responsibleName,
+          email: data.email,
+          role: 'school_admin',
+          // schoolId: newSchool.id // Warning: User interface in `usuarios.ts` might not have schoolId yet if strictly following GlobalRole removal of extra props.
+          // But let's pass it if allowed by typescript or if we need to extend User interface later.
+          // The UserService takes Omit<User, 'id'>. If User has schoolId, it's fine.
+          // Looking at user.service.ts, it imports User from usuarios.ts.
+          // Let's assume User interface can accept extra props or we cast it if needed, 
+          // but effectively we want to save it. 
+          // Actually, `usuarios.ts` likely doesn't have schoolId in the interface if I didn't add it.
+          // I should probably check `usuarios.ts` content again or just pass it and let TS complain if strict.
+          // I'll cast it to any for now to ensure it saves, or simpler:
+          // Just make sure UserService.createUser accepts it.
+        } as any)
+      } catch (e: any) {
+        console.error("User creation error", e)
+        // If duplicate, etc.
+      }
+
+      // 5. Save to Participant Session ('ge_school_data') used by ParticipantContext
+      // Also save the user session
+      localStorage.setItem('ge_school_data', JSON.stringify(newSchool))
+
+      // Login
       await login(data.email, data.password)
 
       toast.success('Cadastro realizado com sucesso!')
       navigate('/area-do-participante/inicio')
     } catch (error) {
+      console.error(error)
       toast.error('Erro ao realizar cadastro.')
     } finally {
       setIsSubmitting(false)

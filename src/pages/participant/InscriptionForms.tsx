@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/table'
 import { Printer, Search, Trophy, Activity, Users, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { MOCK_FALLBACK_MODALITIES_LIST } from '@/banco/fallback_mocks'
+import { MOCK_FALLBACK_MODALITIES_LIST } from '@/backend/banco/fallback_mocks'
 
 const filterFields: FilterFieldConfig[] = [
   {
@@ -49,7 +49,7 @@ const filterFields: FilterFieldConfig[] = [
 ]
 
 export default function InscriptionForms() {
-  const { events } = useEvent()
+  const { events, getEventModalities } = useEvent()
   const { inscriptions, selectedEventId } = useParticipant()
   const { modalities } = useModality()
 
@@ -60,14 +60,10 @@ export default function InscriptionForms() {
   const getGroupedModalities = () => {
     if (!selectedEventId) return []
 
-    const eventInscriptions = inscriptions.filter(i => i.eventId === selectedEventId)
+    // 1. Get Modalities linked to this Event directly (Source of Truth: Event -> Modalities)
+    const eventModalityIds = getEventModalities(selectedEventId)
 
-    // Get unique modality IDs from inscriptions of this event
-    const modalityIds = Array.from(
-      new Set(eventInscriptions.map((i) => i.modalityId)),
-    )
-
-    let filtered = modalityIds
+    let filtered = eventModalityIds
       .map((mid) => modalities.find((m) => m.id === mid))
       .filter((m) => !!m)
 
@@ -242,7 +238,8 @@ export default function InscriptionForms() {
   }
 
   // Mock data if list is empty
-  const displayList = sortedList.length > 0 ? sortedList : MOCK_FALLBACK_MODALITIES_LIST
+  // Always use real data from event association
+  const displayList = sortedList
 
 
   const totalPages = Math.ceil(displayList.length / (typeof itemsPerPage === 'number' ? itemsPerPage : 1))

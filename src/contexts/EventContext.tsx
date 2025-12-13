@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { INITIAL_EVENTS } from '@/banco/eventos'
+import { INITIAL_EVENTS } from '@/backend/banco/eventos'
 
 export interface Event {
   id: string

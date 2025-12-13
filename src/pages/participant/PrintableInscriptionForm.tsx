@@ -4,11 +4,11 @@ import { useParticipant, type School, type Athlete, type Technician } from '@/co
 import { useEvent, type Event } from '@/contexts/EventContext'
 import { useModality, type Modality } from '@/contexts/ModalityContext'
 import { format } from 'date-fns'
-import { MOCK_PREVIEW_EVENT } from '@/banco/eventos'
-import { MOCK_PREVIEW_SCHOOL } from '@/banco/escolas'
-import { MOCK_PREVIEW_MODALITIES } from '@/banco/modalidades'
-import { MOCK_PREVIEW_ATHLETES } from '@/banco/atletas'
-import { MOCK_PREVIEW_TECHNICIANS } from '@/banco/tecnicos'
+import { MOCK_PREVIEW_EVENT } from '@/backend/banco/eventos'
+import { MOCK_PREVIEW_SCHOOL } from '@/backend/banco/escolas'
+import { MOCK_PREVIEW_MODALITIES } from '@/backend/banco/modalidades'
+import { MOCK_PREVIEW_ATHLETES } from '@/backend/banco/atletas'
+import { MOCK_PREVIEW_TECHNICIANS } from '@/backend/banco/tecnicos'
 
 export default function PrintableInscriptionForm() {
   const { eventId, modalityId } = useParams()

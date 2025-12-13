@@ -132,7 +132,7 @@ export function PublicHeader({ title }: PublicHeaderProps) {
             { to: eventBaseUrl, icon: Home, label: 'Início', active: isHome },
             { to: communicationUrl, icon: Megaphone, label: 'Comunicação', active: isCommunication },
             { to: regulationUrl, icon: FileText, label: 'Regulamento', active: isRegulation },
-            { to: '/area-do-participante/login', icon: UserPlus, label: 'Inscrição', active: false }
+            { to: `/area-do-participante/login${id ? `?eventId=${id}` : ''}`, icon: UserPlus, label: 'Inscrição', active: false }
           ].map((item) => (
             <Link
               key={item.label}
@@ -183,7 +183,7 @@ export function PublicHeader({ title }: PublicHeaderProps) {
                 <div className="mt-auto mb-8 px-2">
                   <Button
                     className="w-full shadow-lg font-bold text-lg h-14 rounded-xl"
-                    onClick={() => navigate('/area-do-participante/login')}
+                    onClick={() => navigate(`/area-do-participante/login${id ? `?eventId=${id}` : ''}`)}
                   >
                     <LogIn className="mr-2 h-5 w-5" />
                     Login

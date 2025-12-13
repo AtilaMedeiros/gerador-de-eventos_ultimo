@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/select'
 import { useParticipant } from '@/contexts/ParticipantContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { SchoolService } from '@/backend/services/school.service'
 
 // Mock Municipality List
 const MUNICIPALITIES = [
@@ -144,14 +145,45 @@ export default function SchoolProfile() {
     }
   }
 
+  // ... existing imports ...
+
   const onSubmit = async (data: SchoolFormValues) => {
     setIsSubmitting(true)
     try {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      if (!school) return // Safety check
+
+      // Validate or Transform data if needed
+      // SchoolService expects Partial<School>
+      // We can map fields if necessary or pass directly if they match
+
+      SchoolService.updateSchool(school.id, {
+        name: data.name,
+        inep: data.inep,
+        municipality: data.municipality,
+        directorName: data.directorName,
+        email: data.email,
+        mobile: data.mobile,
+        cnpj: data.cnpj,
+        address: data.address,
+        neighborhood: data.neighborhood,
+        cep: data.cep,
+        type: data.type,
+        sphere: data.sphere,
+        landline: data.landline
+      })
+
+      // Update Local Context (ParticipantContext)
+      // Since context likely wraps the state, and updateSchool updates localStorage, 
+      // we also need to update the context state to reflect changes immediately in UI
+      // updateSchool(data) // Original context function - let's keep it to sync UI state
+      // OR better: Refactor ParticipantContext to use SchoolService too? 
+      // For this task, we focus on the Business Logic being in Service.
+      // The context `updateSchool` probably just sets state.
       updateSchool(data)
+
       toast.success('Dados da escola atualizados com sucesso!')
-    } catch {
+    } catch (e) {
+      console.error(e)
       toast.error('Erro ao atualizar dados.')
     } finally {
       setIsSubmitting(false)

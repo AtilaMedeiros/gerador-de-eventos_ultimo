@@ -1,15 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { getMockUserByEmail } from '@/banco/usuarios'
-
-export interface User {
-  id: string
-  name: string
-  email: string
-  role: 'admin' | 'producer' | 'school_admin' | 'technician'
-  permissions: string[]
-  schoolId?: string // Link to school if school_admin or technician
-}
+import { User } from '@/backend/banco/usuarios'
+import { EventRole } from '@/backend/banco/permissoes'
+import { AuthService } from '@/backend/services/auth.service'
 
 interface AuthContextType {
   user: User | null
@@ -18,6 +11,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
   hasPermission: (permission: string) => boolean
+  getEventRole: (eventId: string) => EventRole | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -41,21 +35,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const foundUser = await AuthService.login(email, password)
 
-    // Mock validation logic
-    if (password === 'error' || password.length < 6 || !email.includes('@')) {
+      if (foundUser) {
+        setUser(foundUser)
+        localStorage.setItem('ge_user', JSON.stringify(foundUser))
+        return true
+      }
+
+      return false
+    } catch (error) {
+      console.error(error)
       return false
     }
-
-    // Mock user retrieval
-    const foundUser = getMockUserByEmail(email)
-    const mockUser: User = { ...foundUser } as User
-
-    setUser(mockUser)
-    localStorage.setItem('ge_user', JSON.stringify(mockUser))
-    return true
   }
 
   const logout = () => {
@@ -65,11 +58,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const hasPermission = (permission: string): boolean => {
-    if (!user) return false
-    if (user.role === 'admin') return true
-    if (user.role === 'school_admin' && permission.startsWith('gerir_'))
-      return true
-    return user.permissions.includes(permission)
+    return AuthService.hasGlobalPermission(user, permission)
+  }
+
+  const getEventRole = (eventId: string): EventRole | null => {
+    return AuthService.getEventRole(user, eventId)
   }
 
   return React.createElement(
@@ -82,6 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         hasPermission,
+        getEventRole
       },
     },
     children,

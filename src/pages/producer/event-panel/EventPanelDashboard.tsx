@@ -33,8 +33,8 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { useEvent } from '@/contexts/EventContext'
 import { useModality } from '@/contexts/ModalityContext'
 import { cn } from '@/lib/utils'
-import { MOCK_INSCRIPTIONS_SEED } from '@/banco/inscricoes'
-import { MOCK_SCHOOL } from '@/banco/escolas'
+import { MOCK_INSCRIPTIONS_SEED } from '@/backend/banco/inscricoes'
+import { MOCK_SCHOOL } from '@/backend/banco/escolas'
 
 export default function EventPanelDashboard() {
   const { eventId } = useParams()

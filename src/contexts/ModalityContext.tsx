@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { INITIAL_MODALITIES } from '@/banco/modalidades'
+import { INITIAL_MODALITIES } from '@/backend/banco/modalidades'
 
 export interface Modality {
   id: string

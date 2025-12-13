@@ -44,6 +44,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { InscriptionService } from '@/backend/services/inscription.service'
 
 export default function TechnicianInscription() {
   const navigate = useNavigate()
@@ -165,10 +166,18 @@ export default function TechnicianInscription() {
       return
     }
 
-    addInscription({
-      athleteId: id!,
+    // Use Service Factory
+    const newInscription = InscriptionService.createInscription({
+      athleteId: id!, // Technician is treated as athlete in inscription schema for now? Or purely ID based.
       eventId: eventId!,
       modalityId: modalityIdToSave,
+      schoolId: 'school-1' // TODO: Get from context/session
+    })
+
+    addInscription({
+      athleteId: newInscription.athleteId,
+      eventId: newInscription.eventId,
+      modalityId: newInscription.modalityId,
     })
 
     // Reset selections

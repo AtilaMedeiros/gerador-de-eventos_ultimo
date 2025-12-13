@@ -44,6 +44,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { AthleteService } from '@/backend/services/athlete.service'
+import { InscriptionService } from '@/backend/services/inscription.service'
 
 export default function AthleteInscription() {
   const navigate = useNavigate()
@@ -87,11 +89,13 @@ export default function AthleteInscription() {
         mod.gender.toLowerCase() === athlete.sex.toLowerCase()
 
       // Age Check
-      const ageMatch = age >= mod.minAge && age <= mod.maxAge
+      // const ageMatch = age >= mod.minAge && age <= mod.maxAge
+      // Using Service
+      const ageMatch = AthleteService.validateCategory(athlete.dob, mod.minAge, mod.maxAge)
 
       return genderMatch && ageMatch
     })
-  }, [modalities, athlete, age, allowedModalityIds])
+  }, [modalities, athlete, allowedModalityIds])
 
   // 3. Get Unique Types available for this athlete
   const availableTypes = useMemo(() => {
@@ -165,10 +169,20 @@ export default function AthleteInscription() {
       return
     }
 
-    addInscription({
+    // Use Service to create object (encapsulating potential default status, ID generation if strictly using service)
+    // However, addInscription from context likely expects specific fields.
+    // Let's use service to 'prepare' the data or simply use it as a factory.
+    const newInscription = InscriptionService.createInscription({
       athleteId: id!,
       eventId: eventId!,
       modalityId: modalityIdToSave,
+      schoolId: 'school-1', // TODO: Get from context/session
+    })
+
+    addInscription({
+      athleteId: newInscription.athleteId,
+      eventId: newInscription.eventId,
+      modalityId: newInscription.modalityId,
     })
 
     // Reset selections

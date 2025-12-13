@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { MOCK_NOTICES } from '@/banco/avisos'
-import { MOCK_BULLETINS } from '@/banco/boletins'
-import { MOCK_RESULTS } from '@/banco/resultados'
-import { MOCK_REGULATIONS } from '@/banco/regulamentos'
+import { MOCK_NOTICES } from '@/backend/banco/avisos'
+import { MOCK_BULLETINS } from '@/backend/banco/boletins'
+import { MOCK_RESULTS } from '@/backend/banco/resultados'
+import { MOCK_REGULATIONS } from '@/backend/banco/regulamentos'
 
 // Types for Communication Data
 export interface Notice {

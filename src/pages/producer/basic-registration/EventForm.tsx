@@ -26,6 +26,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import AccessDenied from '@/pages/AccessDenied'
 import { useEvent } from '@/contexts/EventContext'
 import { eventFormSchema, type EventFormValues } from './schemas'
+import { EventService } from '@/backend/services/event.service'
+import { saveInfoPermission } from '@/backend/banco/permissoes'
 
 // Import sub-components
 import { EventBasicInfo } from './components/EventBasicInfo'
@@ -206,6 +208,12 @@ export default function EventForm({
       }
     } else {
       const newEvent = addEvent(eventData, isWizard)
+
+      // Assign Owner Permission
+      if (user) {
+        EventService.onEventCreated(user, newEvent.id)
+      }
+
       if (isWizard && onNext) {
         onNext(newEvent.id)
       } else {

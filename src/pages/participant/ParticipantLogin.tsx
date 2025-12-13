@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Eye,
   EyeOff,
@@ -35,6 +35,8 @@ type LoginFormValues = z.infer<typeof loginSchema>
 
 export default function ParticipantLogin() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const eventId = searchParams.get('eventId')
   const { login } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -193,7 +195,7 @@ export default function ParticipantLogin() {
             <p className="text-sm text-muted-foreground">
               Ainda não tem cadastro?{' '}
               <a
-                href="/area-do-participante/cadastro"
+                href={`/area-do-participante/cadastro${eventId ? `?eventId=${eventId}` : ''}`}
                 className="font-medium text-primary hover:underline"
               >
                 Criar Nova Conta

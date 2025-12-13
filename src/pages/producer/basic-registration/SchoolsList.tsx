@@ -38,50 +38,30 @@ import { useNavigate } from 'react-router-dom'
 import { FaWhatsapp } from 'react-icons/fa'
 import { useEvent } from '@/contexts/EventContext'
 
-const MOCK_SCHOOLS = [
-    {
-        id: 1,
-        name: 'Escola Municipal de Esportes',
-        type: 'Pública',
-        director: 'Carlos Muniz',
-        phone: '(11) 3344-5566',
-        whatsapp: '(11) 99887-7665',
-        email: 'contato@esportes.sp.gov.br',
-        responsible: 'João Silva',
-        event: 'Tech Summit 2025',
-        status: 'published',
-        inep: '11223344',
-        athletesList: ['Pedro Santos', 'Maria Oliveira', 'Carlos Souza']
-    },
-    {
-        id: 2,
-        name: 'Colégio Estadual do Saber',
-        type: 'Pública',
-        director: 'Ana Paula',
-        phone: '(21) 3322-1100',
-        whatsapp: '(21) 98765-4321',
-        email: 'direcao@saber.rj.gov.br',
-        responsible: 'Maria Santos',
-        event: 'Jogos Estudantis 2025',
-        status: 'closed',
-        inep: '55667788',
-        athletesList: ['Ana Lima', 'Beatriz Costa', 'Daniel Rocha']
-    },
-    {
-        id: 3,
-        name: 'Instituto Atlético',
-        type: 'Privada',
-        director: 'Roberto Campos',
-        phone: '(31) 3214-5678',
-        whatsapp: '(31) 99112-2334',
-        email: 'admin@institutoatletico.com.br',
-        responsible: 'Pedro Costa',
-        event: 'Tech Summit 2025',
-        status: 'published',
-        inep: '99001122',
-        athletesList: ['Lucas Pereira', 'Fernanda Alves', 'Gabriel Dias']
-    },
-]
+import { INITIAL_SCHOOLS } from '@/backend/banco/escolas' // Import mock data
+
+// ... (imports)
+
+// Helper to get global schools (can be moved to a context later if needed)
+const getStoredSchools = () => {
+    const stored = localStorage.getItem('ge_schools_list')
+    if (stored) {
+        try {
+            const parsed = JSON.parse(stored)
+            // Merge Mock + Stored (User added)
+            // Strategy: If stored has items, use them. If we want mocks to persist, we should initialize storage with them.
+            // For now, let's merge:
+            // Actually, simpler: if storage exists, use it. If not, stick to INITIAL_SCHOOLS.
+            return parsed
+        } catch (e) {
+            console.error(e)
+            return INITIAL_SCHOOLS
+        }
+    }
+    return INITIAL_SCHOOLS
+}
+
+// ... inside component
 
 const filterFields: FilterFieldConfig[] = [
     {
@@ -136,19 +116,44 @@ export default function SchoolsList() {
         createFilter('isEventActive', 'equals', 'true')
     ])
 
-    // Derived state merging mock schools with real events
-    const schools = useMemo(() => {
-        if (!events || events.length === 0) return MOCK_SCHOOLS
+    // Load schools state
+    const [schoolsList, setSchoolsList] = useState<any[]>(getStoredSchools())
 
-        return MOCK_SCHOOLS.map((school, index) => {
-            const assignedEvent = events[index % events.length]
+    // Effect to ensure we have INITIAL data or load from storage on mount
+    useEffect(() => {
+        const stored = localStorage.getItem('ge_schools_list')
+        if (!stored) {
+            // Init with mocks if empty
+            localStorage.setItem('ge_schools_list', JSON.stringify(INITIAL_SCHOOLS))
+            setSchoolsList(INITIAL_SCHOOLS)
+        } else {
+            try {
+                setSchoolsList(JSON.parse(stored))
+            } catch (e) {
+                setSchoolsList(INITIAL_SCHOOLS)
+            }
+        }
+    }, [])
+
+    // Derived state merging schools with real event status from Context
+    const schools = useMemo(() => {
+        return schoolsList.map((school) => {
+            // Find linked event in real events list
+            const linkedEvent = events.find(e => e.id === school.eventId || e.name === school.eventName)
+
             return {
                 ...school,
-                event: assignedEvent.name,
-                status: assignedEvent.status
+                // If linked event found, use its real status and name, else fallback or use stored
+                event: linkedEvent ? linkedEvent.name : (school.eventName || 'Evento Desconhecido'),
+                status: linkedEvent ? linkedEvent.status : 'closed', // Default closed if no event found
+                // properties for compatibility with table keys
+                director: school.directorName,
+                phone: school.landline,
+                whatsapp: school.mobile,
+                responsible: school.responsibleName
             }
         })
-    }, [events])
+    }, [events, schoolsList])
 
     // Apply Filters
     const filteredSchools = schools.filter(school => {
@@ -197,7 +202,7 @@ export default function SchoolsList() {
         })
     })
 
-    const [sortConfig, setSortConfig] = useState<{ key: keyof typeof MOCK_SCHOOLS[0] | 'location', direction: 'asc' | 'desc' } | null>(null)
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
 
     // Apply Sorting
     const sortedSchools = [...filteredSchools].sort((a, b) => {
@@ -217,7 +222,7 @@ export default function SchoolsList() {
         return 0
     })
 
-    const requestSort = (key: keyof typeof MOCK_SCHOOLS[0] | 'location') => {
+    const requestSort = (key: string) => {
         let direction: 'asc' | 'desc' = 'asc'
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
             direction = 'desc'

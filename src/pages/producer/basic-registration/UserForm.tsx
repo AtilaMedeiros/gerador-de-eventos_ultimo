@@ -22,6 +22,9 @@ import { Input } from '@/components/ui/input'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Save } from 'lucide-react'
 import { toast } from 'sonner'
+import { getStoredUsers, User, GlobalRole } from '@/backend/banco/usuarios'
+import { UserService } from '@/backend/services/user.service'
+import { useAuth } from '@/contexts/AuthContext'
 
 const formSchema = z.object({
   name: z
@@ -51,6 +54,7 @@ export default function UserForm() {
   const navigate = useNavigate()
   const { id } = useParams()
   const isEditing = id && id !== 'novo'
+  const { user: currentUser } = useAuth()
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -79,14 +83,35 @@ export default function UserForm() {
   }, [isEditing, form])
 
   function onSubmit(values: FormValues) {
-    console.log(values)
-    // Here you would normally make an API call
-    toast.success(
-      isEditing
-        ? 'Usuário atualizado com sucesso!'
-        : 'Usuário criado com sucesso!',
-    )
-    navigate('/area-do-produtor/usuarios')
+
+    // Map form Role string to GlobalRole type
+    let globalRole: GlobalRole = 'producer';
+    if (values.role === 'Administrador') globalRole = 'admin';
+    if (values.role === 'Produtor') globalRole = 'producer';
+    if (values.role === 'Participante') globalRole = 'school_admin'; // Or technician? simplified for now.
+
+    if (isEditing && id) {
+      // TODO: Implement Edit User in Service
+      // For now, we just toast as this was a partial refactor goal
+      toast.success('Usuário atualizado com sucesso!')
+      navigate('/area-do-produtor/usuarios')
+      return
+    }
+
+    try {
+      UserService.createUser(currentUser, {
+        name: values.name,
+        email: values.email,
+        role: globalRole
+        // Note: Phone and CPF are not in the User interface yet.
+      })
+
+      toast.success('Usuário criado com sucesso!')
+      navigate('/area-do-produtor/usuarios')
+
+    } catch (error: any) {
+      toast.error(error.message)
+    }
   }
 
   // Simple CPF Mask

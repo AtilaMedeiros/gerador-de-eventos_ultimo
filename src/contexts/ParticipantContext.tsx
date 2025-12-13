@@ -2,10 +2,10 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useAuth } from './AuthContext'
 import { useEvent } from './EventContext'
 import { toast } from 'sonner'
-import { MOCK_SCHOOL } from '@/banco/escolas'
-import { MOCK_ATHLETES_SEED } from '@/banco/atletas'
-import { MOCK_TECHNICIANS_SEED } from '@/banco/tecnicos'
-import { MOCK_INSCRIPTIONS_SEED } from '@/banco/inscricoes'
+import { MOCK_SCHOOL } from '@/backend/banco/escolas'
+import { MOCK_ATHLETES_SEED } from '@/backend/banco/atletas'
+import { MOCK_TECHNICIANS_SEED } from '@/backend/banco/tecnicos'
+import { MOCK_INSCRIPTIONS_SEED } from '@/backend/banco/inscricoes'
 
 export interface School {
   id: string
