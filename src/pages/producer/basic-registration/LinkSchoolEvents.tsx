@@ -167,9 +167,8 @@ export default function LinkSchoolEvents() {
                             Vincular Eventos
                         </h2>
                         <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                            <span className="font-medium text-foreground">{school.name}</span>
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/10 text-secondary-foreground border border-secondary/20">
-                                {school.inep || 'Sem INEP'}
+                            <span className="font-medium text-foreground text-sm">
+                                {school.name} <span className="text-muted-foreground font-normal text-xs">- INEP: {school.inep || 'N/A'}</span>
                             </span>
                         </div>
                     </div>
