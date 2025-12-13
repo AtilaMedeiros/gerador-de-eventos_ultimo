@@ -16,7 +16,8 @@ export interface School {
     mobile?: string
     email: string
     responsibleName?: string
-    eventId?: string
+    eventId?: string // @deprecated use eventIds
+    eventIds?: string[] // List of linked event IDs
 }
 
 export class SchoolService {
@@ -37,11 +38,10 @@ export class SchoolService {
     static updateSchool(schoolId: string, data: Partial<School>): School {
         // 1. Update in "Session"
         const current = this.getCurrentSchool()
-        if (!current || current.id !== schoolId) {
-            throw new Error("School session mismatch")
+        if (current && current.id === schoolId) {
+            const updated = { ...current, ...data }
+            localStorage.setItem('ge_school_data', JSON.stringify(updated))
         }
-        const updated = { ...current, ...data }
-        localStorage.setItem('ge_school_data', JSON.stringify(updated))
 
         // 2. Update in "Database" (List of all schools)
         const storedList = localStorage.getItem('ge_schools_list')
@@ -51,8 +51,18 @@ export class SchoolService {
         if (index >= 0) {
             list[index] = { ...list[index], ...data }
             localStorage.setItem('ge_schools_list', JSON.stringify(list))
+            return list[index]
+        } else {
+            // Fallback if not found in list but was requested (edge case)
+            throw new Error("School not found in database")
         }
+    }
 
-        return updated
+    /**
+     * Links a school to a set of events.
+     */
+    static linkEvents(schoolId: string, eventIds: string[]): School {
+        // Just reuse update logic
+        return this.updateSchool(schoolId, { eventIds })
     }
 }

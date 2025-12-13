@@ -259,14 +259,13 @@ export default function SchoolsList() {
     const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
         const saved = localStorage.getItem('ge_schools_col_widths_v2')
         return saved ? JSON.parse(saved) : {
-            name: 200,
-            type: 80,
+            name: 260,
+            type: 90,
             director: 120,
-            phone: 120,
-            email: 150,
+            phone: 140,
+            email: 220,
             responsible: 120,
-            event: 120,
-            actions: 80
+            actions: 130
         }
     })
 
@@ -447,16 +446,7 @@ export default function SchoolsList() {
                                     className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                                 />
                             </TableHead>
-                            <TableHead style={{ width: colWidths.event }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('event')}>
-                                <div className="flex items-center justify-center overflow-hidden">
-                                    <span className="truncate">Evento</span> {getSortIcon('event')}
-                                </div>
-                                <div
-                                    onMouseDown={(e) => handleMouseDown(e, 'event')}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
-                                />
-                            </TableHead>
+
                             <TableHead style={{ width: colWidths.actions }} className="relative text-right font-semibold text-primary/80 h-12">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -516,44 +506,22 @@ export default function SchoolsList() {
                                             <span className="text-sm font-medium text-foreground/80">{school.responsible}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="h-12 py-0">
-                                        <div className="flex flex-col items-center justify-center h-full">
-                                            <span className="text-muted-foreground leading-tight text-center">
-                                                {school.event}
-                                            </span>
-                                            {(() => {
-                                                const status = (school as any).status
-                                                if (status === 'published') {
-                                                    return (
-                                                        <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-medium mt-0.5">
-                                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                            Publicado
-                                                        </div>
-                                                    )
-                                                }
-                                                if (status === 'draft') {
-                                                    return (
-                                                        <div className="flex items-center gap-1 text-[10px] text-amber-500 font-medium mt-0.5">
-                                                            <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                                                            Rascunho
-                                                        </div>
-                                                    )
-                                                }
-                                                return (
-                                                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                                                        <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />
-                                                        Encerrado
-                                                    </div>
-                                                )
-                                            })()}
-                                        </div>
-                                    </TableCell>
+
                                     <TableCell className="text-right h-12 py-0">
-                                        <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity h-full items-center">
+                                        <div className="flex justify-end gap-0 opacity-70 group-hover:opacity-100 transition-opacity h-full items-center -mr-4">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                                                className="h-8 w-8 shrink-0 hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                                                onClick={() => navigate(`/area-do-produtor/escolas/${school.id}/vincular-eventos`)}
+                                                title="Vincular Eventos"
+                                            >
+                                                <CalendarHeart className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 shrink-0 hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
                                                 onClick={() => navigate(`/area-do-produtor/escolas/${school.id}/participantes`)} // Assumed route or action
                                                 title="Participante Técnico"
                                             >
@@ -562,7 +530,7 @@ export default function SchoolsList() {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                                                className="h-8 w-8 shrink-0 hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
                                                 onClick={() => navigate(`/area-do-produtor/escolas/${school.id}`)}
                                             >
                                                 <Edit className="h-4 w-4" />
@@ -570,7 +538,7 @@ export default function SchoolsList() {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                                                className="h-8 w-8 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
                                                 onClick={() => handleAction('Excluir')}
                                             >
                                                 <Trash2 className="h-4 w-4" />
