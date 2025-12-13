@@ -37,6 +37,7 @@ import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { FaWhatsapp } from 'react-icons/fa'
 import { useEvent } from '@/contexts/EventContext'
+import { EventService } from '@/backend/services/event.service'
 
 import { INITIAL_SCHOOLS } from '@/backend/banco/escolas' // Import mock data
 
@@ -94,7 +95,7 @@ const filterFields: FilterFieldConfig[] = [
     },
     {
         key: 'isEventActive',
-        label: 'Eventos Publicados',
+        label: 'Evento Editável',
         activeLabel: '',
         icon: <CalendarHeart className="size-5" />,
         type: 'boolean',
@@ -146,6 +147,7 @@ export default function SchoolsList() {
                 // If linked event found, use its real status and name, else fallback or use stored
                 event: linkedEvent ? linkedEvent.name : (school.eventName || 'Evento Desconhecido'),
                 adminStatus: linkedEvent ? linkedEvent.adminStatus : 'CANCELADO', // Default closed if no event found
+                computedTimeStatus: linkedEvent ? linkedEvent.computedTimeStatus : 'ENCERRADO',
                 // properties for compatibility with table keys
                 director: school.directorName,
                 phone: school.landline,
@@ -192,7 +194,7 @@ export default function SchoolsList() {
                     // Note: MOCK_SCHOOLS now uses 'status'.
                     // We cast school to any because TS might expect isEventActive if defined in interface elsewhere, 
                     // but here it is inferred from MOCK_SCHOOLS which we just updated.
-                    return (school as any).adminStatus === 'PUBLICADO'
+                    return EventService.isEditable((school as any).adminStatus || '', (school as any).computedTimeStatus || '')
                 }
                 case 'inep':
                     return school.inep?.includes(value)

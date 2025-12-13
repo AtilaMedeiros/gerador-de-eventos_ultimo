@@ -30,6 +30,7 @@ import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { useParticipant, Athlete } from '@/contexts/ParticipantContext'
 import { useEvent } from '@/contexts/EventContext'
+import { EventService } from '@/backend/services/event.service'
 import { format } from 'date-fns'
 
 const filterFields: FilterFieldConfig[] = [
@@ -56,7 +57,7 @@ const filterFields: FilterFieldConfig[] = [
     },
     {
         key: 'isEventActive',
-        label: 'Eventos Publicados',
+        label: 'Evento Editável',
         activeLabel: '',
         icon: <CalendarHeart className="size-5" />,
         type: 'boolean',
@@ -81,7 +82,8 @@ export default function AthletesList() {
             return {
                 ...athlete,
                 event: assignedEvent.name,
-                adminStatus: assignedEvent.adminStatus
+                adminStatus: assignedEvent.adminStatus,
+                computedTimeStatus: assignedEvent.computedTimeStatus
             }
         })
     }, [athletes, events])
@@ -114,7 +116,7 @@ export default function AthletesList() {
                         return athlete.event.toLowerCase().includes(value)
                     case 'isEventActive':
                         if (value === 'false') return true
-                        return athlete.adminStatus === 'PUBLICADO'
+                        return EventService.isEditable(athlete.adminStatus || '', (athlete as any).computedTimeStatus || '')
                     default:
                         return true
                 }

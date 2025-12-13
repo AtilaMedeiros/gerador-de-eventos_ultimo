@@ -24,7 +24,9 @@ import { ptBR } from 'date-fns/locale'
 
 import { useEvent } from '@/contexts/EventContext'
 import { SchoolService } from '@/backend/services/school.service'
+import { EventService } from '@/backend/services/event.service'
 import { EventStatusBadge } from '@/components/EventStatusBadge'
+import { StatusLegendTooltip } from '@/components/StatusLegendTooltip'
 
 const filterFields: FilterFieldConfig[] = [
     {
@@ -42,11 +44,11 @@ const filterFields: FilterFieldConfig[] = [
         placeholder: 'Cidade, Ginásio...',
     },
     {
-        key: 'status',
-        label: 'Status',
-        icon: <Activity className="size-3.5" />,
-        type: 'text',
-        placeholder: 'published, draft...',
+        key: 'isEventActive',
+        label: 'Evento Editável',
+        activeLabel: '',
+        icon: <CalendarHeart className="size-5" />,
+        type: 'boolean',
     }
 ]
 
@@ -56,7 +58,14 @@ export default function LinkSchoolEvents() {
     const { events } = useEvent()
 
     const [searchTerm, setSearchTerm] = useState('')
-    const [filters, setFilters] = useState<Filter[]>([])
+    const [filters, setFilters] = useState<Filter[]>([
+        {
+            id: 'default-active-filter',
+            field: 'isEventActive',
+            operator: 'eq',
+            value: 'true'
+        }
+    ])
 
     const [school, setSchool] = useState<any>(null)
     const [selectedEventIds, setSelectedEventIds] = useState<string[]>([])
@@ -124,8 +133,9 @@ export default function LinkSchoolEvents() {
                     return event.name.toLowerCase().includes(value)
                 case 'location':
                     return event.location.toLowerCase().includes(value)
-                case 'status':
-                    return event.status.toLowerCase().includes(value)
+                case 'isEventActive':
+                    if (value === 'false') return true
+                    return EventService.isEditable(event.adminStatus || '', event.computedTimeStatus || '')
                 default:
                     return true
             }
@@ -313,36 +323,38 @@ export default function LinkSchoolEvents() {
                                     </div>
 
                                     <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                                        <div className="flex flex-col gap-0.5">
-                                            <div className="flex items-center gap-1.5 text-[10px]">
-                                                <span className="font-semibold text-muted-foreground uppercase tracking-wider">Status:</span>
-                                                <span className={`font-bold uppercase ${event.adminStatus === 'PUBLICADO' ? 'text-blue-600 dark:text-blue-500' :
-                                                    event.adminStatus === 'RASCUNHO' ? 'text-orange-400' :
-                                                        event.adminStatus === 'REABERTO' ? 'text-green-500' :
-                                                            event.adminStatus === 'SUSPENSO' ? 'text-gray-400' :
-                                                                event.adminStatus === 'CANCELADO' ? 'text-red-500' :
-                                                                    'text-muted-foreground'
-                                                    }`}>
-                                                    {event.adminStatus === 'PUBLICADO' ? 'Publicado' :
-                                                        event.adminStatus === 'RASCUNHO' ? 'Rascunho' :
-                                                            event.adminStatus === 'CANCELADO' ? 'Cancelado' :
-                                                                event.adminStatus === 'SUSPENSO' ? 'Suspenso' :
-                                                                    event.adminStatus === 'REABERTO' ? 'Reaberto' : event.adminStatus}
-                                                </span>
+                                        <StatusLegendTooltip>
+                                            <div className="flex flex-col gap-0.5">
+                                                <div className="flex items-center gap-1.5 text-[10px]">
+                                                    <span className="font-semibold text-muted-foreground uppercase tracking-wider">Status:</span>
+                                                    <span className={`font-bold uppercase ${event.adminStatus === 'PUBLICADO' ? 'text-blue-600 dark:text-blue-500' :
+                                                        event.adminStatus === 'RASCUNHO' ? 'text-orange-400' :
+                                                            event.adminStatus === 'REABERTO' ? 'text-green-500' :
+                                                                event.adminStatus === 'SUSPENSO' ? 'text-gray-400' :
+                                                                    event.adminStatus === 'CANCELADO' ? 'text-red-500' :
+                                                                        'text-muted-foreground'
+                                                        }`}>
+                                                        {event.adminStatus === 'PUBLICADO' ? 'Publicado' :
+                                                            event.adminStatus === 'RASCUNHO' ? 'Rascunho' :
+                                                                event.adminStatus === 'CANCELADO' ? 'Cancelado' :
+                                                                    event.adminStatus === 'SUSPENSO' ? 'Suspenso' :
+                                                                        event.adminStatus === 'REABERTO' ? 'Reaberto' : event.adminStatus}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 text-[10px]">
+                                                    <span className="font-semibold text-muted-foreground uppercase tracking-wider">Data:</span>
+                                                    <span className={`font-bold uppercase ${event.computedTimeStatus === 'ATIVO' ? 'text-blue-600 dark:text-blue-500' :
+                                                        event.computedTimeStatus === 'AGENDADO' ? 'text-orange-400' :
+                                                            event.computedTimeStatus === 'ENCERRADO' ? 'text-red-500' :
+                                                                'text-muted-foreground'
+                                                        }`}>
+                                                        {event.computedTimeStatus === 'ATIVO' ? 'Em andamento' :
+                                                            event.computedTimeStatus === 'AGENDADO' ? 'Agendado' :
+                                                                event.computedTimeStatus === 'ENCERRADO' ? 'Encerrado' : '-'}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-1.5 text-[10px]">
-                                                <span className="font-semibold text-muted-foreground uppercase tracking-wider">Data:</span>
-                                                <span className={`font-bold uppercase ${event.computedTimeStatus === 'ATIVO' ? 'text-blue-600 dark:text-blue-500' :
-                                                    event.computedTimeStatus === 'AGENDADO' ? 'text-orange-400' :
-                                                        event.computedTimeStatus === 'ENCERRADO' ? 'text-red-500' :
-                                                            'text-muted-foreground'
-                                                    }`}>
-                                                    {event.computedTimeStatus === 'ATIVO' ? 'Em andamento' :
-                                                        event.computedTimeStatus === 'AGENDADO' ? 'Agendado' :
-                                                            event.computedTimeStatus === 'ENCERRADO' ? 'Encerrado' : '-'}
-                                                </span>
-                                            </div>
-                                        </div>
+                                        </StatusLegendTooltip>
 
                                         <div className="flex items-center gap-2">
                                             <span className={`text-sm font-medium ${isLinked ? 'text-primary' : 'text-muted-foreground'}`}>

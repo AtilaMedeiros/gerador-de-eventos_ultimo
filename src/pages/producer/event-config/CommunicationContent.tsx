@@ -11,6 +11,7 @@ import { Calendar, CalendarHeart } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Event } from '@/contexts/EventContext'
+import { EventService } from '@/backend/services/event.service'
 interface CommunicationContentProps {
     eventId: string
     events: Event[]
@@ -28,7 +29,7 @@ export function CommunicationContent({ eventId, events, onEventSelect }: Communi
     }, [eventId])
 
     const filteredEvents = isActive
-        ? events.filter(e => e.adminStatus === 'PUBLICADO')
+        ? events.filter(e => EventService.isEditable(e.adminStatus || '', e.computedTimeStatus || ''))
         : events
 
     return (
@@ -62,7 +63,7 @@ export function CommunicationContent({ eventId, events, onEventSelect }: Communi
                             },
                             {
                                 key: 'active',
-                                label: 'Eventos Publicados',
+                                label: 'Evento Editável',
                                 type: 'boolean',
                                 icon: <CalendarHeart className="h-4 w-4" />,
                                 activeLabel: ''

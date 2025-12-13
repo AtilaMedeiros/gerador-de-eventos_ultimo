@@ -44,6 +44,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useAuth } from '@/contexts/AuthContext'
 import { useEvent, Event } from '@/contexts/EventContext'
+import { EventService } from '@/backend/services/event.service'
 import { cn } from '@/lib/utils'
 import { EventStatusBadge } from '@/components/EventStatusBadge'
 import { StatusLegendTooltip } from '@/components/StatusLegendTooltip'
@@ -114,7 +115,7 @@ const filterFields: FilterFieldConfig[] = [
   },
   {
     key: 'isActive',
-    label: 'Apenas Eventos Ativos',
+    label: 'Evento Editável',
     activeLabel: '',
     icon: <CalendarHeart className="size-5" />,
     type: 'boolean',
@@ -182,11 +183,8 @@ export default function EventsList() {
         case 'isActive': {
           // If 'false' (unchecked), show all events.
           if (value === 'false') return true
-          // Logic: (Time: Scheduled OR Active) AND (Admin: Published OR Draft)
-          const isTimeActive = ['AGENDADO', 'ATIVO'].includes(event.computedTimeStatus || '')
-          const isAdminActive = ['PUBLICADO', 'RASCUNHO'].includes(event.adminStatus || '')
-
-          return isTimeActive && isAdminActive
+          // Logic: (Time: Scheduled OR Active) AND (Admin: Draft OR Published OR Reopened)
+          return EventService.isEditable(event.adminStatus || '', event.computedTimeStatus || '')
         }
         default:
           return true

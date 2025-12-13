@@ -24,7 +24,7 @@ export function StatusLegendTooltip({ children }: { children: React.ReactNode })
               {/* Admin Section */}
               <div className="flex-1 bg-slate-50 dark:bg-zinc-900 p-4 border-r border-border/40">
                 <h4 className="font-bold text-[9px] uppercase tracking-[0.15em] text-muted-foreground mb-4">
-                  Administrativo
+                  Negócio (manual)
                 </h4>
                 <div className="space-y-3">
                   <StatusItem
@@ -58,7 +58,7 @@ export function StatusLegendTooltip({ children }: { children: React.ReactNode })
               {/* Time Section */}
               <div className="flex-1 p-4 bg-white dark:bg-zinc-950">
                 <h4 className="font-bold text-[9px] uppercase tracking-[0.15em] text-muted-foreground mb-4">
-                  Ciclo (Data)
+                  Data (automático)
                 </h4>
                 <div className="space-y-3">
                   <StatusItem
