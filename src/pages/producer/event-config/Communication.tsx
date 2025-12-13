@@ -1,17 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { Megaphone, Calendar, Search } from 'lucide-react'
 import { CommunicationContent } from './CommunicationContent'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useSearchParams, useParams } from 'react-router-dom'
 import { useEvent } from '@/contexts/EventContext'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { EventService } from '@/backend/services/event.service'
 
 export default function Communication() {
   const { events } = useEvent()
@@ -32,7 +25,7 @@ export default function Communication() {
   const hasAutoSelected = useRef(false)
   useEffect(() => {
     if (events.length > 0 && !urlEventId && !selectedEventId && !hasAutoSelected.current) {
-      const activeEvents = events.filter(e => e.adminStatus === 'PUBLICADO')
+      const activeEvents = events.filter(e => EventService.isEditable(e.adminStatus || '', e.computedTimeStatus || ''))
       // If active events exist, sort by date desc
       if (activeEvents.length > 0) {
         const sorted = [...activeEvents].sort((a, b) =>

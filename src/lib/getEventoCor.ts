@@ -9,7 +9,6 @@ type StatusData =
 type StatusAdmin =
   | 'RASCUNHO'
   | 'PUBLICADO'
-  | 'REABERTO'
   | 'DESATIVADO'
   | 'ARQUIVADO'
   | string;
@@ -25,12 +24,10 @@ export function getEventoCor(statusData: StatusData, statusAdmin: StatusAdmin): 
   if (sd === 'ATIVO' && sa === 'PUBLICADO') return '#22C55E'; // Verde
 
   if (sd === 'ENCERRADO' && sa === 'PUBLICADO') return '#6B7280'; // Cinza escuro
-  if (sd === 'ENCERRADO' && sa === 'REABERTO') return '#F59E0B'; // Amarelo
   if (sd === 'ENCERRADO' && sa === 'DESATIVADO') return '#EF4444'; // Vermelho
 
   // Fallbacks por criticidade (em ordem): DESATIVADO, ENCERRADO(REABERTO), SUSPENSO, ATIVO, AGENDADO
   if (sa === 'DESATIVADO') return '#EF4444';
-  if (sa === 'REABERTO') return '#F59E0B';
   if (sd === 'EM_ANDAMENTO' || sd === 'ATIVO') return '#22C55E';
 
   // Default neutro

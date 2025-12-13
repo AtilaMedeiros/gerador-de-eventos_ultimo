@@ -47,10 +47,10 @@ export class EventService {
 
     /**
      * Determines if an event is considered "editable" or "eligible" for operations.
-     * Rule: (RASCUNHO | PUBLICADO | REABERTO) AND (AGENDADO | ATIVO)
+     * Rule: (RASCUNHO | PUBLICADO) AND (AGENDADO | ATIVO)
      */
     static isEditable(adminStatus: string, timeStatus: string): boolean {
-        const validAdmin = ['RASCUNHO', 'PUBLICADO', 'REABERTO'].includes(adminStatus)
+        const validAdmin = ['RASCUNHO', 'PUBLICADO'].includes(adminStatus)
         const validTime = ['AGENDADO', 'ATIVO'].includes(timeStatus)
         return validAdmin && validTime
     }

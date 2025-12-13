@@ -25,6 +25,7 @@ import {
   Megaphone,
   CalendarX2,
   CalendarCheck2,
+  CalendarCog,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -44,6 +45,17 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { useAuth } from '@/contexts/AuthContext'
 import { useEvent, Event } from '@/contexts/EventContext'
 import { EventService } from '@/backend/services/event.service'
@@ -161,19 +173,9 @@ export default function EventsList() {
     }
   }
 
-  const handleDeactivate = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation()
-    if (confirm('Tem certeza que deseja desativar este evento?')) {
-      updateEvent(id, { adminStatus: 'DESATIVADO' })
-    }
-  }
 
-  const handleReopen = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation()
-    if (confirm('Tem certeza que deseja reabrir este evento?')) {
-      updateEvent(id, { adminStatus: 'REABERTO' })
-    }
-  }
+
+
 
   const handleEdit = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
@@ -199,7 +201,7 @@ export default function EventsList() {
         case 'isActive': {
           // If 'false' (unchecked), show all events.
           if (value === 'false') return true
-          // Logic: (Time: Scheduled OR Active) AND (Admin: Draft OR Published OR Reopened)
+          // Logic: (Time: Scheduled OR Active) AND (Admin: Draft OR Published)
           return EventService.isEditable(event.adminStatus || '', event.computedTimeStatus || '')
         }
         default:
@@ -363,14 +365,13 @@ export default function EventsList() {
                               <span className="font-semibold text-muted-foreground uppercase tracking-wider">Status:</span>
                               <span className={`font-bold uppercase ${event.adminStatus === 'PUBLICADO' ? 'text-blue-600 dark:text-blue-500' :
                                 event.adminStatus === 'RASCUNHO' ? 'text-orange-400' :
-                                  event.adminStatus === 'REABERTO' ? 'text-green-500' :
-                                    event.adminStatus === 'DESATIVADO' ? 'text-red-500' :
-                                      'text-muted-foreground'
+                                  event.adminStatus === 'DESATIVADO' ? 'text-red-500' :
+                                    'text-muted-foreground'
                                 }`}>
                                 {event.adminStatus === 'PUBLICADO' ? 'Publicado' :
                                   event.adminStatus === 'RASCUNHO' ? 'Rascunho' :
                                     event.adminStatus === 'DESATIVADO' ? 'Desativado' :
-                                      event.adminStatus === 'REABERTO' ? 'Reaberto' : event.adminStatus}
+                                      event.adminStatus}
                               </span>
                             </div>
                             <div className="flex items-center gap-1.5 text-[10px]">
@@ -456,31 +457,127 @@ export default function EventsList() {
                   <TooltipContent side="left">Produtor Assistente / Observador</TooltipContent>
                 </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      aria-label="Reabrir Evento"
-                      className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-green-500/10 hover:text-green-600"
-                      onClick={(e) => handleReopen(e, event.id)}
-                    >
-                      <CalendarCheck2 className="h-5 w-5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="left">Reabrir Evento</TooltipContent>
-                </Tooltip>
+                {/* Toggle Status Button (Publish / Deactivate) */}
+                {event.adminStatus === 'PUBLICADO' ? (
+                  <AlertDialog>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AlertDialogTrigger asChild>
+                          <button
+                            aria-label="Desativar Evento"
+                            className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-red-500/10 hover:text-red-600"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <CalendarX2 className="h-5 w-5" />
+                          </button>
+                        </AlertDialogTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="left">Desativar Evento</TooltipContent>
+                    </Tooltip>
+                    <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Desativar Evento?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja mudar o status para <span className="font-bold text-destructive">DESATIVADO</span>?
+                          <br />
+                          O evento deixará de estar visível para o público.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            updateEvent(event.id, { adminStatus: 'DESATIVADO' })
+                          }}
+                        >
+                          Sim, Desativar
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                ) : (
+                  <AlertDialog>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AlertDialogTrigger asChild>
+                          <button
+                            aria-label="Publicar Evento"
+                            className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-green-500/10 hover:text-green-600"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <CalendarCheck2 className="h-5 w-5" />
+                          </button>
+                        </AlertDialogTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="left">Publicar Evento</TooltipContent>
+                    </Tooltip>
+                    <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Publicar Evento?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja mudar o status para <span className="font-bold text-foreground">PUBLICADO</span>?
+                          <br />
+                          O evento ficará visível para o público imediatamente.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            updateEvent(event.id, { adminStatus: 'PUBLICADO' })
+                          }}
+                        >
+                          Sim, Publicar
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      aria-label="Desativar Evento"
-                      className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-red-500/10 hover:text-red-600"
-                      onClick={(e) => handleDeactivate(e, event.id)}
-                    >
-                      <CalendarX2 className="h-5 w-5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="left">Desativar Evento</TooltipContent>
-                </Tooltip>
+                {/* Draft Button (CalendarCog) */}
+                <AlertDialog>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          aria-label="Definir como Rascunho"
+                          className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-muted-foreground hover:bg-amber-500/10 hover:text-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={event.adminStatus === 'RASCUNHO'}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <CalendarCog className="h-5 w-5" />
+                        </button>
+                      </AlertDialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">Definir como Rascunho</TooltipContent>
+                  </Tooltip>
+                  <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Voltar para Rascunho?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        O evento voltará para o status de <span className="font-bold text-amber-500">RASCUNHO</span>.
+                        <br />
+                        Ele não estará mais visível publicamente até ser publicado novamente.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-amber-500 hover:bg-amber-600 text-white"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          updateEvent(event.id, { adminStatus: 'RASCUNHO' })
+                        }}
+                      >
+                        Sim, Rascunho
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
 
                 <Tooltip>
                   <TooltipTrigger asChild>

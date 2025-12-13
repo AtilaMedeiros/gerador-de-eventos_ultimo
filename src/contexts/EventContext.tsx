@@ -11,7 +11,7 @@ export interface Event {
   location: string
   registrations: number
   capacity: number
-  adminStatus: 'RASCUNHO' | 'PUBLICADO' | 'REABERTO' | 'DESATIVADO'
+  adminStatus: 'RASCUNHO' | 'PUBLICADO' | 'DESATIVADO'
   computedTimeStatus?: 'AGENDADO' | 'ATIVO' | 'ENCERRADO'
   status?: string // Deprecated, kept for temporary compat during migration if needed, but preferable to remove. Keeping type loose for now.
 
@@ -81,7 +81,9 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
             ? new Date(ev.registrationIndividualEnd)
             : undefined,
           // Migration Logic
-          adminStatus: ev.adminStatus || (ev.status === 'published' ? 'PUBLICADO' : ev.status === 'closed' ? 'DESATIVADO' : 'RASCUNHO'),
+          adminStatus: (ev.adminStatus === 'CANCELADO' || ev.adminStatus === 'SUSPENSO')
+            ? 'DESATIVADO'
+            : (ev.adminStatus === 'REABERTO' ? 'PUBLICADO' : (ev.adminStatus || (ev.status === 'published' ? 'PUBLICADO' : ev.status === 'closed' ? 'DESATIVADO' : 'RASCUNHO'))),
           computedTimeStatus: EventService.getTimeStatus(new Date(ev.startDate), new Date(ev.endDate))
         }))
 

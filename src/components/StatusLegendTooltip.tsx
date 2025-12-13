@@ -37,11 +37,7 @@ export function StatusLegendTooltip({ children }: { children: React.ReactNode })
                     color="text-blue-600 dark:text-blue-500"
                     desc="Visível e acessível."
                   />
-                  <StatusItem
-                    label="Reaberto"
-                    color="text-emerald-500 dark:text-emerald-400"
-                    desc="Ajustes temporários."
-                  />
+
 
                   <StatusItem
                     label="Desativado"

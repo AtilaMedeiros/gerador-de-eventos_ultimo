@@ -44,14 +44,7 @@ export function EventStatusBadge({
             label: `Desativado • ${timeLabel}`,
         }
     }
-    // 2. REABERTO (Specific to ENCERRADO + REABERTO, but dominant if Reaberto)
-    else if (admin === 'REABERTO') {
-        badgeConfig = {
-            bg: 'bg-amber-500/15 dark:bg-amber-900/30',
-            text: 'text-amber-700 dark:text-amber-400',
-            label: `Reaberto • ${timeLabel}`,
-        }
-    }
+
 
     // 4. RASCUNHO (Dominant over time unless completely invalid)
     else if (admin === 'RASCUNHO') {
