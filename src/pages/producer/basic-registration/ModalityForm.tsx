@@ -271,10 +271,20 @@ export default function ModalityForm({ onSuccess, onCancel, isModal = false, mod
                             </FormControl>
                             <SelectContent>
                               <SelectItem value="masculino">
-                                Masculino
+                                <div className="flex items-center gap-2">
+                                  <span>Masculino</span>
+                                </div>
                               </SelectItem>
-                              <SelectItem value="feminino">Feminino</SelectItem>
-                              <SelectItem value="misto">Misto</SelectItem>
+                              <SelectItem value="feminino">
+                                <div className="flex items-center gap-2">
+                                  <span>Feminino</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="misto">
+                                <div className="flex items-center gap-2">
+                                  <span>Misto</span>
+                                </div>
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />

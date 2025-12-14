@@ -26,6 +26,7 @@ import {
     ChevronRight,
     CalendarHeart
 } from 'lucide-react'
+import { StatusLegendTooltip } from '@/components/StatusLegendTooltip'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { useParticipant, Athlete } from '@/contexts/ParticipantContext'
@@ -182,19 +183,19 @@ export default function AthletesList() {
 
     // Column Resizing Logic
     const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
-        const saved = localStorage.getItem('ge_athletes_col_widths')
+        const saved = localStorage.getItem('ge_athletes_col_widths_v2')
         return saved ? JSON.parse(saved) : {
-            name: 250,
-            sex: 120,
-            dob: 120,
-            cpf: 140,
-            event: 180,
-            actions: 130
+            name: 200,
+            sex: 90,
+            dob: 100,
+            cpf: 130,
+            event: 280,
+            actions: 90
         }
     })
 
     useEffect(() => {
-        localStorage.setItem('ge_athletes_col_widths', JSON.stringify(colWidths))
+        localStorage.setItem('ge_athletes_col_widths_v2', JSON.stringify(colWidths))
     }, [colWidths])
 
     const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)
@@ -371,7 +372,7 @@ export default function AthletesList() {
                     </TableHeader>
                     <TableBody>
                         {currentAthletes.length > 0 ? (
-                            currentAthletes.map((athlete) => (
+                            currentAthletes.map((athlete: any) => (
                                 <TableRow
                                     key={athlete.id}
                                     className="hover:bg-primary/5 transition-all duration-200 border-b border-blue-100 dark:border-blue-900/30 group"
@@ -400,43 +401,39 @@ export default function AthletesList() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="h-12 py-0">
-                                        <div className="flex flex-col items-center justify-center h-full">
-                                            <span className="text-muted-foreground leading-tight">
+                                        <div className="flex flex-col justify-center h-full gap-0.5">
+                                            <span className="text-sm leading-tight truncate w-full" title={athlete.event}>
                                                 {athlete.event}
                                             </span>
-                                            {(() => {
-                                                const status = athlete.adminStatus
-                                                if (status === 'PUBLICADO') {
-                                                    return (
-                                                        <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-medium mt-0.5">
-                                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                            Publicado
-                                                        </div>
-                                                    )
-                                                }
-                                                if (status === 'RASCUNHO') {
-                                                    return (
-                                                        <div className="flex items-center gap-1 text-[10px] text-amber-500 font-medium mt-0.5">
-                                                            <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                                                            Rascunho
-                                                        </div>
-                                                    )
-                                                }
-                                                if (status === 'DESATIVADO') {
-                                                    return (
-                                                        <div className="flex items-center gap-1 text-[10px] text-red-500 font-medium mt-0.5">
-                                                            <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                                                            Desativado
-                                                        </div>
-                                                    )
-                                                }
-                                                return (
-                                                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                                                        <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />
-                                                        Encerrado
+                                            <StatusLegendTooltip>
+                                                <div className="flex items-center gap-3 text-[11px] mt-0.5">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className={`h-1.5 w-1.5 rounded-full ${athlete.adminStatus === 'PUBLICADO' ? 'bg-blue-600 dark:bg-blue-500' :
+                                                            athlete.adminStatus === 'RASCUNHO' ? 'bg-orange-400' :
+                                                                athlete.adminStatus === 'DESATIVADO' ? 'bg-red-500' :
+                                                                    'bg-muted-foreground'
+                                                            }`} />
+                                                        <span className="text-muted-foreground capitalize">
+                                                            {athlete.adminStatus === 'PUBLICADO' ? 'Publicado' :
+                                                                athlete.adminStatus === 'RASCUNHO' ? 'Rascunho' :
+                                                                    athlete.adminStatus === 'DESATIVADO' ? 'Desativado' :
+                                                                        (athlete.adminStatus || '').toLowerCase()}
+                                                        </span>
                                                     </div>
-                                                )
-                                            })()}
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className={`h-1.5 w-1.5 rounded-full ${athlete.computedTimeStatus === 'ATIVO' ? 'bg-blue-600 dark:bg-blue-500' :
+                                                            athlete.computedTimeStatus === 'AGENDADO' ? 'bg-orange-400' :
+                                                                athlete.computedTimeStatus === 'ENCERRADO' ? 'bg-red-500' :
+                                                                    'bg-muted-foreground'
+                                                            }`} />
+                                                        <span className="text-muted-foreground capitalize">
+                                                            {athlete.computedTimeStatus === 'ATIVO' ? 'Em andamento' :
+                                                                athlete.computedTimeStatus === 'AGENDADO' ? 'Agendado' :
+                                                                    athlete.computedTimeStatus === 'ENCERRADO' ? 'Encerrado' : '-'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </StatusLegendTooltip>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right h-12 py-0">

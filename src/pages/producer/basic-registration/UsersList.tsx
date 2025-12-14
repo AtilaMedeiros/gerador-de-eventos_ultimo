@@ -349,7 +349,15 @@ export default function UsersList() {
                   </TableCell>
                   <TableCell className="h-12 py-0">
                     <div className="flex items-center h-full text-muted-foreground gap-2">
-                      <FaWhatsapp className="h-4 w-4 text-green-500" />
+                      <a
+                        href={`https://wa.me/55${user.phone.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:scale-110 transition-transform cursor-pointer"
+                        title="Conversar no WhatsApp"
+                      >
+                        <FaWhatsapp className="h-4 w-4 text-green-500" />
+                      </a>
                       {user.phone}
                     </div>
                   </TableCell>

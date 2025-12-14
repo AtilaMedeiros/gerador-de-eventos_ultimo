@@ -384,16 +384,6 @@ export default function SchoolsList() {
                                     className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                                 />
                             </TableHead>
-                            <TableHead style={{ width: colWidths.event }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('event')}>
-                                <div className="flex items-center overflow-hidden">
-                                    <span className="truncate">Evento</span> {getSortIcon('event')}
-                                </div>
-                                <div
-                                    onMouseDown={(e) => handleMouseDown(e, 'event')}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
-                                />
-                            </TableHead>
 
                             <TableHead style={{ width: colWidths.director }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('director' as any)}>
                                 <div className="flex items-center justify-center overflow-hidden">
@@ -421,6 +411,16 @@ export default function SchoolsList() {
                                 </div>
                                 <div
                                     onMouseDown={(e) => handleMouseDown(e, 'responsible')}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
+                                />
+                            </TableHead>
+                            <TableHead style={{ width: colWidths.event }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('event')}>
+                                <div className="flex items-center overflow-hidden">
+                                    <span className="truncate">Evento</span> {getSortIcon('event')}
+                                </div>
+                                <div
+                                    onMouseDown={(e) => handleMouseDown(e, 'event')}
                                     onClick={(e) => e.stopPropagation()}
                                     className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                                 />
@@ -453,43 +453,6 @@ export default function SchoolsList() {
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="h-12 py-0">
-                                        <div className="flex flex-col justify-center h-full gap-0.5">
-                                            <span className="text-sm font-medium leading-tight truncate w-full" title={school.event}>
-                                                {school.event}
-                                            </span>
-                                            <StatusLegendTooltip>
-                                                <div className="flex items-center gap-3 text-[11px] mt-0.5">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <div className={`h-1.5 w-1.5 rounded-full ${school.adminStatus === 'PUBLICADO' ? 'bg-blue-600 dark:bg-blue-500' :
-                                                            school.adminStatus === 'RASCUNHO' ? 'bg-orange-400' :
-                                                                school.adminStatus === 'DESATIVADO' ? 'bg-red-500' :
-                                                                    'bg-muted-foreground'
-                                                            }`} />
-                                                        <span className="text-muted-foreground capitalize">
-                                                            {school.adminStatus === 'PUBLICADO' ? 'Publicado' :
-                                                                school.adminStatus === 'RASCUNHO' ? 'Rascunho' :
-                                                                    school.adminStatus === 'DESATIVADO' ? 'Desativado' :
-                                                                        (school.adminStatus || '').toLowerCase()}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <div className={`h-1.5 w-1.5 rounded-full ${school.computedTimeStatus === 'ATIVO' ? 'bg-blue-600 dark:bg-blue-500' :
-                                                            school.computedTimeStatus === 'AGENDADO' ? 'bg-orange-400' :
-                                                                school.computedTimeStatus === 'ENCERRADO' ? 'bg-red-500' :
-                                                                    'bg-muted-foreground'
-                                                            }`} />
-                                                        <span className="text-muted-foreground capitalize">
-                                                            {school.computedTimeStatus === 'ATIVO' ? 'Em andamento' :
-                                                                school.computedTimeStatus === 'AGENDADO' ? 'Agendado' :
-                                                                    school.computedTimeStatus === 'ENCERRADO' ? 'Encerrado' : '-'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </StatusLegendTooltip>
-                                        </div>
-                                    </TableCell>
-
                                     <TableCell className="h-12 py-0">
                                         <div className="flex items-center justify-center h-full gap-2 text-muted-foreground">
                                             <UserCheck className="h-3.5 w-3.5" />
@@ -529,6 +492,42 @@ export default function SchoolsList() {
                                     <TableCell className="h-12 py-0">
                                         <div className="flex items-center justify-center h-full text-muted-foreground">
                                             <span className="text-sm font-medium text-foreground/80">{school.responsible}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="h-12 py-0">
+                                        <div className="flex flex-col justify-center h-full gap-0.5">
+                                            <span className="text-sm font-medium leading-tight truncate w-full" title={school.event}>
+                                                {school.event}
+                                            </span>
+                                            <StatusLegendTooltip>
+                                                <div className="flex items-center gap-3 text-[11px] mt-0.5">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className={`h-1.5 w-1.5 rounded-full ${school.adminStatus === 'PUBLICADO' ? 'bg-blue-600 dark:bg-blue-500' :
+                                                            school.adminStatus === 'RASCUNHO' ? 'bg-orange-400' :
+                                                                school.adminStatus === 'DESATIVADO' ? 'bg-red-500' :
+                                                                    'bg-muted-foreground'
+                                                            }`} />
+                                                        <span className="text-muted-foreground capitalize">
+                                                            {school.adminStatus === 'PUBLICADO' ? 'Publicado' :
+                                                                school.adminStatus === 'RASCUNHO' ? 'Rascunho' :
+                                                                    school.adminStatus === 'DESATIVADO' ? 'Desativado' :
+                                                                        (school.adminStatus || '').toLowerCase()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className={`h-1.5 w-1.5 rounded-full ${school.computedTimeStatus === 'ATIVO' ? 'bg-blue-600 dark:bg-blue-500' :
+                                                            school.computedTimeStatus === 'AGENDADO' ? 'bg-orange-400' :
+                                                                school.computedTimeStatus === 'ENCERRADO' ? 'bg-red-500' :
+                                                                    'bg-muted-foreground'
+                                                            }`} />
+                                                        <span className="text-muted-foreground capitalize">
+                                                            {school.computedTimeStatus === 'ATIVO' ? 'Em andamento' :
+                                                                school.computedTimeStatus === 'AGENDADO' ? 'Agendado' :
+                                                                    school.computedTimeStatus === 'ENCERRADO' ? 'Encerrado' : '-'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </StatusLegendTooltip>
                                         </div>
                                     </TableCell>
 
@@ -635,6 +634,6 @@ export default function SchoolsList() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }

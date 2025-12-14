@@ -19,6 +19,15 @@ export class EventService {
     }
 
     /**
+     * Removes a user from an event team.
+     */
+    static removeTeamMember(targetUserId: string, eventId: string) {
+        const perms = getStoredPermissions()
+        const filtered = perms.filter(p => !(p.userId === targetUserId && p.eventId === eventId))
+        localStorage.setItem('ge_event_roles', JSON.stringify(filtered))
+    }
+
+    /**
      * Automatically executes when a new event is created.
      * Assigns the creator as 'owner'.
      */

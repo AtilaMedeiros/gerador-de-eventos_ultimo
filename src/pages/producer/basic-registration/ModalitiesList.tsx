@@ -57,7 +57,7 @@ const filterFields: FilterFieldConfig[] = [
   },
   {
     key: 'gender',
-    label: 'Gênero',
+    label: 'Naipe',
     icon: <Users className="size-3.5" />,
     type: 'text', // Can be select in future
     placeholder: 'Masculino, Feminino...',
@@ -315,7 +315,7 @@ export default function ModalitiesList() {
               </TableHead>
               <TableHead style={{ width: colWidths.gender }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('gender')}>
                 <div className="flex items-center justify-center overflow-hidden">
-                  <span className="truncate">Gênero</span> {getSortIcon('gender')}
+                  <span className="truncate">Naipe</span> {getSortIcon('gender')}
                 </div>
                 <div
                   onMouseDown={(e) => handleMouseDown(e, 'gender')}
@@ -419,7 +419,7 @@ export default function ModalitiesList() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                        className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
                         title="Editar"
                         onClick={() =>
                           navigate(
@@ -432,7 +432,7 @@ export default function ModalitiesList() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="hover:bg-secondary/20 hover:text-secondary-foreground rounded-full transition-colors"
+                        className="h-8 w-8 hover:bg-secondary/20 hover:text-secondary-foreground rounded-full transition-colors"
                         title="Copiar"
                         onClick={() => handleDuplicate(mod)}
                       >
@@ -445,7 +445,7 @@ export default function ModalitiesList() {
                             variant="ghost"
                             size="icon"
                             title="Excluir"
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
