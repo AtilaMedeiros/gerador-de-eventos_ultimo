@@ -102,13 +102,13 @@ export default function AssociateModalities({
     }
 
     return {
-      name: 200,
-      type: 120,
-      gender: 120,
-      minAge: 140,
-      minAthletes: 140,
-      maxTeams: 120,
-      maxEventsPerAthlete: 120
+      name: 180,
+      type: 100,
+      gender: 100,
+      minAge: 100,
+      minAthletes: 80,
+      maxTeams: 100,
+      maxEventsPerAthlete: 100
     }
   })
 
@@ -402,7 +402,7 @@ export default function AssociateModalities({
                         </TableHead>
                         <TableHead style={{ width: colWidths.gender }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('gender')}>
                           <div className="flex items-center justify-center overflow-hidden">
-                            <span className="truncate">Gênero</span> {getSortIcon('gender')}
+                            <span className="truncate">Naipe</span> {getSortIcon('gender')}
                           </div>
                           <div
                             onMouseDown={(e) => handleMouseDown(e, 'gender')}
@@ -412,7 +412,7 @@ export default function AssociateModalities({
                         </TableHead>
                         <TableHead style={{ width: colWidths.minAge }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('minAge')}>
                           <div className="flex items-center justify-center overflow-hidden">
-                            <span className="truncate">Idade (Min-Max)</span> {getSortIcon('minAge')}
+                            <span className="truncate">Idade</span> {getSortIcon('minAge')}
                           </div>
                           <div
                             onMouseDown={(e) => handleMouseDown(e, 'minAge')}
@@ -422,7 +422,7 @@ export default function AssociateModalities({
                         </TableHead>
                         <TableHead style={{ width: colWidths.minAthletes }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('minAthletes')}>
                           <div className="flex items-center justify-center overflow-hidden">
-                            <span className="truncate">Atletas (Min-Max)</span> {getSortIcon('minAthletes')}
+                            <span className="truncate">Atleta</span> {getSortIcon('minAthletes')}
                           </div>
                           <div
                             onMouseDown={(e) => handleMouseDown(e, 'minAthletes')}

@@ -25,7 +25,7 @@ import {
   Edit,
   Trash2,
   UserPlus,
-  User,
+  User as UserIcon,
   Mail,
   Shield,
   Activity,
@@ -41,15 +41,19 @@ import { useNavigate } from 'react-router-dom'
 import { FaWhatsapp } from 'react-icons/fa'
 import { TbUserPause, TbUserCheck } from 'react-icons/tb'
 
-import { MOCK_USERS_LIST } from '@/backend/banco/usuarios'
+import { getStoredUsers, User, saveUser } from '@/backend/banco/usuarios'
 
-const MOCK_USERS = MOCK_USERS_LIST
+const roleMap: Record<string, string> = {
+  admin: 'Administrador',
+  producer: 'Produtor',
+  participant: 'Participante',
+}
 
 const filterFields: FilterFieldConfig[] = [
   {
     key: 'name',
     label: 'Nome',
-    icon: <User className="size-3.5" />,
+    icon: <UserIcon className="size-3.5" />,
     type: 'text',
     placeholder: 'Buscar por nome...',
   },
@@ -81,11 +85,11 @@ export default function UsersList() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<Filter[]>([])
 
-  const [users, setUsers] = useState(MOCK_USERS)
+  const [users, setUsers] = useState<User[]>(getStoredUsers())
 
   // Password Reset State
   const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false)
-  const [selectedUserForReset, setSelectedUserForReset] = useState<typeof MOCK_USERS[0] | null>(null)
+  const [selectedUserForReset, setSelectedUserForReset] = useState<User | null>(null)
   const [newPassword, setNewPassword] = useState('')
 
 
@@ -95,8 +99,9 @@ export default function UsersList() {
     const searchLower = searchTerm.toLowerCase()
     const matchesSearch =
       user.name.toLowerCase().includes(searchLower) ||
+      user.name.toLowerCase().includes(searchLower) ||
       user.email.toLowerCase().includes(searchLower) ||
-      user.role.toLowerCase().includes(searchLower) ||
+      (roleMap[user.role] || user.role).toLowerCase().includes(searchLower) ||
       user.cpf.includes(searchLower) ||
       user.phone.includes(searchLower) ||
       (user.status === 'active' ? 'ativo' : 'inativo').includes(searchLower)
@@ -129,7 +134,7 @@ export default function UsersList() {
     })
   })
 
-  const [sortConfig, setSortConfig] = useState<{ key: keyof typeof MOCK_USERS[0], direction: 'asc' | 'desc' } | null>(null)
+  const [sortConfig, setSortConfig] = useState<{ key: keyof User, direction: 'asc' | 'desc' } | null>(null)
 
   // Apply Sorting
   const sortedUsers = [...filteredUsers].sort((a, b) => {
@@ -149,7 +154,7 @@ export default function UsersList() {
     return 0
   })
 
-  const requestSort = (key: keyof typeof MOCK_USERS[0]) => {
+  const requestSort = (key: keyof User) => {
     let direction: 'asc' | 'desc' = 'asc'
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc'
@@ -185,18 +190,23 @@ export default function UsersList() {
     toast.info(`Ação ${action} simulada com sucesso.`)
   }
 
-  const toggleUserStatus = (userId: number) => {
+  const toggleUserStatus = (userId: string) => {
     setUsers(prevUsers => prevUsers.map(user => {
       if (user.id === userId) {
         const newStatus = user.status === 'active' ? 'inactive' : 'active'
+        const updatedUser = { ...user, status: newStatus } as User // Cast to satisfy type if needed, though mostly inferred
+
+        // Persist change
+        saveUser(updatedUser)
+
         toast.success(`Usuário ${newStatus === 'active' ? 'ativado' : 'pausado'} com sucesso.`)
-        return { ...user, status: newStatus }
+        return updatedUser
       }
       return user
     }))
   }
 
-  const handleOpenResetDialog = (user: typeof MOCK_USERS[0]) => {
+  const handleOpenResetDialog = (user: User) => {
     setSelectedUserForReset(user)
     setNewPassword(`@Sme${new Date().getFullYear()}`)
     setResetPasswordDialogOpen(true)
@@ -368,7 +378,7 @@ export default function UsersList() {
                   </TableCell>
                   <TableCell className="h-12 py-0">
                     <div className="flex items-center h-full text-muted-foreground">
-                      {user.role}
+                      {roleMap[user.role] || user.role}
                     </div>
                   </TableCell>
                   <TableCell className="text-right h-12 py-0">

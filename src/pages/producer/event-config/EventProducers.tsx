@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { TbUserPause, TbUserCheck } from 'react-icons/tb'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,15 +15,17 @@ import {
 } from "@/components/ui/alert-dialog"
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import {
     ArrowLeft, UserPlus, Search, Trash2, Shield, Users, CheckCircle2, AlertCircle, Speech, Mail, Phone, Crown, Eye
 } from 'lucide-react'
 import { useEvent } from '@/contexts/EventContext'
 import { getStoredUsers, User } from '@/backend/banco/usuarios'
-import { getStoredPermissions, EventRole } from '@/backend/banco/permissoes'
+import { getStoredPermissions, EventRole, saveInfoPermission } from '@/backend/banco/permissoes'
 import { EventService } from '@/backend/services/event.service'
+
+
 
 // Helper type for display
 interface DisplayProducer extends User {
@@ -30,6 +33,12 @@ interface DisplayProducer extends User {
     status: 'active' | 'inactive'
     phone: string
     cpf: string
+}
+
+const roleMap: Record<string, string> = {
+    admin: 'Administrador',
+    producer: 'Produtor',
+    participant: 'Participante',
 }
 
 export default function EventProducers() {
@@ -59,11 +68,10 @@ export default function EventProducers() {
         const allUsers = getStoredUsers()
         const allPermissions = getStoredPermissions()
 
-        // 1. All Global Producers (Candidates)
-        // Filter users who are global 'producer' or 'admin'
-        const globalProducers = allUsers.filter(u =>
-            (u.role === 'producer' || u.role === 'admin')
-        )
+        // 1. All Active Users (Candidates)
+        // Filter users who are active (if status exists) and filter out participants if needed (optional)
+        // User requested "usuarios ativo", so we strictly filter by status === 'active'
+        const globalProducers = allUsers.filter(u => u.status === 'active')
         setAllGlobalProducers(globalProducers)
 
         // 2. Linked Producers
@@ -122,7 +130,8 @@ export default function EventProducers() {
                 u.email.toLowerCase().includes(lower) ||
                 (u.cpf && u.cpf.includes(lower)) ||
                 (u.phone && u.phone.includes(lower)) ||
-                phoneClean.includes(lower)
+                phoneClean.includes(lower) ||
+                (roleMap[u.role] || u.role).toLowerCase().includes(lower)
             )
         }).slice(0, 10) // Limit results
     }, [allGlobalProducers, userSearchTerm, linkedProducers])
@@ -185,17 +194,40 @@ export default function EventProducers() {
             loadProducers()
         } else {
             // Update Existing Link
-            const stored = localStorage.getItem('ge_permissions')
-            if (stored) {
-                let perms = JSON.parse(stored)
-                const index = perms.findIndex((p: any) => p.userId === activeUserId && p.eventId === eventId)
-                if (index >= 0) {
-                    perms[index].role = selectedRole
-                    localStorage.setItem('ge_permissions', JSON.stringify(perms))
-                    toast.success('Permissões atualizadas com sucesso!')
-                    loadProducers()
+            saveInfoPermission({
+                userId: activeUserId,
+                eventId: eventId,
+                role: selectedRole
+            })
+            toast.success('Permissões atualizadas com sucesso!')
+            loadProducers()
+        }
+    }
+
+    const handleToggleStatus = (userId: string, e: React.MouseEvent) => {
+        e.stopPropagation()
+        const isDraft = draftProducers.some(dp => dp.id === userId)
+
+        if (isDraft) {
+            setDraftProducers(prev => prev.map(p => {
+                if (p.id === userId) {
+                    const newStatus = p.status === 'active' ? 'inactive' : 'active'
+                    toast.success(newStatus === 'active' ? "Membro ativado" : "Membro pausado")
+                    return { ...p, status: newStatus }
                 }
-            }
+                return p
+            }))
+        } else {
+            // For linked producers, we'll just toggle the local state for now as we don't have a backend route
+            // In a real app, this would be an API call to toggle permission status
+            setLinkedProducers(prev => prev.map(p => {
+                if (p.id === userId) {
+                    const newStatus = p.status === 'active' ? 'inactive' : 'active'
+                    toast.success(newStatus === 'active' ? "Membro ativado" : "Membro pausado")
+                    return { ...p, status: newStatus }
+                }
+                return p
+            }))
         }
     }
 
@@ -262,9 +294,6 @@ export default function EventProducers() {
                                 <h3 className="font-semibold text-lg tracking-tight">Equipe</h3>
                                 <p className="text-xs text-muted-foreground">Membros vinculados</p>
                             </div>
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full" onClick={() => setIsSearchOpen(true)}>
-                                <UserPlus className="h-4 w-4 text-primary" />
-                            </Button>
                         </div>
 
                         <div className="relative">
@@ -352,27 +381,60 @@ export default function EventProducers() {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="font-medium text-sm truncate">{user.name}</div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1 capitalize">
+                                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                                <span className="text-[10px] text-muted-foreground font-medium capitalize shrink-0">
                                                     {isDraft ? 'Novo (Não Salvo)' :
                                                         user.subRole === 'owner' ? 'Proprietário' :
                                                             user.subRole === 'assistant' ? 'Assistente' : 'Observador'}
                                                 </span>
-                                                {isDraft && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+                                                <span className="text-[10px] text-muted-foreground/30">•</span>
+                                                <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0">
+                                                    {(user.status === 'active' || isDraft) ? (
+                                                        <>
+                                                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                                                            Ativo
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50 inline-block" />
+                                                            Inativo
+                                                        </>
+                                                    )}
+                                                </span>
                                             </div>
                                         </div>
 
                                         <div className="flex items-center gap-0.5 ml-1">
+                                            {user.subRole !== 'owner' && !isDraft && (
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    className={`h-7 w-7 shrink-0 rounded-full transition-colors ${user.status === 'active'
+                                                        ? "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                                                        : "text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                                                        }`}
+                                                    onClick={(e) => handleToggleStatus(user.id, e)}
+                                                    title={user.status === 'active' ? "Pausar Membro" : "Ativar Membro"}
+                                                >
+                                                    {user.status === 'active' ? (
+                                                        <TbUserPause className="h-4 w-4" />
+                                                    ) : (
+                                                        <TbUserCheck className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            )}
+
                                             {user.subRole !== 'owner' && (
                                                 <Button
                                                     size="icon"
                                                     variant="ghost"
-                                                    className="h-7 w-7 shrink-0 transition-opacity text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100"
+                                                    className="h-7 w-7 shrink-0 transition-opacity text-muted-foreground hover:text-destructive"
                                                     onClick={(e) => {
                                                         e.stopPropagation()
                                                         setProducerToDelete(user.id)
                                                     }}
                                                 >
+
                                                     <Trash2 className="h-3.5 w-3.5" />
                                                 </Button>
                                             )}
@@ -415,7 +477,7 @@ export default function EventProducers() {
                                     </div>
                                 </div>
                                 {activeUser.subRole !== 'owner' && (
-                                    <Button onClick={handleSaveRole} className={`gap-2 shadow-lg ${isDraftUser ? 'shadow-emerald-500/20 bg-emerald-600 hover:bg-emerald-700 text-white' : 'shadow-primary/20'}`}>
+                                    <Button onClick={handleSaveRole} className="gap-2 shadow-lg shadow-primary/20">
                                         <CheckCircle2 className="h-4 w-4" />
                                         {isDraftUser ? 'Confirmar Adição' : 'Salvar Alterações'}
                                     </Button>
@@ -426,64 +488,92 @@ export default function EventProducers() {
                             <ScrollArea className="flex-1 p-6 bg-muted/5">
                                 <div className="space-y-6 max-w-2xl mx-auto">
 
-                                    <div className="bg-card border rounded-lg p-6 shadow-sm">
-                                        <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                                            <Shield className="h-5 w-5 text-primary" />
-                                            {isDraftUser ? 'Definir Permissão Inicial' : 'Configuração de Acesso'}
-                                        </h3>
-
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <Label>Papel no Evento</Label>
-                                                <Select
-                                                    value={selectedRole}
-                                                    onValueChange={(v: EventRole) => setSelectedRole(v)}
-                                                    disabled={activeUser.subRole === 'owner'}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="assistant">
-                                                            <div className="flex items-start gap-3">
-                                                                <div className="mt-0.5 bg-blue-100 p-1 rounded text-blue-600 dark:bg-blue-900 dark:text-blue-400">
-                                                                    <Speech className="h-4 w-4" />
-                                                                </div>
-                                                                <div>
-                                                                    <span className="font-semibold block">Assistente</span>
-                                                                    <span className="text-xs text-muted-foreground">Pode editar informações, gerenciar inscrições e ver relatórios.</span>
-                                                                </div>
-                                                            </div>
-                                                        </SelectItem>
-                                                        <SelectItem value="observer">
-                                                            <div className="flex items-start gap-3">
-                                                                <div className="mt-0.5 bg-purple-100 p-1 rounded text-purple-600 dark:bg-purple-900 dark:text-purple-400">
-                                                                    <Eye className="h-4 w-4" />
-                                                                </div>
-                                                                <div>
-                                                                    <span className="font-semibold block">Observador</span>
-                                                                    <span className="text-xs text-muted-foreground">Apenas visualização. Não pode alterar dados.</span>
-                                                                </div>
-                                                            </div>
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
+                                    <div className="space-y-4">
+                                        <div className="flex flex-col gap-4">
+                                            {/* Observer Option */}
+                                            <div
+                                                className={`
+                                                    relative overflow-hidden rounded-[5px] border-2 transition-all duration-300 cursor-pointer group flex flex-col p-4 gap-3
+                                                    ${selectedRole === 'observer'
+                                                        ? 'border-primary/50 bg-primary/5 shadow-md'
+                                                        : 'border-dashed border-muted-foreground/30 hover:bg-muted/40 hover:border-primary/30'
+                                                    }
+                                                    ${activeUser.subRole === 'owner' ? 'opacity-50 cursor-not-allowed' : ''}
+                                                `}
+                                                onClick={() => activeUser.subRole !== 'owner' && setSelectedRole('observer')}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <span className={`font-semibold text-sm ${selectedRole === 'observer' ? 'text-primary' : 'text-muted-foreground'}`}>
+                                                        Observador
+                                                    </span>
+                                                    <div
+                                                        className={`
+                                                            h-5 w-5 shrink-0 rounded-full border-2 flex items-center justify-center transition-all duration-300
+                                                            ${selectedRole === 'observer'
+                                                                ? 'bg-primary border-primary scale-110 shadow-sm'
+                                                                : 'border-muted-foreground/30 bg-background group-hover:border-primary/50'
+                                                            }
+                                                        `}
+                                                    >
+                                                        {selectedRole === 'observer' && (
+                                                            <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground animate-in zoom-in duration-300" />
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <p className="text-[11px] text-muted-foreground leading-snug">
+                                                    Visualiza todas as informações mas não pode fazer alterações.
+                                                </p>
                                             </div>
 
-                                            {isDraftUser && (
-                                                <div className="bg-emerald-50 border border-emerald-200 rounded-md p-3 text-sm text-emerald-800 flex gap-2">
-                                                    <UserPlus className="h-5 w-5 shrink-0" />
-                                                    <p>Você está adicionando este produtor à equipe. Clique em "Confirmar Adição" acima para salvar.</p>
+                                            {/* Assistant Option */}
+                                            <div
+                                                className={`
+                                                    relative overflow-hidden rounded-[5px] border-2 transition-all duration-300 cursor-pointer group flex flex-col p-4 gap-3
+                                                    ${selectedRole === 'assistant'
+                                                        ? 'border-primary/50 bg-primary/5 shadow-md'
+                                                        : 'border-dashed border-muted-foreground/30 hover:bg-muted/40 hover:border-primary/30'
+                                                    }
+                                                    ${activeUser.subRole === 'owner' ? 'opacity-50 cursor-not-allowed' : ''}
+                                                `}
+                                                onClick={() => activeUser.subRole !== 'owner' && setSelectedRole('assistant')}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <span className={`font-semibold text-sm ${selectedRole === 'assistant' ? 'text-primary' : 'text-muted-foreground'}`}>
+                                                        Assistente
+                                                    </span>
+                                                    <div
+                                                        className={`
+                                                            h-5 w-5 shrink-0 rounded-full border-2 flex items-center justify-center transition-all duration-300
+                                                            ${selectedRole === 'assistant'
+                                                                ? 'bg-primary border-primary scale-110 shadow-sm'
+                                                                : 'border-muted-foreground/30 bg-background group-hover:border-primary/50'
+                                                            }
+                                                        `}
+                                                    >
+                                                        {selectedRole === 'assistant' && (
+                                                            <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground animate-in zoom-in duration-300" />
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            )}
-
-                                            {activeUser.subRole === 'owner' && (
-                                                <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm text-amber-800 flex gap-2">
-                                                    <Crown className="h-5 w-5 shrink-0" />
-                                                    <p>O proprietário do evento tem acesso total e não pode ter seu papel alterado.</p>
-                                                </div>
-                                            )}
+                                                <p className="text-[11px] text-muted-foreground leading-snug">
+                                                    Pode editar informações, gerenciar inscrições e configurações.
+                                                </p>
+                                            </div>
                                         </div>
+
+                                        {isDraftUser && (
+                                            <div className="bg-emerald-50 border border-emerald-200 rounded-md p-3 text-sm text-emerald-800 flex gap-2">
+                                                <UserPlus className="h-5 w-5 shrink-0" />
+                                                <p>Você está adicionando este produtor à equipe. Clique em "Confirmar Adição" acima para salvar.</p>
+                                            </div>
+                                        )}
+
+                                        {activeUser.subRole === 'owner' && (
+                                            <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm text-amber-800 flex gap-2">
+                                                <Crown className="h-5 w-5 shrink-0" />
+                                                <p>O proprietário do evento tem acesso total e não pode ter seu papel alterado.</p>
+                                            </div>
+                                        )}
                                     </div>
 
                                 </div>

@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import {
-    ArrowLeft, UserPlus, Search, Trash2, Shield, Users, School, Trophy, CheckCircle2, X, AlertCircle, User as UserIcon, Calendar, Speech, Cake
+    ArrowLeft, UserPlus, Search, Trash2, Shield, Users, School, Trophy, CheckCircle2, X, AlertCircle, User as UserIcon, Calendar, Speech, Cake, Mail, Phone
 } from 'lucide-react'
 
 import { TbUserPause, TbUserCheck } from 'react-icons/tb'
@@ -426,8 +426,18 @@ export default function SchoolTechnicians() {
                                     <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                                         <Speech className="h-7 w-7" />
                                     </div>
-                                    <div className="flex items-center">
+                                    <div>
                                         <h2 className="text-2xl font-bold text-foreground">{activeUser.name}</h2>
+                                        <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                                            <div className="flex items-center gap-1">
+                                                <Mail className="h-3.5 w-3.5" /> {activeUser.email}
+                                            </div>
+                                            {activeUser.phone && (
+                                                <div className="flex items-center gap-1">
+                                                    <Phone className="h-3.5 w-3.5" /> {activeUser.phone}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <Button onClick={handleSave} className="gap-2 shadow-lg shadow-primary/20">
