@@ -124,28 +124,72 @@ export default function SchoolTechnicians() {
         // 1. Existing Technicians
         const existingUsers = technicians.map(t => {
             const user = users.find(u => u.id === t.userId)
-            return { user, link: t, isDraft: false }
-        }).filter(item => item.user !== undefined) as { user: User, link: SchoolTechnician, isDraft: boolean }[]
+            return { user, link: t, isDraft: false, isResponsible: false }
+        }).filter(item => item.user !== undefined) as { user: User, link: SchoolTechnician | null, isDraft: boolean, isResponsible: boolean }[]
 
         // 2. Draft Users (exclude if already in existing)
         const drafts = draftUsers
             .filter(d => !existingUsers.some(e => e.user.id === d.id))
-            .map(user => ({ user, link: null, isDraft: true }))
+            .map(user => ({ user, link: null, isDraft: true, isResponsible: false }))
 
-        return [...existingUsers, ...drafts]
-    }, [technicians, draftUsers, users])
+        let combined = [...existingUsers, ...drafts]
+
+        // 3. Ensure Responsible is in the list
+        if (school && school.responsibleId) {
+            const responsibleUser = users.find(u => u.id === school.responsibleId)
+            if (responsibleUser) {
+                const alreadyInList = combined.find(i => i.user.id === responsibleUser.id)
+                if (alreadyInList) {
+                    alreadyInList.isResponsible = true
+                } else {
+                    // Add as a "Draft" (so they can be configured) or "Active" if we assume implicit access?
+                    // User says "responsavel é um vinculo", implying they should be active.
+                    // But if they don't have a TechnicianLink record, they effectively have no modality permissions stored *yet*.
+                    // Showing as "Draft" (yellow/gray) encourages the producer to configuring permissions.
+                    // OR we show them as distinct.
+                    // Let's add them as a "Draft" but pin them to top.
+                    combined.unshift({
+                        user: responsibleUser,
+                        link: null,
+                        isDraft: true, // Will show as inactive/config needed until saved
+                        isResponsible: true
+                    })
+                }
+            }
+        }
+
+        // Sort: Responsible first, then others
+        combined.sort((a, b) => {
+            if (a.isResponsible) return -1
+            if (b.isResponsible) return 1
+            return 0
+        })
+
+        return combined
+    }, [technicians, draftUsers, users, school])
 
     // Search Logic
     const filteredSearchUsers = useMemo(() => {
         if (!userSearchTerm) return []
         const lower = userSearchTerm.toLowerCase()
-        // Determine who is already in the sidebar to mark them or exclude them? 
-        // Let's just filter global users matching search
-        return users.filter(u =>
-            (u.name.toLowerCase().includes(lower) || u.email.toLowerCase().includes(lower) || u.cpf?.includes(lower)) &&
-            // Optional: Exclude if already in sidebar? User might want to "find" them again to select.
-            true
-        ).slice(0, 5)
+
+        const roleMap: Record<string, string> = {
+            admin: 'administrador',
+            producer: 'produtor',
+            participant: 'participante',
+            school_admin: 'responsável',
+        }
+
+        return users.filter(u => {
+            const roleName = roleMap[u.role] || u.role
+            return (
+                u.name.toLowerCase().includes(lower) ||
+                u.email.toLowerCase().includes(lower) ||
+                u.cpf?.includes(lower) ||
+                roleName.toLowerCase().includes(lower) ||
+                u.role.toLowerCase().includes(lower)
+            )
+        }).slice(0, 5)
     }, [users, userSearchTerm])
 
     // Actions
@@ -266,18 +310,16 @@ export default function SchoolTechnicians() {
                     <div className="p-4 border-b bg-muted/30">
                         <div className="flex items-center justify-between mb-3">
                             <div>
-                                <h3 className="font-semibold text-lg tracking-tight">Técnicos</h3>
+                                <h3 className="font-semibold text-lg tracking-tight">Participante</h3>
                                 <p className="text-xs text-muted-foreground">Gerencie os vínculos</p>
                             </div>
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full" onClick={() => setIsSearchOpen(true)}>
-                                <UserPlus className="h-4 w-4 text-primary" />
-                            </Button>
+
                         </div>
 
                         <div className="relative">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="Buscar..."
+                                placeholder="Buscar por nome, email ou função..."
                                 className="pl-9 bg-background/50"
                                 value={userSearchTerm}
                                 onClick={() => setIsSearchOpen(true)}
@@ -329,7 +371,7 @@ export default function SchoolTechnicians() {
                                 <p className="text-sm">Nenhum técnico listado.<br />Utilize a busca acima para adicionar.</p>
                             </div>
                         ) : (
-                            sidebarList.map(({ user, link, isDraft }) => (
+                            sidebarList.map(({ user, link, isDraft, isResponsible }) => (
                                 <div
                                     key={user.id}
                                     onClick={() => setActiveUserId(user.id)}
@@ -349,26 +391,31 @@ export default function SchoolTechnicians() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="font-medium text-sm truncate">{user.name}</div>
-                                        <span className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
-                                            {(isDraft || (link?.active ?? true)) ? (
-                                                <>
-                                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
-                                                    Ativo
-                                                </>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                                {(isDraft || (link?.active ?? true)) ? (
+                                                    <>
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                                                        Ativo
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50 inline-block" />
+                                                        Inativo
+                                                    </>
+                                                )}
+                                            </span>
+                                            {isResponsible ? (
+                                                <Badge variant="outline" className="text-[9px] h-4 px-1 border-primary/30 text-primary bg-primary/5 rounded-[5px]">
+                                                    Responsável
+                                                </Badge>
                                             ) : (
-                                                <>
-                                                    <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50 inline-block" />
-                                                    Inativo
-                                                </>
+                                                <Badge variant="outline" className="text-[9px] h-4 px-1 border-blue-500/30 text-blue-600 bg-blue-500/5 rounded-[5px]">
+                                                    Técnico
+                                                </Badge>
                                             )}
-                                        </span>
+                                        </div>
                                     </div>
-
-                                    {!isDraft && (
-                                        <Badge className="text-[10px] h-5 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 shadow-none border-0 px-1.5">
-                                            {link?.allowedModalityIds.length}
-                                        </Badge>
-                                    )}
 
                                     <div className="flex items-center gap-0.5 ml-1">
                                         {!isDraft && (
@@ -427,7 +474,14 @@ export default function SchoolTechnicians() {
                                         <Speech className="h-7 w-7" />
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-bold text-foreground">{activeUser.name}</h2>
+                                        <div className="flex items-center gap-2">
+                                            <h2 className="text-2xl font-bold text-foreground">{activeUser.name}</h2>
+                                            {activeUserId === school?.responsibleId && (
+                                                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                                                    Responsável
+                                                </Badge>
+                                            )}
+                                        </div>
                                         <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                                             <div className="flex items-center gap-1">
                                                 <Mail className="h-3.5 w-3.5" /> {activeUser.email}
@@ -440,192 +494,209 @@ export default function SchoolTechnicians() {
                                         </div>
                                     </div>
                                 </div>
-                                <Button onClick={handleSave} className="gap-2 shadow-lg shadow-primary/20">
-                                    <CheckCircle2 className="h-4 w-4" />
-                                    Salvar Alterações
-                                </Button>
+                                {activeUserId !== school?.responsibleId && (
+                                    <Button onClick={handleSave} className="gap-2 shadow-lg shadow-primary/20">
+                                        <CheckCircle2 className="h-4 w-4" />
+                                        Salvar Alterações
+                                    </Button>
+                                )}
                             </div>
 
-                            {/* Modalities List */}
-                            <ScrollArea className="flex-1 p-6 bg-muted/5">
-                                <div className="space-y-6 max-w-4xl mx-auto">
-                                    {availableModalitiesByEvent.length === 0 && (
-                                        <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-                                            <AlertCircle className="h-10 w-10 mb-2 opacity-50" />
-                                            <p>Esta escola não possui eventos com modalidades disponíveis.</p>
+                            {/* Content Area */}
+                            {activeUserId === school?.responsibleId ? (
+                                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in-95 duration-300">
+                                    <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-6 ring-8 ring-primary/5">
+                                        <Shield className="h-12 w-12 text-primary" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold tracking-tight mb-3">Acesso Administrativo Completo</h3>
+                                    <p className="text-muted-foreground max-w-lg text-lg leading-relaxed">
+                                        Como <strong>Responsável pela Escola</strong>, este usuário possui permissão automática e irrestrita para gerenciar inscrições de atletas em <strong>todas as modalidades</strong> disponíveis no evento.
+                                    </p>
+                                    <div className="mt-8 flex gap-4">
+                                        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800">
+                                            <CheckCircle2 className="h-4 w-4" />
+                                            <span>Gerenciar Inscrições</span>
                                         </div>
-                                    )}
+                                        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
+                                            <CheckCircle2 className="h-4 w-4" />
+                                            <span>Gerenciar Técnicos</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <ScrollArea className="flex-1 p-6 bg-muted/5">
+                                    <div className="space-y-6 max-w-4xl mx-auto">
+                                        {availableModalitiesByEvent.length === 0 && (
+                                            <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+                                                <AlertCircle className="h-10 w-10 mb-2 opacity-50" />
+                                                <p>Esta escola não possui eventos com modalidades disponíveis.</p>
+                                            </div>
+                                        )}
 
-                                    {availableModalitiesByEvent.map(({ event, modalities }) => (
-                                        <div key={event.id} className="space-y-3">
-                                            <div className="grid gap-2">
-                                                {(() => {
-                                                    const currentEventModalityIds = modalities.map(m => m.id)
-                                                    const allSelected = currentEventModalityIds.every(id => selectedModalities.includes(id))
+                                        {availableModalitiesByEvent.map(({ event, modalities }) => (
+                                            <div key={event.id} className="space-y-3">
+                                                <div className="grid gap-2">
+                                                    {(() => {
+                                                        const currentEventModalityIds = modalities.map(m => m.id)
+                                                        const allSelected = currentEventModalityIds.every(id => selectedModalities.includes(id))
 
-                                                    return (
-                                                        <div
-                                                            onClick={() => {
-                                                                if (allSelected) {
-                                                                    // Deselect all for this event
-                                                                    setSelectedModalities(prev => prev.filter(id => !currentEventModalityIds.includes(id)))
-                                                                } else {
-                                                                    // Select all for this event
-                                                                    const toAdd = currentEventModalityIds.filter(id => !selectedModalities.includes(id))
-                                                                    setSelectedModalities(prev => [...prev, ...toAdd])
-                                                                }
-                                                            }}
-                                                            className={`
-                                                                relative overflow-hidden rounded-[5px] border-2 transition-all duration-300 cursor-pointer group flex items-center justify-between p-4
-                                                                ${allSelected
-                                                                    ? 'border-primary/50 bg-primary/10 shadow-md'
-                                                                    : 'border-dashed border-muted-foreground/30 hover:bg-muted/40 hover:border-primary/30'
-                                                                }
-                                                            `}
-                                                        >
-                                                            <div className="flex items-center gap-3">
-                                                                <div
-                                                                    className={`
-                                                                        h-5 w-5 shrink-0 rounded-full border-2 flex items-center justify-center transition-all duration-300
-                                                                        ${allSelected
-                                                                            ? 'bg-primary border-primary scale-110 shadow-sm'
-                                                                            : 'border-muted-foreground/30 bg-background group-hover:border-primary/50'
-                                                                        }
-                                                                    `}
-                                                                >
-                                                                    {allSelected && (
-                                                                        <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground animate-in zoom-in duration-300" />
-                                                                    )}
+                                                        return (
+                                                            <div
+                                                                onClick={() => {
+                                                                    if (allSelected) {
+                                                                        // Deselect all for this event
+                                                                        setSelectedModalities(prev => prev.filter(id => !currentEventModalityIds.includes(id)))
+                                                                    } else {
+                                                                        // Select all for this event
+                                                                        const toAdd = currentEventModalityIds.filter(id => !selectedModalities.includes(id))
+                                                                        setSelectedModalities(prev => [...prev, ...toAdd])
+                                                                    }
+                                                                }}
+                                                                className={`
+                                                                 relative overflow-hidden rounded-[5px] border-2 transition-all duration-300 cursor-pointer group flex items-center justify-between p-4
+                                                                 ${allSelected
+                                                                        ? 'border-primary/50 bg-primary/10 shadow-md'
+                                                                        : 'border-dashed border-muted-foreground/30 hover:bg-muted/40 hover:border-primary/30'
+                                                                    }
+                                                             `}
+                                                            >
+                                                                <div className="flex items-center gap-3">
+                                                                    <div
+                                                                        className={`
+                                                                         h-5 w-5 shrink-0 rounded-full border-2 flex items-center justify-center transition-all duration-300
+                                                                         ${allSelected
+                                                                                ? 'bg-primary border-primary scale-110 shadow-sm'
+                                                                                : 'border-muted-foreground/30 bg-background group-hover:border-primary/50'
+                                                                            }
+                                                                     `}
+                                                                    >
+                                                                        {allSelected && (
+                                                                            <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground animate-in zoom-in duration-300" />
+                                                                        )}
+                                                                    </div>
+                                                                    <span className={`font-semibold text-sm ${allSelected ? 'text-primary' : 'text-muted-foreground'}`}>
+                                                                        {allSelected ? 'Todas as modalidades selecionadas' : 'Selecionar todas as modalidades'}
+                                                                    </span>
                                                                 </div>
-                                                                <span className={`font-semibold text-sm ${allSelected ? 'text-primary' : 'text-muted-foreground'}`}>
-                                                                    {allSelected ? 'Todas as modalidades selecionadas' : 'Selecionar todas as modalidades'}
-                                                                </span>
+                                                                {allSelected && (
+                                                                    <Badge variant="secondary" className="bg-background/80 text-xs">
+                                                                        {modalities.length} selecionadas
+                                                                    </Badge>
+                                                                )}
                                                             </div>
-                                                            {allSelected && (
-                                                                <Badge variant="secondary" className="bg-background/80 text-xs">
-                                                                    {modalities.length} selecionadas
-                                                                </Badge>
-                                                            )}
-                                                        </div>
-                                                    )
-                                                })()}
-                                                {modalities.map(mod => {
-                                                    const isSelected = selectedModalities.includes(mod.id)
+                                                        )
+                                                    })()}
+                                                    {modalities.map(mod => {
+                                                        const isSelected = selectedModalities.includes(mod.id)
 
-                                                    // Helper specific to this render for gender colors
-                                                    const getGenderStyle = (g: string) => {
-                                                        if (g === 'masculino') return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300'
-                                                        if (g === 'feminino') return 'bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-900/30 dark:text-pink-300'
-                                                        return 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300'
-                                                    }
+                                                        return (
+                                                            <div
+                                                                key={mod.id}
+                                                                onClick={() => {
+                                                                    if (isSelected) setSelectedModalities(prev => prev.filter(id => id !== mod.id))
+                                                                    else setSelectedModalities(prev => [...prev, mod.id])
+                                                                }}
+                                                                className={`
+                                                                 relative overflow-hidden rounded-[5px] border-2 transition-all duration-300 cursor-pointer group
+                                                                 ${isSelected
+                                                                        ? 'border-primary/50 bg-blue-50/50 dark:bg-blue-900/10 shadow-md'
+                                                                        : 'border-transparent bg-muted/40 hover:bg-muted/60 hover:shadow-sm'
+                                                                    }
+                                                             `}
+                                                            >
+                                                                {/* Decorative Blur for selected state */}
+                                                                {isSelected && (
+                                                                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 blur-3xl rounded-full pointer-events-none" />
+                                                                )}
 
-                                                    return (
-                                                        <div
-                                                            key={mod.id}
-                                                            onClick={() => {
-                                                                if (isSelected) setSelectedModalities(prev => prev.filter(id => id !== mod.id))
-                                                                else setSelectedModalities(prev => [...prev, mod.id])
-                                                            }}
-                                                            className={`
-                                                                relative overflow-hidden rounded-[5px] border-2 transition-all duration-300 cursor-pointer group
-                                                                ${isSelected
-                                                                    ? 'border-primary/50 bg-blue-50/50 dark:bg-blue-900/10 shadow-md'
-                                                                    : 'border-transparent bg-muted/40 hover:bg-muted/60 hover:shadow-sm'
-                                                                }
-                                                            `}
-                                                        >
-                                                            {/* Decorative Blur for selected state */}
-                                                            {isSelected && (
-                                                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 blur-3xl rounded-full pointer-events-none" />
-                                                            )}
-
-                                                            <div className="flex items-center gap-3 p-3 relative z-10 w-full">
-                                                                {/* Custom Checkbox */}
-                                                                <div
-                                                                    className={`
-                                                                        h-5 w-5 shrink-0 rounded-full border-2 flex items-center justify-center transition-all duration-300
-                                                                        ${isSelected
-                                                                            ? 'bg-primary border-primary scale-110 shadow-sm'
-                                                                            : 'border-muted-foreground/30 bg-background group-hover:border-primary/50'
-                                                                        }
-                                                                    `}
-                                                                >
-                                                                    {isSelected && (
-                                                                        <CheckCircle2 className="h-3 w-3 text-primary-foreground animate-in zoom-in duration-300" />
-                                                                    )}
-                                                                </div>
-
-                                                                <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                                                                    {/* Title Section */}
-                                                                    <div className="min-w-0">
-                                                                        <h3 className={`font-bold text-base tracking-tight leading-none truncate ${isSelected ? 'text-primary' : 'text-foreground'}`}>
-                                                                            {mod.name}
-                                                                        </h3>
-                                                                        <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground font-medium truncate">
-                                                                            <Trophy className="h-3 w-3 text-amber-500/70" />
-                                                                            <span className={isSelected ? 'text-foreground/90' : ''}>
-                                                                                {mod.eventCategory || 'Categoria Única'}
-                                                                            </span>
-                                                                        </div>
+                                                                <div className="flex items-center gap-3 p-3 relative z-10 w-full">
+                                                                    {/* Custom Checkbox */}
+                                                                    <div
+                                                                        className={`
+                                                                         h-5 w-5 shrink-0 rounded-full border-2 flex items-center justify-center transition-all duration-300
+                                                                         ${isSelected
+                                                                                ? 'bg-primary border-primary scale-110 shadow-sm'
+                                                                                : 'border-muted-foreground/30 bg-background group-hover:border-primary/50'
+                                                                            }
+                                                                     `}
+                                                                    >
+                                                                        {isSelected && (
+                                                                            <CheckCircle2 className="h-3 w-3 text-primary-foreground animate-in zoom-in duration-300" />
+                                                                        )}
                                                                     </div>
 
-                                                                    {/* Compact Pills Layout - Row on desktop */}
-                                                                    <div className="flex flex-wrap items-center justify-start md:justify-end gap-2 shrink-0">
-                                                                        {/* Type Pill */}
-                                                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full border border-indigo-100 bg-indigo-50/50 dark:bg-indigo-900/10 dark:border-indigo-800">
-                                                                            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 shrink-0">
-                                                                                {mod.type === 'coletiva' ? <Users className="h-3 w-3" /> : <UserIcon className="h-3 w-3" />}
-                                                                            </div>
-                                                                            <div className="flex flex-col">
-                                                                                <span className="text-[8px] font-bold text-indigo-400 dark:text-indigo-300 tracking-wider uppercase leading-none mb-0.5">TIPO</span>
-                                                                                <span className="text-[10px] font-bold text-indigo-900 dark:text-indigo-100 capitalize leading-none">{mod.type}</span>
-                                                                            </div>
-                                                                        </div>
-
-                                                                        {/* Gender Pill */}
-                                                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full border border-orange-100 bg-orange-50/50 dark:bg-orange-900/10 dark:border-orange-800">
-                                                                            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 shrink-0">
-                                                                                <UserIcon className="h-3 w-3" />
-                                                                            </div>
-                                                                            <div className="flex flex-col">
-                                                                                <span className="text-[8px] font-bold text-orange-400 dark:text-orange-300 tracking-wider uppercase leading-none mb-0.5">NAIPE</span>
-                                                                                <span className="text-[10px] font-bold text-orange-900 dark:text-orange-100 capitalize leading-none">{mod.gender}</span>
-                                                                            </div>
-                                                                        </div>
-
-                                                                        {/* Age Pill */}
-                                                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full border border-pink-100 bg-pink-50/50 dark:bg-pink-900/10 dark:border-pink-800">
-                                                                            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 shrink-0">
-                                                                                <Cake className="h-3 w-3" />
-                                                                            </div>
-                                                                            <div className="flex flex-col">
-                                                                                <span className="text-[8px] font-bold text-pink-400 dark:text-pink-300 tracking-wider uppercase leading-none mb-0.5">IDADE</span>
-                                                                                <span className="text-[10px] font-bold text-pink-900 dark:text-pink-100 leading-none">
-                                                                                    {mod.minAge === 0 && mod.maxAge === 99 ? 'Livre' : `${mod.minAge}-${mod.maxAge}`}
+                                                                    <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                                                        {/* Title Section */}
+                                                                        <div className="min-w-0">
+                                                                            <h3 className={`font-bold text-base tracking-tight leading-none truncate ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                                                                                {mod.name}
+                                                                            </h3>
+                                                                            <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground font-medium truncate">
+                                                                                <Trophy className="h-3 w-3 text-amber-500/70" />
+                                                                                <span className={isSelected ? 'text-foreground/90' : ''}>
+                                                                                    {mod.eventCategory || 'Categoria Única'}
                                                                                 </span>
                                                                             </div>
                                                                         </div>
+
+                                                                        {/* Compact Pills Layout - Row on desktop */}
+                                                                        <div className="flex flex-wrap items-center justify-start md:justify-end gap-2 shrink-0">
+                                                                            {/* Type Pill */}
+                                                                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full border border-indigo-100 bg-indigo-50/50 dark:bg-indigo-900/10 dark:border-indigo-800">
+                                                                                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 shrink-0">
+                                                                                    {mod.type === 'coletiva' ? <Users className="h-3 w-3" /> : <UserIcon className="h-3 w-3" />}
+                                                                                </div>
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-[8px] font-bold text-indigo-400 dark:text-indigo-300 tracking-wider uppercase leading-none mb-0.5">TIPO</span>
+                                                                                    <span className="text-[10px] font-bold text-indigo-900 dark:text-indigo-100 capitalize leading-none">{mod.type}</span>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* Gender Pill */}
+                                                                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full border border-orange-100 bg-orange-50/50 dark:bg-orange-900/10 dark:border-orange-800">
+                                                                                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 shrink-0">
+                                                                                    <UserIcon className="h-3 w-3" />
+                                                                                </div>
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-[8px] font-bold text-orange-400 dark:text-orange-300 tracking-wider uppercase leading-none mb-0.5">NAIPE</span>
+                                                                                    <span className="text-[10px] font-bold text-orange-900 dark:text-orange-100 capitalize leading-none">{mod.gender}</span>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* Age Pill */}
+                                                                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full border border-pink-100 bg-pink-50/50 dark:bg-pink-900/10 dark:border-pink-800">
+                                                                                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 shrink-0">
+                                                                                    <Cake className="h-3 w-3" />
+                                                                                </div>
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-[8px] font-bold text-pink-400 dark:text-pink-300 tracking-wider uppercase leading-none mb-0.5">IDADE</span>
+                                                                                    <span className="text-[10px] font-bold text-pink-900 dark:text-pink-100 leading-none">
+                                                                                        {mod.minAge === 0 && mod.maxAge === 99 ? 'Livre' : `${mod.minAge}-${mod.maxAge}`}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    )
-                                                })}
+                                                        )
+                                                    })}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="mt-8 bg-blue-50/50 border border-blue-100 rounded-lg p-4 flex gap-3 text-sm text-blue-700 max-w-3xl">
-                                    <Shield className="h-5 w-5 shrink-0" />
-                                    <div>
-                                        <p className="font-semibold mb-1">Permissões de Acesso</p>
-                                        <p className="opacity-90">
-                                            Ao salvar, o técnico <strong>{activeUser.name}</strong> terá acesso imediato para gerenciar atletas apenas nestas modalidades selecionadas.
-                                        </p>
+                                        ))}
                                     </div>
-                                </div>
-                            </ScrollArea>
+
+                                    <div className="mt-8 bg-blue-50/50 border border-blue-100 rounded-lg p-4 flex gap-3 text-sm text-blue-700 max-w-3xl">
+                                        <Shield className="h-5 w-5 shrink-0" />
+                                        <div>
+                                            <p className="font-semibold mb-1">Permissões de Acesso</p>
+                                            <p className="opacity-90">
+                                                Ao salvar, o técnico <strong>{activeUser.name}</strong> terá acesso imediato para gerenciar atletas apenas nestas modalidades selecionadas.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </ScrollArea>
+                            )}
                         </>
                     )}
                 </div>

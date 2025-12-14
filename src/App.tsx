@@ -161,7 +161,7 @@ const App = () => (
                       <Route path="escolas" element={<SchoolsList />} />
                       <Route path="escolas/novo" element={<SchoolForm />} />
                       <Route path="escolas/:id" element={<SchoolForm />} />
-                      <Route path="escolas/:id/tecnicos" element={<SchoolTechnicians />} />
+                      <Route path="escolas/:id/participante" element={<SchoolTechnicians />} />
                       <Route path="escolas/:id/vincular-eventos" element={<LinkSchoolEvents />} />
 
                       {/* Atletas */}

@@ -528,8 +528,8 @@ export default function SchoolsList() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-8 w-8 shrink-0 hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
-                                                onClick={() => navigate(`/area-do-produtor/escolas/${school.id}/tecnicos`)}
-                                                title="Técnicos da Escola"
+                                                onClick={() => navigate(`/area-do-produtor/escolas/${school.id}/participante`)}
+                                                title="Participantes da Escola"
                                             >
                                                 <UserPlus className="h-4 w-4" />
                                             </Button>

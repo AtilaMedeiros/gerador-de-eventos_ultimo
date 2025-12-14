@@ -49,6 +49,12 @@ const roleMap: Record<string, string> = {
   participant: 'Participante',
 }
 
+
+
+const getUserDisplayRole = (user: User) => {
+  return roleMap[user.role] || user.role
+}
+
 const filterFields: FilterFieldConfig[] = [
   {
     key: 'name',
@@ -68,7 +74,7 @@ const filterFields: FilterFieldConfig[] = [
     key: 'role',
     label: 'Tipo de Acesso',
     icon: <Shield className="size-3.5" />,
-    type: 'text', // Keeping text for simplicity as mock roles are limited but could be select
+    type: 'text',
     placeholder: 'Administrador, Produtor...',
   },
   {
@@ -95,15 +101,17 @@ export default function UsersList() {
 
   // Apply Filters
   const filteredUsers = users.filter(user => {
+    const displayRole = getUserDisplayRole(user)
+
     // Global Search
     const searchLower = searchTerm.toLowerCase()
     const matchesSearch =
       user.name.toLowerCase().includes(searchLower) ||
       user.name.toLowerCase().includes(searchLower) ||
       user.email.toLowerCase().includes(searchLower) ||
-      (roleMap[user.role] || user.role).toLowerCase().includes(searchLower) ||
-      user.cpf.includes(searchLower) ||
-      user.phone.includes(searchLower) ||
+      displayRole.toLowerCase().includes(searchLower) ||
+      user.cpf?.includes(searchLower) ||
+      user.phone?.includes(searchLower) ||
       (user.status === 'active' ? 'ativo' : 'inativo').includes(searchLower)
 
     if (!matchesSearch) return false
@@ -121,7 +129,7 @@ export default function UsersList() {
         case 'email':
           return user.email.toLowerCase().includes(value)
         case 'role':
-          return user.role.toLowerCase().includes(value)
+          return displayRole.toLowerCase().includes(value)
         case 'status': {
           if (value === 'false') return true
           const isActive = user.status === 'active'
@@ -378,7 +386,7 @@ export default function UsersList() {
                   </TableCell>
                   <TableCell className="h-12 py-0">
                     <div className="flex items-center h-full text-muted-foreground">
-                      {roleMap[user.role] || user.role}
+                      {getUserDisplayRole(user)}
                     </div>
                   </TableCell>
                   <TableCell className="text-right h-12 py-0">

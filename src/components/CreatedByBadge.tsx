@@ -23,7 +23,7 @@ export function CreatedByBadge() {
         <div className="fixed bottom-3 right-3 z-[9999] flex items-center gap-3 rounded-lg bg-black pl-3 pr-2 py-2 text-xs font-medium text-white shadow-lg border border-zinc-800 transition-colors hover:bg-zinc-900 animate-in slide-in-from-bottom-5 fade-in duration-500">
             <div className="flex items-center gap-2">
                 <Terminal className="h-4 w-4 text-emerald-500" />
-                <span>Criado pelo Lavor</span>
+                <span>Criado por Lavor</span>
             </div>
             <div className="h-4 w-px bg-zinc-800" />
             <button

@@ -83,6 +83,50 @@ export const INITIAL_USERS: User[] = [
         status: 'inactive',
         lastAccess: '10/05/2025',
     },
+    {
+        id: '7',
+        name: 'João Silva',
+        email: 'joao.silva@esportes.sp.gov.br',
+        role: 'participant',
+        schoolId: '1',
+        cpf: '111.111.111-11',
+        phone: '(11) 91111-1111',
+        status: 'active',
+        lastAccess: 'Hoje, 08:00'
+    },
+    {
+        id: '8',
+        name: 'Maria Santos',
+        email: 'maria.santos@saber.rj.gov.br',
+        role: 'participant',
+        schoolId: '2',
+        cpf: '222.222.222-22',
+        phone: '(21) 92222-2222',
+        status: 'active',
+        lastAccess: 'Ontem, 16:30'
+    },
+    {
+        id: '9',
+        name: 'Pedro Costa',
+        email: 'pedro.costa@institutoatletico.com.br',
+        role: 'participant',
+        schoolId: '3',
+        cpf: '333.333.333-33',
+        phone: '(31) 93333-3333',
+        status: 'active',
+        lastAccess: 'Hoje, 09:15'
+    },
+    {
+        id: '10',
+        name: 'Juliana Lima',
+        email: 'juliana.lima@escoladesativada.com.br',
+        role: 'participant',
+        schoolId: '4',
+        cpf: '444.444.444-44',
+        phone: '(41) 94444-4444',
+        status: 'active',
+        lastAccess: 'Semana passada'
+    },
 ]
 
 export const getStoredUsers = (): User[] => {

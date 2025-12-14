@@ -1,4 +1,5 @@
 import { MOCK_SCHOOL, INITIAL_SCHOOLS } from '@/backend/banco/escolas'
+import { getStoredUsers } from '@/backend/banco/usuarios'
 
 export interface School {
     id: string
@@ -16,6 +17,7 @@ export interface School {
     mobile?: string
     email: string
     responsibleName?: string
+    responsibleId?: string // Link to User.id
     eventId?: string // @deprecated use eventIds
     eventIds?: string[] // List of linked event IDs
 }
@@ -70,14 +72,30 @@ export class SchoolService {
      * Expands the list of schools so that a school appears once for each event it is linked to.
      * This implements the business rule that a school linked to N events should appear as N rows.
      */
-    static expandSchoolsByEvents(schools: School[], allEvents: any[]): any[] {
+    static expandSchoolsByEvents(schools: School[], allEvents: any[] = []): any[] {
         const expanded: any[] = []
+        const storedUsers = getStoredUsers()
+
+        if (!schools) return []
 
         schools.forEach(school => {
+            // Resolve Responsible Name from Users DB
+            let responsibleName = school.responsibleName || 'N/A'
+
+            // Priority 1: Direct Link via responsibleId
+            if (school.responsibleId) {
+                const user = storedUsers.find(u => u.id === school.responsibleId)
+                if (user) responsibleName = user.name
+            }
+            // Priority 2: Fallback logic (find any school_admin linked to this school)
+            else {
+                const user = storedUsers.find(u => u.schoolId === school.id && (u.role === 'participant' || (u as any).role === 'school_admin'))
+                if (user) responsibleName = user.name
+            }
+
             // Normalize event IDs (prefer eventIds, fallback to eventId)
             let rawIds: string[] = Array.isArray(school.eventIds) ? [...school.eventIds] : []
             if (school.eventId) rawIds.push(school.eventId)
-
             // Deduplicate
             const linkedIds = Array.from(new Set(rawIds))
 
@@ -93,7 +111,7 @@ export class SchoolService {
                     director: school.directorName,
                     phone: school.landline,
                     whatsapp: school.mobile,
-                    responsible: school.responsibleName
+                    responsible: responsibleName
                 })
             } else {
                 // Multiple linked events: expand rows
@@ -109,7 +127,7 @@ export class SchoolService {
                         director: school.directorName,
                         phone: school.landline,
                         whatsapp: school.mobile,
-                        responsible: school.responsibleName
+                        responsible: responsibleName
                     })
                 })
             }

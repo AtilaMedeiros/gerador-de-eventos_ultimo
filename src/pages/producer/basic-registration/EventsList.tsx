@@ -595,18 +595,44 @@ export default function EventsList() {
                   <TooltipContent side="left">Link Público</TooltipContent>
                 </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      aria-label="Delete Event"
-                      className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-destructive hover:bg-destructive/10"
-                      onClick={(e) => handleDelete(e, event.id)}
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="left" className="text-destructive">Excluir</TooltipContent>
-                </Tooltip>
+                <AlertDialog>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          aria-label="Delete Event"
+                          className="group/btn flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-destructive hover:bg-destructive/10"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </AlertDialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="text-destructive">Excluir</TooltipContent>
+                  </Tooltip>
+                  <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Excluir Evento?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tem certeza que deseja excluir o evento <span className="font-bold text-foreground">{event.name}</span>?
+                        <br /><br />
+                        <span className="text-destructive font-semibold">Esta ação é irreversível.</span> Todos os dados, inscrições e configurações associadas serão perdidos permanentemente.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          deleteEvent(event.id)
+                        }}
+                      >
+                        Sim, Excluir
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           ))

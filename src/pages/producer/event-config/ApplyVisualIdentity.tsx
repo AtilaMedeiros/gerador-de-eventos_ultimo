@@ -328,9 +328,9 @@ export default function ApplyVisualIdentity({
         </Button>
 
         <Button
-          variant="secondary"
           onClick={handlePreview}
           disabled={!selectedThemeId}
+          className="bg-[#65a30d] hover:bg-[#65a30d]/90 text-white font-bold shadow-[0_10px_30px_rgba(101,163,13,0.4)] hover:shadow-[0_15px_40px_rgba(101,163,13,0.6)] transition-all duration-300 hover:-translate-y-1 rounded-xl border-t border-white/20"
         >
           <Eye className="mr-2 h-4 w-4" /> Preview
         </Button>
@@ -338,7 +338,7 @@ export default function ApplyVisualIdentity({
         <Button
           onClick={handleSave}
           disabled={!selectedThemeId}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]"
+          className="bg-primary hover:bg-primary/90 text-white font-bold shadow-[0_10px_30px_rgba(59,130,246,0.4)] hover:shadow-[0_15px_40px_rgba(59,130,246,0.6)] transition-all duration-300 hover:-translate-y-1 rounded-xl border-t border-white/20 min-w-[120px]"
         >
           {isWizard ? (
             <>Publicar <Rocket className="ml-2 h-4 w-4" /></>

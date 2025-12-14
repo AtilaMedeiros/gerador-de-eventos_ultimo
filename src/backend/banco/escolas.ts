@@ -43,6 +43,7 @@ export const INITIAL_SCHOOLS = [
         mobile: '(11) 99887-7665', // Normalized property name
         email: 'contato@esportes.sp.gov.br',
         responsibleName: 'João Silva', // Added for consistency
+        responsibleId: '7', // Linked to User 'João Silva'
         eventId: '1', // Linked to 'Tech Summit 2025' (ID 1)
         eventName: 'Tech Summit 2025', // Denormalized for easy display if needed, but ID is better
         inep: '11223344',
@@ -62,6 +63,7 @@ export const INITIAL_SCHOOLS = [
         mobile: '(21) 98765-4321',
         email: 'direcao@saber.rj.gov.br',
         responsibleName: 'Maria Santos',
+        responsibleId: '8', // Linked to User 'Maria Santos'
         eventId: '3', // Linked to 'Torneio de Robótica' (ID 3 - closed)
         eventName: 'Torneio de Robótica',
         inep: '55667788',
@@ -81,6 +83,7 @@ export const INITIAL_SCHOOLS = [
         mobile: '(31) 99112-2334',
         email: 'admin@institutoatletico.com.br',
         responsibleName: 'Pedro Costa',
+        responsibleId: '9', // Linked to User 'Pedro Costa'
         eventId: '1', // Linked to 'Tech Summit 2025'
         eventName: 'Tech Summit 2025',
         inep: '99001122',
@@ -90,5 +93,25 @@ export const INITIAL_SCHOOLS = [
         cep: '30000-000',
         sphere: 'Federal', // Just for variety
         cnpj: '00.000.000/0003-00'
+    },
+    {
+        id: '4',
+        name: 'Escola Evento Desativado',
+        type: 'Privada',
+        directorName: 'Marcos Souza',
+        landline: '(41) 3333-4444',
+        mobile: '(41) 98888-7777',
+        email: 'contato@escoladesativada.com.br',
+        responsibleName: 'Juliana Lima',
+        responsibleId: '10', // Linked to User 'Juliana Lima'
+        eventId: '5', // Linked to 'Evento Desativado' (ID 5)
+        eventName: 'Evento Desativado (Desativado)',
+        inep: '12312312',
+        municipality: 'Curitiba',
+        address: 'Rua das Araucárias, 400',
+        neighborhood: 'Batel',
+        cep: '80000-000',
+        sphere: 'Privada',
+        cnpj: '00.000.000/0004-00'
     },
 ]

@@ -220,9 +220,27 @@ export default function ParticipantRegister() {
         } catch (e) { }
       }
 
-      // 2. Create School Object
+      // 2. Prepare IDs upfront
+      const newSchoolId = crypto.randomUUID()
+      // We don't generate userId manually because UserService does it, 
+      // but we need the user to link. So we rely on UserService returning the user.
+
+      // 3. Create User First (to get ID) OR Create School First (to get ID)?
+      // User needs schoolId. School needs responsibleId. Circular dependency if we are strict.
+      // Solution: Generate School ID first. Create User with School ID. Then Create School with User ID.
+
+      const role = 'participant'
+      const newUser = UserService.createUser(null, {
+        name: data.responsibleName,
+        email: data.email,
+        role: role,
+        schoolId: newSchoolId, // Link User -> School
+        // Add extra fields if compatible with User interface or cast
+      } as any)
+
+      // 4. Create School Object
       const newSchool = {
-        id: crypto.randomUUID(),
+        id: newSchoolId,
         name: data.schoolName,
         inep: data.inep,
         cnpj: data.cnpj,
@@ -237,48 +255,26 @@ export default function ParticipantRegister() {
         // Contact
         landline: data.landline || '',
         mobile: data.schoolMobile,
-        email: data.email, // Using login email as contact for simplicity if not provided separate
+        email: data.email,
         responsibleName: data.responsibleName,
-        // Link
+        responsibleId: newUser.id, // Link School -> User
+        // Link Event
         eventId: activeEventId,
-        eventName: activeEventName
+        eventName: activeEventName,
+        eventIds: [activeEventId] // Modern array support
       }
 
-      // 3. Save to Global Producer List ('ge_schools_list')
+      // 5. Save School to Global List
       const storedList = localStorage.getItem('ge_schools_list')
       let currentList = storedList ? JSON.parse(storedList) : [...INITIAL_SCHOOLS]
 
-      // Avoid duplicates based on INEP or Email
+      // Avoid duplicates based on INEP
       if (!currentList.some((s: any) => s.inep === newSchool.inep)) {
         currentList.push(newSchool)
         localStorage.setItem('ge_schools_list', JSON.stringify(currentList))
       }
 
-      // 4. Create and Save "Responsible" User
-      // Note: Assuming 'school_admin' role for responsible
-      try {
-        UserService.createUser(null, {
-          name: data.responsibleName,
-          email: data.email,
-          role: 'school_admin',
-          // schoolId: newSchool.id // Warning: User interface in `usuarios.ts` might not have schoolId yet if strictly following GlobalRole removal of extra props.
-          // But let's pass it if allowed by typescript or if we need to extend User interface later.
-          // The UserService takes Omit<User, 'id'>. If User has schoolId, it's fine.
-          // Looking at user.service.ts, it imports User from usuarios.ts.
-          // Let's assume User interface can accept extra props or we cast it if needed, 
-          // but effectively we want to save it. 
-          // Actually, `usuarios.ts` likely doesn't have schoolId in the interface if I didn't add it.
-          // I should probably check `usuarios.ts` content again or just pass it and let TS complain if strict.
-          // I'll cast it to any for now to ensure it saves, or simpler:
-          // Just make sure UserService.createUser accepts it.
-        } as any)
-      } catch (e: any) {
-        console.error("User creation error", e)
-        // If duplicate, etc.
-      }
-
-      // 5. Save to Participant Session ('ge_school_data') used by ParticipantContext
-      // Also save the user session
+      // 6. Save to Participant Session
       localStorage.setItem('ge_school_data', JSON.stringify(newSchool))
 
       // Login

@@ -82,15 +82,15 @@ export const eventFormSchema = z
       }
     }
 
-    // Registration End < Event Start checks
+    // Registration End < Event End checks (Allow during event)
     const colEnd = combineDateTime(
       data.inscricaoColetivaFim,
       data.inscricaoColetivaHoraFim,
     )
-    if (start && colEnd && isAfter(colEnd, start)) {
+    if (end && colEnd && isAfter(colEnd, end)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'As inscrições devem fechar ANTES do evento começar.',
+        message: 'As inscrições devem fechar até o FIM do evento.',
         path: ['inscricaoColetivaFim'],
       })
     }
@@ -99,10 +99,10 @@ export const eventFormSchema = z
       data.inscricaoIndividualFim,
       data.inscricaoIndividualHoraFim,
     )
-    if (start && indEnd && isAfter(indEnd, start)) {
+    if (end && indEnd && isAfter(indEnd, end)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'As inscrições devem fechar ANTES do evento começar.',
+        message: 'As inscrições devem fechar até o FIM do evento.',
         path: ['inscricaoIndividualFim'],
       })
     }

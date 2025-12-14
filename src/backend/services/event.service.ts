@@ -59,9 +59,9 @@ export class EventService {
      * Rule: (RASCUNHO | PUBLICADO) AND (AGENDADO | ATIVO)
      */
     static isEditable(adminStatus: string, timeStatus: string): boolean {
-        const validAdmin = ['RASCUNHO', 'PUBLICADO'].includes(adminStatus)
-        const validTime = ['AGENDADO', 'ATIVO'].includes(timeStatus)
-        return validAdmin && validTime
+        // Filtro baseado puramente em status de negócio conforme solicitado
+        // "permitir os status de negocio publicado ou rascunho e nao olhar mais para datas"
+        return ['RASCUNHO', 'PUBLICADO'].includes(adminStatus)
     }
 
     /**
