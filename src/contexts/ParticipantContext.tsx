@@ -4,8 +4,8 @@ import { useEvent } from './EventContext'
 import { toast } from 'sonner'
 import { MOCK_SCHOOL } from '@/backend/banco/escolas'
 import { MOCK_ATHLETES_SEED } from '@/backend/banco/atletas'
-import { MOCK_TECHNICIANS_SEED } from '@/backend/banco/tecnicos'
 import { MOCK_INSCRIPTIONS_SEED } from '@/backend/banco/inscricoes'
+import { getStoredUsers, saveUser, deleteUser, type User } from '@/backend/banco/usuarios'
 
 export interface School {
   id: string
@@ -87,7 +87,6 @@ const ParticipantContext = createContext<ParticipantContextType | undefined>(
 
 // MOCK_ATHLETES_SEED moved to src/banco/atletas.ts
 
-// MOCK_TECHNICIANS_SEED moved to src/banco/tecnicos.ts
 
 // MOCK_INSCRIPTIONS_SEED moved to src/banco/inscricoes.ts
 
@@ -106,8 +105,9 @@ export function ParticipantProvider({
   useEffect(() => {
     if (
       user &&
-      (user.role === 'school_admin' ||
-        user.role === 'technician' ||
+      ((user.role as string) === 'school_admin' ||
+        (user.role as string) === 'technician' ||
+        user.role === 'participant' ||
         user.role === 'producer' ||
         user.role === 'admin')
     ) {
@@ -137,22 +137,27 @@ export function ParticipantProvider({
         setAthletes(MOCK_ATHLETES_SEED as unknown as Athlete[])
       }
 
-      const storedTechs = localStorage.getItem('ge_technicians')
-      if (storedTechs) {
-        const parsed = JSON.parse(storedTechs)
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setTechnicians(
-            parsed.map((t: any) => ({
-              ...t,
-              dob: new Date(t.dob),
-            })),
-          )
-        } else {
-          setTechnicians(MOCK_TECHNICIANS_SEED as unknown as Technician[])
-        }
-      } else {
-        setTechnicians(MOCK_TECHNICIANS_SEED as unknown as Technician[])
-      }
+      const allUsers = getStoredUsers()
+
+      // We need to robustly filter. Let's assume for this specific requirement "participants in usuarios" means anyone with role='participant' 
+      // AND we should probably filter by school if we are logged in as a school, but for simplicity let's load all 'participant' users that look like technicians.
+      // Actually, let's just load all users with role 'participant' effectively.
+
+      const mappedTechnicians: Technician[] = allUsers
+        .filter(u => u.role === 'participant')
+        .map(u => ({
+          id: u.id,
+          schoolId: u.schoolId || '',
+          name: u.name,
+          email: u.email,
+          phone: u.phone || '',
+          cpf: u.cpf || '',
+          cref: u.cref,
+          sex: u.sex || 'Masculino', // Default
+          dob: u.dob ? new Date(u.dob) : new Date(), // Default
+        }))
+
+      setTechnicians(mappedTechnicians)
 
       const storedInscriptions = localStorage.getItem('ge_inscriptions')
       if (storedInscriptions) {
@@ -184,9 +189,13 @@ export function ParticipantProvider({
   }, [athletes])
 
   // Persist Technicians
-  useEffect(() => {
-    localStorage.setItem('ge_technicians', JSON.stringify(technicians))
-  }, [technicians])
+  // Persist Technicians - NOW HANDLED VIA saveUser directly in actions, but we sync state changes?
+  // Actually, we shouldn't save the whole array to 'ge_technicians' anymore. 
+  // We should rely on the actions updating 'ge_users'. 
+  // But wait, the state 'technicians' is local. If we update it, we should update 'ge_users'.
+  // However, updating 'ge_users' is better done atomically in the add/update/delete functions.
+  // So we REMOVE this useEffect that blindly saves to 'ge_technicians'
+
 
   // Persist Inscriptions
   useEffect(() => {
@@ -226,24 +235,68 @@ export function ParticipantProvider({
 
   const addTechnician = (data: Omit<Technician, 'id' | 'schoolId'>) => {
     if (!school) return
+    const newId = crypto.randomUUID()
     const newTech: Technician = {
       ...data,
-      id: crypto.randomUUID(),
+      id: newId,
       schoolId: school.id,
     }
+
+    // Save to User store
+    const newUser: User = {
+      id: newId,
+      name: data.name,
+      email: data.email,
+      role: 'participant',
+      schoolId: school.id,
+      cpf: data.cpf,
+      phone: data.phone,
+      cref: data.cref,
+      sex: data.sex,
+      dob: data.dob.toISOString().split('T')[0], // Save as YYYY-MM-DD string
+      status: 'active'
+    }
+    saveUser(newUser)
+
     setTechnicians((prev) => [...prev, newTech])
     toast.success('Técnico cadastrado com sucesso!')
   }
 
   const updateTechnician = (id: string, data: Partial<Technician>) => {
     setTechnicians((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...data } : t)),
+      prev.map((t) => {
+        if (t.id === id) {
+          const updated = { ...t, ...data }
+
+          // Helper to find existing user to preserve other fields
+          const allUsers = getStoredUsers()
+          const existingUser = allUsers.find(u => u.id === id)
+
+          if (existingUser) {
+            const updatedUser: User = {
+              ...existingUser,
+              name: updated.name,
+              email: updated.email,
+              cpf: updated.cpf,
+              phone: updated.phone,
+              cref: updated.cref,
+              sex: updated.sex,
+              dob: updated.dob ? updated.dob.toISOString().split('T')[0] : existingUser.dob,
+            }
+            saveUser(updatedUser)
+          }
+
+          return updated
+        }
+        return t
+      }),
     )
     toast.success('Técnico atualizado!')
   }
 
   const deleteTechnician = (id: string) => {
     setTechnicians((prev) => prev.filter((t) => t.id !== id))
+    deleteUser(id)
     toast.success('Técnico removido.')
   }
 

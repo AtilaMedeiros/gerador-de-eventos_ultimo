@@ -7,6 +7,9 @@ export interface User {
     role: GlobalRole
     cpf?: string
     phone?: string
+    cref?: string
+    sex?: 'Feminino' | 'Masculino'
+    dob?: string // ISO Date string
     schoolId?: string // Only for school_admin or technician
     permissions?: string[] // Optional legacy or specific global permissions
     status?: 'active' | 'inactive'
@@ -42,6 +45,9 @@ export const INITIAL_USERS: User[] = [
         role: 'participant',
         schoolId: 'school-1',
         cpf: '000.000.000-03',
+        cref: '123456-G/CE',
+        sex: 'Masculino',
+        dob: '1985-05-20',
         phone: '(85) 98888-8888',
         status: 'active',
         lastAccess: 'Há 2 dias'
@@ -104,6 +110,12 @@ export const saveUser = (user: User) => {
         users.push(user)
     }
 
+    localStorage.setItem('ge_users', JSON.stringify(users))
+}
+
+export const deleteUser = (userId: string) => {
+    let users = getStoredUsers()
+    users = users.filter(u => u.id !== userId)
     localStorage.setItem('ge_users', JSON.stringify(users))
 }
 
