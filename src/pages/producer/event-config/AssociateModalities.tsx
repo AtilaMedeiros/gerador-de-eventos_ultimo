@@ -90,7 +90,7 @@ export default function AssociateModalities({
   // Column Resizing Logic
   const [colWidths, setColWidths] = useState<{ [key: string]: number }>(() => {
     try {
-      const saved = localStorage.getItem('ge_associate_modalities_col_widths')
+      const saved = localStorage.getItem('ge_associate_modalities_col_widths_v2')
       if (saved) {
         const parsed = JSON.parse(saved)
         if (parsed && typeof parsed === 'object') {
@@ -102,18 +102,17 @@ export default function AssociateModalities({
     }
 
     return {
-      name: 180,
-      type: 100,
+      name: 240,
       gender: 100,
       minAge: 100,
-      minAthletes: 80,
+      minAthletes: 100,
       maxTeams: 100,
       maxEventsPerAthlete: 100
     }
   })
 
   useEffect(() => {
-    localStorage.setItem('ge_associate_modalities_col_widths', JSON.stringify(colWidths))
+    localStorage.setItem('ge_associate_modalities_col_widths_v2', JSON.stringify(colWidths))
   }, [colWidths])
 
   const resizingRef = useRef<{ key: string, startX: number, startWidth: number } | null>(null)
@@ -309,7 +308,7 @@ export default function AssociateModalities({
       <div className="flex-1 pr-2 lg:pr-4 pb-24 flex flex-col lg:flex-row gap-6 px-1 pt-1">
 
         {/* Left Column: List */}
-        <Card className="flex-1 flex flex-col shadow-md border bg-card">
+        <Card className="flex-1 flex flex-col shadow-md border bg-card max-w-[1100px] mx-auto w-full">
           <CardContent className="flex-1 flex flex-col p-4 space-y-4">
             <div className="flex justify-end">
               <Button
@@ -390,16 +389,7 @@ export default function AssociateModalities({
                             className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
                           />
                         </TableHead>
-                        <TableHead style={{ width: colWidths.type }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('type')}>
-                          <div className="flex items-center justify-center overflow-hidden">
-                            <span className="truncate">Tipo</span> {getSortIcon('type')}
-                          </div>
-                          <div
-                            onMouseDown={(e) => handleMouseDown(e, 'type')}
-                            onClick={(e) => e.stopPropagation()}
-                            className="absolute right-0 top-0 h-full w-1 hover:w-1.5 bg-border/0 hover:bg-primary/50 cursor-col-resize z-10"
-                          />
-                        </TableHead>
+
                         <TableHead style={{ width: colWidths.gender }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors text-center" onClick={() => requestSort('gender')}>
                           <div className="flex items-center justify-center overflow-hidden">
                             <span className="truncate">Naipe</span> {getSortIcon('gender')}
@@ -483,10 +473,17 @@ export default function AssociateModalities({
                               <TableCell className="font-medium h-12 py-0">
                                 <div className="flex flex-col justify-center h-full">
                                   <span className={cn("text-sm transition-colors leading-tight", isSelected && "text-primary font-bold")}>{mod.name}</span>
-                                  {mod.eventCategory && <span className="text-[10px] text-muted-foreground font-light leading-tight">{mod.eventCategory}</span>}
+                                  <span className="text-[10px] text-muted-foreground font-light leading-tight flex items-center gap-1">
+                                    <span className="capitalize">{mod.type}</span>
+                                    {mod.eventCategory && (
+                                      <>
+                                        <span>•</span>
+                                        <span>{mod.eventCategory}</span>
+                                      </>
+                                    )}
+                                  </span>
                                 </div>
                               </TableCell>
-                              <TableCell className="capitalize text-muted-foreground h-12 py-0 text-center text-sm">{mod.type}</TableCell>
                               <TableCell className="capitalize text-muted-foreground h-12 py-0 text-center text-sm">{mod.gender}</TableCell>
                               <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">{mod.minAge} - {mod.maxAge} anos</TableCell>
                               <TableCell className="text-center text-sm text-muted-foreground h-12 py-0">{mod.minAthletes} - {mod.maxAthletes}</TableCell>
