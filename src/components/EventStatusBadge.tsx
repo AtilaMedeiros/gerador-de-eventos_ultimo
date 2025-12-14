@@ -3,102 +3,42 @@ import { cn } from '@/lib/utils'
 
 interface EventStatusBadgeProps {
     adminStatus: string
-    timeStatus?: string
     className?: string
 }
 
 export function EventStatusBadge({
     adminStatus,
-    timeStatus = 'AGENDADO', // Default logic fallback
     className,
 }: EventStatusBadgeProps) {
-    // Normalize inputs to upper case for safety
+    // Normalize input
     const admin = adminStatus?.toUpperCase() || 'RASCUNHO'
-    const time = timeStatus?.toUpperCase() || 'AGENDADO'
 
-    // Determine Badge Configuration
-    let badgeConfig = {
-        bg: 'bg-gray-100 dark:bg-gray-800',
-        text: 'text-gray-600 dark:text-gray-400',
-        label: 'Rascunho', // Default
-    }
+    // Determine Color Configuration
+    let dotColor = 'bg-gray-400'
+    let label = 'Rascunho'
 
-    // --- Logic Table ---
-
-    // Helper to get Time Label
-    const getTimeLabel = (t: string) => {
-        switch (t) {
-            case 'AGENDADO': return 'Agendado'
-            case 'ATIVO': return 'Em Andamento'
-            case 'ENCERRADO': return 'Encerrado'
-            default: return 'Agendado'
-        }
-    }
-    const timeLabel = getTimeLabel(time)
-
-    // 1. DESATIVADO (Dominant)
+    // 1. DESATIVADO
     if (admin === 'DESATIVADO') {
-        badgeConfig = {
-            bg: 'bg-red-500/15 dark:bg-red-900/30',
-            text: 'text-red-700 dark:text-red-400',
-            label: `Desativado • ${timeLabel}`,
-        }
+        dotColor = 'bg-red-500'
+        label = 'Desativado'
     }
-
-
-    // 4. RASCUNHO (Dominant over time unless completely invalid)
+    // 2. RASCUNHO
     else if (admin === 'RASCUNHO') {
-        badgeConfig = {
-            bg: 'bg-gray-400/15 dark:bg-gray-800/50',
-            text: 'text-gray-600 dark:text-gray-400',
-            label: `Rascunho • ${timeLabel}`,
-        }
+        dotColor = 'bg-orange-400'
+        label = 'Rascunho'
     }
-    // 5. PUBLICADO (Depends on Time Status)
+    // 3. PUBLICADO
     else if (admin === 'PUBLICADO') {
-        switch (time) {
-            case 'AGENDADO':
-                badgeConfig = {
-                    bg: 'bg-blue-500/15 dark:bg-blue-900/30',
-                    text: 'text-blue-700 dark:text-blue-400',
-                    label: 'Publicado • Agendado',
-                }
-                break
-            case 'ATIVO':
-                badgeConfig = {
-                    bg: 'bg-emerald-500/15 dark:bg-emerald-900/30',
-                    text: 'text-emerald-700 dark:text-emerald-400',
-                    label: 'Publicado • Em Andamento',
-                }
-                break
-            case 'ENCERRADO':
-                badgeConfig = {
-                    bg: 'bg-slate-600/15 dark:bg-slate-800/50',
-                    text: 'text-slate-700 dark:text-slate-400',
-                    label: 'Publicado • Encerrado',
-                }
-                break
-            default:
-                // Fallback for valid PUBLICADO but standard time
-                badgeConfig = {
-                    bg: 'bg-blue-500/15 dark:bg-blue-900/30',
-                    text: 'text-blue-700 dark:text-blue-400',
-                    label: 'Publicado',
-                }
-        }
+        dotColor = 'bg-blue-600 dark:bg-blue-500'
+        label = 'Publicado'
     }
 
     return (
-        <div
-            className={cn(
-                'flex items-center gap-2 px-2 py-0.5 rounded-[5px] text-[10px] font-bold w-fit transition-colors',
-                badgeConfig.bg,
-                badgeConfig.text,
-                className,
-            )}
-        >
-            <span className="w-1.5 h-1.5 bg-current rounded-full animate-pulse shadow-sm" />
-            <span className="uppercase tracking-wider">{badgeConfig.label}</span>
+        <div className={cn('flex items-center gap-1.5 text-[11px]', className)}>
+            <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", dotColor)} />
+            <span className="text-muted-foreground font-medium uppercase tracking-wide">
+                {label}
+            </span>
         </div>
     )
 }

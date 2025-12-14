@@ -173,7 +173,6 @@ export default function DashboardHome() {
             <div className="inline-block ml-3 align-middle">
               <EventStatusBadge
                 adminStatus={activeEvent.adminStatus}
-                timeStatus={activeEvent.computedTimeStatus}
               />
             </div>
           </p>

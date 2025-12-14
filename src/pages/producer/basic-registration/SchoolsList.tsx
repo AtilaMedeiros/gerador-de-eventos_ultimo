@@ -41,6 +41,7 @@ import { EventService } from '@/backend/services/event.service'
 
 import { INITIAL_SCHOOLS } from '@/backend/banco/escolas' // Import mock data
 import { StatusLegendTooltip } from '@/components/StatusLegendTooltip'
+import { EventStatusBadge } from '@/components/EventStatusBadge'
 import { SchoolService } from '@/backend/services/school.service'
 
 // ... (imports)
@@ -448,7 +449,12 @@ export default function SchoolsList() {
                                                         <span>INEP: {school.inep}</span>
                                                     )}
                                                     {school.inep && <span>-</span>}
-                                                    <span className="capitalize">{school.type}</span>
+                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[10px] uppercase tracking-wide font-bold capitalize border ${school.type === 'Publica' || school.type === 'Pública'
+                                                        ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
+                                                        : 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800'
+                                                        }`}>
+                                                        {school.type}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -500,32 +506,8 @@ export default function SchoolsList() {
                                                 {school.event}
                                             </span>
                                             <StatusLegendTooltip>
-                                                <div className="flex items-center gap-3 text-[11px] mt-0.5">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <div className={`h-1.5 w-1.5 rounded-full ${school.adminStatus === 'PUBLICADO' ? 'bg-blue-600 dark:bg-blue-500' :
-                                                            school.adminStatus === 'RASCUNHO' ? 'bg-orange-400' :
-                                                                school.adminStatus === 'DESATIVADO' ? 'bg-red-500' :
-                                                                    'bg-muted-foreground'
-                                                            }`} />
-                                                        <span className="text-muted-foreground capitalize">
-                                                            {school.adminStatus === 'PUBLICADO' ? 'Publicado' :
-                                                                school.adminStatus === 'RASCUNHO' ? 'Rascunho' :
-                                                                    school.adminStatus === 'DESATIVADO' ? 'Desativado' :
-                                                                        (school.adminStatus || '').toLowerCase()}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <div className={`h-1.5 w-1.5 rounded-full ${school.computedTimeStatus === 'ATIVO' ? 'bg-blue-600 dark:bg-blue-500' :
-                                                            school.computedTimeStatus === 'AGENDADO' ? 'bg-orange-400' :
-                                                                school.computedTimeStatus === 'ENCERRADO' ? 'bg-red-500' :
-                                                                    'bg-muted-foreground'
-                                                            }`} />
-                                                        <span className="text-muted-foreground capitalize">
-                                                            {school.computedTimeStatus === 'ATIVO' ? 'Em andamento' :
-                                                                school.computedTimeStatus === 'AGENDADO' ? 'Agendado' :
-                                                                    school.computedTimeStatus === 'ENCERRADO' ? 'Encerrado' : '-'}
-                                                        </span>
-                                                    </div>
+                                                <div className="mt-1">
+                                                    <EventStatusBadge adminStatus={school.adminStatus} />
                                                 </div>
                                             </StatusLegendTooltip>
                                         </div>

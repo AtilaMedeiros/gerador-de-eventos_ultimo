@@ -20,11 +20,11 @@ export function StatusLegendTooltip({ children }: { children: React.ReactNode })
             sideOffset={10}
             className="p-0 border shadow-2xl bg-white dark:bg-zinc-950 rounded-xl overflow-hidden z-[9999]"
           >
-            <div className="flex flex-row w-[380px] text-[10px]">
+            <div className="flex flex-col w-[200px] text-[10px]">
               {/* Admin Section */}
-              <div className="flex-1 bg-slate-50 dark:bg-zinc-900 p-4 border-r border-border/40">
+              <div className="flex-1 bg-slate-50 dark:bg-zinc-900 p-4">
                 <h4 className="font-bold text-[9px] uppercase tracking-[0.15em] text-muted-foreground mb-4">
-                  Negócio (manual)
+                  Status do Evento
                 </h4>
                 <div className="space-y-3">
                   <StatusItem
@@ -37,36 +37,10 @@ export function StatusLegendTooltip({ children }: { children: React.ReactNode })
                     color="text-blue-600 dark:text-blue-500"
                     desc="Visível e acessível."
                   />
-
-
                   <StatusItem
                     label="Desativado"
                     color="text-red-500 dark:text-red-400"
                     desc="Invalidado, sem uso."
-                  />
-                </div>
-              </div>
-
-              {/* Time Section */}
-              <div className="flex-1 p-4 bg-white dark:bg-zinc-950">
-                <h4 className="font-bold text-[9px] uppercase tracking-[0.15em] text-muted-foreground mb-4">
-                  Data (automático)
-                </h4>
-                <div className="space-y-3">
-                  <StatusItem
-                    label="Agendado"
-                    color="text-orange-500 dark:text-orange-400"
-                    desc="Futuro, não iniciado."
-                  />
-                  <StatusItem
-                    label="Em Andamento"
-                    color="text-blue-600 dark:text-blue-500"
-                    desc="Acontece no momento."
-                  />
-                  <StatusItem
-                    label="Encerrado"
-                    color="text-red-500 dark:text-red-400"
-                    desc="Ciclo finalizado."
                   />
                 </div>
               </div>

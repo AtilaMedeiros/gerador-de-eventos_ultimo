@@ -27,6 +27,7 @@ import {
     CalendarHeart
 } from 'lucide-react'
 import { StatusLegendTooltip } from '@/components/StatusLegendTooltip'
+import { EventStatusBadge } from '@/components/EventStatusBadge'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { useParticipant, Athlete } from '@/contexts/ParticipantContext'
@@ -406,32 +407,8 @@ export default function AthletesList() {
                                                 {athlete.event}
                                             </span>
                                             <StatusLegendTooltip>
-                                                <div className="flex items-center gap-3 text-[11px] mt-0.5">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <div className={`h-1.5 w-1.5 rounded-full ${athlete.adminStatus === 'PUBLICADO' ? 'bg-blue-600 dark:bg-blue-500' :
-                                                            athlete.adminStatus === 'RASCUNHO' ? 'bg-orange-400' :
-                                                                athlete.adminStatus === 'DESATIVADO' ? 'bg-red-500' :
-                                                                    'bg-muted-foreground'
-                                                            }`} />
-                                                        <span className="text-muted-foreground capitalize">
-                                                            {athlete.adminStatus === 'PUBLICADO' ? 'Publicado' :
-                                                                athlete.adminStatus === 'RASCUNHO' ? 'Rascunho' :
-                                                                    athlete.adminStatus === 'DESATIVADO' ? 'Desativado' :
-                                                                        (athlete.adminStatus || '').toLowerCase()}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <div className={`h-1.5 w-1.5 rounded-full ${athlete.computedTimeStatus === 'ATIVO' ? 'bg-blue-600 dark:bg-blue-500' :
-                                                            athlete.computedTimeStatus === 'AGENDADO' ? 'bg-orange-400' :
-                                                                athlete.computedTimeStatus === 'ENCERRADO' ? 'bg-red-500' :
-                                                                    'bg-muted-foreground'
-                                                            }`} />
-                                                        <span className="text-muted-foreground capitalize">
-                                                            {athlete.computedTimeStatus === 'ATIVO' ? 'Em andamento' :
-                                                                athlete.computedTimeStatus === 'AGENDADO' ? 'Agendado' :
-                                                                    athlete.computedTimeStatus === 'ENCERRADO' ? 'Encerrado' : '-'}
-                                                        </span>
-                                                    </div>
+                                                <div className="mt-1">
+                                                    <EventStatusBadge adminStatus={athlete.adminStatus} />
                                                 </div>
                                             </StatusLegendTooltip>
                                         </div>

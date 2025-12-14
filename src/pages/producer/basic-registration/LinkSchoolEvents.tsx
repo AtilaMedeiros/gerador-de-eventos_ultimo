@@ -323,33 +323,7 @@ export default function LinkSchoolEvents() {
 
                                     <div className="flex items-center justify-between pt-2 border-t border-border/50">
                                         <StatusLegendTooltip>
-                                            <div className="flex flex-col gap-0.5">
-                                                <div className="flex items-center gap-1.5 text-[10px]">
-                                                    <span className="font-semibold text-muted-foreground uppercase tracking-wider">Status:</span>
-                                                    <span className={`font-bold uppercase ${event.adminStatus === 'PUBLICADO' ? 'text-blue-600 dark:text-blue-500' :
-                                                        event.adminStatus === 'RASCUNHO' ? 'text-orange-400' :
-                                                            event.adminStatus === 'DESATIVADO' ? 'text-red-500' :
-                                                                'text-muted-foreground'
-                                                        }`}>
-                                                        {event.adminStatus === 'PUBLICADO' ? 'Publicado' :
-                                                            event.adminStatus === 'RASCUNHO' ? 'Rascunho' :
-                                                                event.adminStatus === 'DESATIVADO' ? 'Desativado' :
-                                                                    event.adminStatus}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-1.5 text-[10px]">
-                                                    <span className="font-semibold text-muted-foreground uppercase tracking-wider">Data:</span>
-                                                    <span className={`font-bold uppercase ${event.computedTimeStatus === 'ATIVO' ? 'text-blue-600 dark:text-blue-500' :
-                                                        event.computedTimeStatus === 'AGENDADO' ? 'text-orange-400' :
-                                                            event.computedTimeStatus === 'ENCERRADO' ? 'text-red-500' :
-                                                                'text-muted-foreground'
-                                                        }`}>
-                                                        {event.computedTimeStatus === 'ATIVO' ? 'Em andamento' :
-                                                            event.computedTimeStatus === 'AGENDADO' ? 'Agendado' :
-                                                                event.computedTimeStatus === 'ENCERRADO' ? 'Encerrado' : '-'}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                            <EventStatusBadge adminStatus={event.adminStatus} />
                                         </StatusLegendTooltip>
 
                                         <div className="flex items-center gap-2">
