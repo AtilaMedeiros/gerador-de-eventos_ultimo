@@ -224,17 +224,57 @@ export function ParticipantProvider({
       return
     }
 
+    const newId = crypto.randomUUID()
+    // NOTE: User requirement: "Cadastro do atleta vai para tabela atleta, escolha do evento e escola para tabela de vinculo"
+    // We maintain schoolId/eventId on the Athlete object for app compatibility/state, but also save to specific link tables.
     const newAthlete: Athlete = {
       ...data,
-      id: crypto.randomUUID(),
+      id: newId,
       schoolId: targetSchoolId,
       eventId: data.eventId || selectedEventId || '1'
     }
 
-    // Optimistic Update & Immediate Save to avoid race conditions with navigation
+    // 1. Save to Main Table (Athletes)
     const updatedAthletes = [...athletes, newAthlete]
     setAthletes(updatedAthletes)
     localStorage.setItem('ge_athletes', JSON.stringify(updatedAthletes))
+
+    // 2. Save to School Link Table (Vinculo Escola)
+    try {
+      const schoolLinks = JSON.parse(localStorage.getItem('ge_links_athlete_school') || '[]')
+      schoolLinks.push({
+        id: crypto.randomUUID(),
+        athleteId: newId,
+        schoolId: targetSchoolId,
+        createdAt: new Date().toISOString()
+      })
+      localStorage.setItem('ge_links_athlete_school', JSON.stringify(schoolLinks))
+    } catch (e) { console.error('Error saving school link', e) }
+
+    // 3. Save to Event Link Table (Vinculo Evento)
+    try {
+      const eventLinks = JSON.parse(localStorage.getItem('ge_links_athlete_event') || '[]')
+      eventLinks.push({
+        id: crypto.randomUUID(),
+        athleteId: newId,
+        eventId: newAthlete.eventId,
+        createdAt: new Date().toISOString()
+      })
+      localStorage.setItem('ge_links_athlete_event', JSON.stringify(eventLinks))
+    } catch (e) { console.error('Error saving event link', e) }
+
+    // 4. Update School Cache (for Search/Listings)
+    try {
+      const schoolsList = JSON.parse(localStorage.getItem('ge_schools_list') || '[]')
+      const schoolIdx = schoolsList.findIndex((s: any) => s.id === targetSchoolId)
+      if (schoolIdx >= 0) {
+        const currentAthletes = schoolsList[schoolIdx].athletesList || []
+        if (!currentAthletes.includes(newAthlete.name)) {
+          schoolsList[schoolIdx].athletesList = [...currentAthletes, newAthlete.name]
+          localStorage.setItem('ge_schools_list', JSON.stringify(schoolsList))
+        }
+      }
+    } catch (e) { console.error('Error updating school cache', e) }
 
     toast.success('Atleta cadastrado com sucesso!')
   }
@@ -243,6 +283,38 @@ export function ParticipantProvider({
     const updatedAthletes = athletes.map((a) => (a.id === id ? { ...a, ...data } : a))
     setAthletes(updatedAthletes)
     localStorage.setItem('ge_athletes', JSON.stringify(updatedAthletes))
+
+    // Update Links if necessary
+    if (data.schoolId) {
+      try {
+        const links = JSON.parse(localStorage.getItem('ge_links_athlete_school') || '[]')
+        // Simple logic: Add new link, maybe mark old as inactive? For now, just append new relationship.
+        // Or update existing for this athlete? Assuming 1 active school per athlete:
+        const existingIdx = links.findIndex((l: any) => l.athleteId === id)
+        if (existingIdx >= 0) {
+          links[existingIdx].schoolId = data.schoolId
+          links[existingIdx].updatedAt = new Date().toISOString()
+        } else {
+          links.push({ id: crypto.randomUUID(), athleteId: id, schoolId: data.schoolId, createdAt: new Date().toISOString() })
+        }
+        localStorage.setItem('ge_links_athlete_school', JSON.stringify(links))
+      } catch (e) { }
+    }
+
+    if (data.eventId) {
+      try {
+        const links = JSON.parse(localStorage.getItem('ge_links_athlete_event') || '[]')
+        const existingIdx = links.findIndex((l: any) => l.athleteId === id)
+        if (existingIdx >= 0) {
+          links[existingIdx].eventId = data.eventId
+          links[existingIdx].updatedAt = new Date().toISOString()
+        } else {
+          links.push({ id: crypto.randomUUID(), athleteId: id, eventId: data.eventId, createdAt: new Date().toISOString() })
+        }
+        localStorage.setItem('ge_links_athlete_event', JSON.stringify(links))
+      } catch (e) { }
+    }
+
     toast.success('Atleta atualizado!')
   }
 
@@ -250,6 +322,16 @@ export function ParticipantProvider({
     const updatedAthletes = athletes.filter((a) => a.id !== id)
     setAthletes(updatedAthletes)
     localStorage.setItem('ge_athletes', JSON.stringify(updatedAthletes))
+
+    // Remove from link tables? Or keep as history?
+    // Let's remove for cleanup.
+    try {
+      const sLinks = JSON.parse(localStorage.getItem('ge_links_athlete_school') || '[]')
+      localStorage.setItem('ge_links_athlete_school', JSON.stringify(sLinks.filter((l: any) => l.athleteId !== id)))
+
+      const eLinks = JSON.parse(localStorage.getItem('ge_links_athlete_event') || '[]')
+      localStorage.setItem('ge_links_athlete_event', JSON.stringify(eLinks.filter((l: any) => l.athleteId !== id)))
+    } catch (e) { }
 
     // Also remove inscriptions
     setInscriptions((prev) => prev.filter((i) => i.athleteId !== id))

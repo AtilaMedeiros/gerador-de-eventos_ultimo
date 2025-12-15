@@ -248,6 +248,30 @@ export default function AthleteForm() {
                                                                                 )}
                                                                             />
                                                                             {event.name}
+                                                                            <div className="ml-2 flex items-center gap-1.5">
+                                                                                {(() => {
+                                                                                    const status = (event.adminStatus || 'RASCUNHO').toUpperCase()
+                                                                                    let dotColor = 'bg-orange-500'
+                                                                                    let label = 'Rascunho'
+
+                                                                                    if (status === 'PUBLICADO') {
+                                                                                        dotColor = 'bg-blue-500'
+                                                                                        label = 'Publicado'
+                                                                                    } else if (status === 'REABERTO') {
+                                                                                        dotColor = 'bg-green-500'
+                                                                                        label = 'Reaberto'
+                                                                                    }
+
+                                                                                    return (
+                                                                                        <>
+                                                                                            <div className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
+                                                                                            <span className="text-[10px] font-semibold text-muted-foreground/80 uppercase tracking-wider">
+                                                                                                {label}
+                                                                                            </span>
+                                                                                        </>
+                                                                                    )
+                                                                                })()}
+                                                                            </div>
                                                                         </CommandItem>
                                                                     ))}
                                                                 </CommandGroup>
@@ -292,7 +316,7 @@ export default function AthleteForm() {
                                                                 <CommandGroup>
                                                                     {schools.map((school) => (
                                                                         <CommandItem
-                                                                            value={school.name}
+                                                                            value={`${school.name} ${school.inep}`}
                                                                             key={school.id}
                                                                             onSelect={() => {
                                                                                 form.setValue("schoolId", school.id)
@@ -308,8 +332,8 @@ export default function AthleteForm() {
                                                                                 )}
                                                                             />
                                                                             {school.name}
-                                                                            <span className="ml-2 text-xs text-muted-foreground truncate">
-                                                                                ({school.municipality})
+                                                                            <span className="ml-2 text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-medium">
+                                                                                INEP: {school.inep}
                                                                             </span>
                                                                         </CommandItem>
                                                                     ))}
