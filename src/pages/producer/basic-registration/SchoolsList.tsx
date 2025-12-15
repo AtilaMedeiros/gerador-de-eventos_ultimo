@@ -146,15 +146,23 @@ export default function SchoolsList() {
     }, [events, schoolsList])
 
     // Apply Filters
+    // Apply Filters
     const filteredSchools = schools.filter(school => {
+        if (!school) return false
+
         // Global Search
         const searchLower = searchTerm.toLowerCase()
+        const name = (school.name || '').toLowerCase()
+        const responsible = (school.responsible || '').toLowerCase()
+        const eventName = (school.event || '').toLowerCase()
+        const inep = school.inep || ''
+
         const matchesSearch =
-            school.name.toLowerCase().includes(searchLower) ||
-            school.responsible.toLowerCase().includes(searchLower) ||
-            school.event.toLowerCase().includes(searchLower) ||
-            school.inep?.includes(searchLower) ||
-            school.athletesList?.some(athlete => athlete.toLowerCase().includes(searchLower))
+            name.includes(searchLower) ||
+            responsible.includes(searchLower) ||
+            eventName.includes(searchLower) ||
+            inep.includes(searchLower) ||
+            (school.athletesList || []).some((athlete: string) => (athlete || '').toLowerCase().includes(searchLower))
 
         if (!matchesSearch) return false
 
@@ -167,25 +175,21 @@ export default function SchoolsList() {
 
             switch (filter.field) {
                 case 'name':
-                    return school.name.toLowerCase().includes(value)
+                    return (school.name || '').toLowerCase().includes(value)
                 case 'responsible':
-                    return school.responsible.toLowerCase().includes(value)
+                    return (school.responsible || '').toLowerCase().includes(value)
                 case 'athlete':
-                    return school.athletesList?.some(a => a.toLowerCase().includes(value))
+                    return (school.athletesList || []).some((a: string) => (a || '').toLowerCase().includes(value))
                 case 'event':
-                    return school.event?.toLowerCase().includes(value)
+                    return (school.event || '').toLowerCase().includes(value)
                 case 'isEventActive': {
                     // If 'true' (checked), show only published events.
                     // If 'false' (unchecked), show all events.
                     if (value === 'false') return true
-                    // Check if mock school has 'published' status
-                    // Note: MOCK_SCHOOLS now uses 'status'.
-                    // We cast school to any because TS might expect isEventActive if defined in interface elsewhere, 
-                    // but here it is inferred from MOCK_SCHOOLS which we just updated.
                     return EventService.isEditable((school as any).adminStatus || '', (school as any).computedTimeStatus || '')
                 }
                 case 'inep':
-                    return school.inep?.includes(value)
+                    return (school.inep || '').includes(value)
                 default:
                     return true
             }
@@ -486,7 +490,7 @@ export default function SchoolsList() {
                                             {school.whatsapp && (
                                                 <div
                                                     className="flex items-center gap-2 text-xs text-muted-foreground/80 group/item cursor-pointer hover:text-emerald-500 transition-colors"
-                                                    onClick={() => window.open(`https://wa.me/55${school.whatsapp.replace(/\D/g, '')}`, '_blank')}
+                                                    onClick={() => school.whatsapp && window.open(`https://wa.me/55${String(school.whatsapp).replace(/\D/g, '')}`, '_blank')}
                                                     title="Conversar no WhatsApp"
                                                 >
                                                     <FaWhatsapp className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
@@ -506,8 +510,35 @@ export default function SchoolsList() {
                                                 {school.event}
                                             </span>
                                             <StatusLegendTooltip>
-                                                <div className="mt-1">
-                                                    <EventStatusBadge adminStatus={school.adminStatus} />
+                                                <div className="mt-1 flex items-center gap-1.5">
+                                                    {(() => {
+                                                        const status = (school.adminStatus || 'RASCUNHO').toUpperCase()
+                                                        let dotColor = 'bg-orange-500'
+                                                        let label = 'Rascunho'
+
+                                                        if (status === 'PUBLICADO') {
+                                                            dotColor = 'bg-blue-500'
+                                                            label = 'Publicado'
+                                                        } else if (status === 'REABERTO') {
+                                                            dotColor = 'bg-green-500'
+                                                            label = 'Reaberto'
+                                                        } else if (status === 'DESATIVADO' || status === 'CANCELADO') {
+                                                            dotColor = 'bg-red-500'
+                                                            label = 'Desativado'
+                                                        } else if (status === 'SUSPENSO') {
+                                                            dotColor = 'bg-gray-500'
+                                                            label = 'Suspenso'
+                                                        }
+
+                                                        return (
+                                                            <>
+                                                                <div className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
+                                                                <span className="text-[10px] font-semibold text-muted-foreground/80 uppercase tracking-wider">
+                                                                    {label}
+                                                                </span>
+                                                            </>
+                                                        )
+                                                    })()}
                                                 </div>
                                             </StatusLegendTooltip>
                                         </div>

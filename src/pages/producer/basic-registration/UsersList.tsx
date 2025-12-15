@@ -52,6 +52,7 @@ const roleMap: Record<string, string> = {
 
 
 const getUserDisplayRole = (user: User) => {
+  if (!user || !user.role) return 'Desconhecido'
   return roleMap[user.role] || user.role
 }
 
@@ -101,18 +102,24 @@ export default function UsersList() {
 
   // Apply Filters
   const filteredUsers = users.filter(user => {
+    if (!user) return false
     const displayRole = getUserDisplayRole(user)
 
     // Global Search
     const searchLower = searchTerm.toLowerCase()
+    const name = (user.name || '').toLowerCase()
+    const email = (user.email || '').toLowerCase()
+    const cpf = user.cpf || ''
+    const phone = user.phone || ''
+    const statusLabel = user.status === 'active' ? 'ativo' : 'inativo'
+
     const matchesSearch =
-      user.name.toLowerCase().includes(searchLower) ||
-      user.name.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower) ||
+      name.includes(searchLower) ||
+      email.includes(searchLower) ||
       displayRole.toLowerCase().includes(searchLower) ||
-      user.cpf?.includes(searchLower) ||
-      user.phone?.includes(searchLower) ||
-      (user.status === 'active' ? 'ativo' : 'inativo').includes(searchLower)
+      cpf.includes(searchLower) ||
+      phone.includes(searchLower) ||
+      statusLabel.includes(searchLower)
 
     if (!matchesSearch) return false
 
@@ -368,10 +375,10 @@ export default function UsersList() {
                   <TableCell className="h-12 py-0">
                     <div className="flex items-center h-full text-muted-foreground gap-2">
                       <a
-                        href={`https://wa.me/55${user.phone.replace(/\D/g, '')}`}
+                        href={user.phone ? `https://wa.me/55${user.phone.replace(/\D/g, '')}` : '#'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:scale-110 transition-transform cursor-pointer"
+                        className={`hover:scale-110 transition-transform cursor-pointer ${!user.phone ? 'pointer-events-none opacity-50' : ''}`}
                         title="Conversar no WhatsApp"
                       >
                         <FaWhatsapp className="h-4 w-4 text-green-500" />

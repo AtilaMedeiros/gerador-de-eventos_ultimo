@@ -14,31 +14,36 @@ export function EventStatusBadge({
     const admin = adminStatus?.toUpperCase() || 'RASCUNHO'
 
     // Determine Color Configuration
-    let dotColor = 'bg-gray-400'
+    let badgeStyles = 'bg-orange-100 text-orange-700 border-orange-200'
     let label = 'Rascunho'
 
     // 1. DESATIVADO
-    if (admin === 'DESATIVADO') {
-        dotColor = 'bg-red-500'
+    if (admin === 'DESATIVADO' || admin === 'CANCELADO') {
+        badgeStyles = 'bg-red-100 text-red-700 border-red-200'
         label = 'Desativado'
     }
     // 2. RASCUNHO
     else if (admin === 'RASCUNHO') {
-        dotColor = 'bg-orange-400'
+        badgeStyles = 'bg-orange-100 text-orange-700 border-orange-200'
         label = 'Rascunho'
     }
     // 3. PUBLICADO
     else if (admin === 'PUBLICADO') {
-        dotColor = 'bg-blue-600 dark:bg-blue-500'
+        badgeStyles = 'bg-blue-100 text-blue-700 border-blue-200'
         label = 'Publicado'
+    }
+    // 4. REABERTO
+    else if (admin === 'REABERTO') {
+        badgeStyles = 'bg-green-100 text-green-700 border-green-200'
+        label = 'Reaberto'
+    } else if (admin === 'SUSPENSO') {
+        badgeStyles = 'bg-gray-100 text-gray-700 border-gray-200'
+        label = 'Suspenso'
     }
 
     return (
-        <div className={cn('flex items-center gap-1.5 text-[11px]', className)}>
-            <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", dotColor)} />
-            <span className="text-muted-foreground font-medium uppercase tracking-wide">
-                {label}
-            </span>
+        <div className={cn('flex items-center justify-center px-2.5 py-1 border rounded-[5px] text-[10px] font-bold uppercase tracking-wider shadow-sm select-none', badgeStyles, className)}>
+            {label}
         </div>
     )
 }

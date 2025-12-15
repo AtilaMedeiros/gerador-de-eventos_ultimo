@@ -407,8 +407,35 @@ export default function AthletesList() {
                                                 {athlete.event}
                                             </span>
                                             <StatusLegendTooltip>
-                                                <div className="mt-1">
-                                                    <EventStatusBadge adminStatus={athlete.adminStatus} />
+                                                <div className="mt-1 flex items-center gap-1.5">
+                                                    {(() => {
+                                                        const status = (athlete.adminStatus || 'RASCUNHO').toUpperCase()
+                                                        let dotColor = 'bg-orange-500'
+                                                        let label = 'Rascunho'
+
+                                                        if (status === 'PUBLICADO') {
+                                                            dotColor = 'bg-blue-500'
+                                                            label = 'Publicado'
+                                                        } else if (status === 'REABERTO') {
+                                                            dotColor = 'bg-green-500'
+                                                            label = 'Reaberto'
+                                                        } else if (status === 'DESATIVADO' || status === 'CANCELADO') {
+                                                            dotColor = 'bg-red-500'
+                                                            label = 'Desativado'
+                                                        } else if (status === 'SUSPENSO') {
+                                                            dotColor = 'bg-gray-500'
+                                                            label = 'Suspenso'
+                                                        }
+
+                                                        return (
+                                                            <>
+                                                                <div className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
+                                                                <span className="text-[10px] font-semibold text-muted-foreground/80 uppercase tracking-wider">
+                                                                    {label}
+                                                                </span>
+                                                            </>
+                                                        )
+                                                    })()}
                                                 </div>
                                             </StatusLegendTooltip>
                                         </div>

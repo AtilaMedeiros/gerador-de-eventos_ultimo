@@ -187,7 +187,11 @@ export default function ParticipantRegister() {
 
   // ... existing code ...
 
-  const onSubmit = async (data: RegisterFormValues) => {
+  const onSubmit = async (values: RegisterFormValues) => {
+    // Zod resolver with partial schema might strip fields from 'values'.
+    // Use getValues() to ensure we have data from all steps.
+    const data = form.getValues()
+
     setIsSubmitting(true)
     try {
       // Simulate API Call
@@ -234,6 +238,8 @@ export default function ParticipantRegister() {
         name: data.responsibleName,
         email: data.email,
         role: role,
+        phone: data.mobile,
+        cpf: data.cpf,
         schoolId: newSchoolId, // Link User -> School
         // Add extra fields if compatible with User interface or cast
       } as any)
@@ -261,7 +267,8 @@ export default function ParticipantRegister() {
         // Link Event
         eventId: activeEventId,
         eventName: activeEventName,
-        eventIds: [activeEventId] // Modern array support
+        eventIds: [activeEventId], // Modern array support
+        athletesList: [], // Initialize empty list
       }
 
       // 5. Save School to Global List
@@ -284,7 +291,7 @@ export default function ParticipantRegister() {
       navigate('/area-do-participante/inicio')
     } catch (error) {
       console.error(error)
-      toast.error('Erro ao realizar cadastro.')
+      toast.error(error instanceof Error ? error.message : 'Erro ao realizar cadastro.')
     } finally {
       setIsSubmitting(false)
     }

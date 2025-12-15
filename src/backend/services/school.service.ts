@@ -76,9 +76,13 @@ export class SchoolService {
         const expanded: any[] = []
         const storedUsers = getStoredUsers()
 
-        if (!schools) return []
+        // Defensive checks
+        if (!schools || !Array.isArray(schools)) return []
+        const safeEvents = Array.isArray(allEvents) ? allEvents : []
 
         schools.forEach(school => {
+            if (!school) return
+
             // Resolve Responsible Name from Users DB
             let responsibleName = school.responsibleName || 'N/A'
 
@@ -111,12 +115,13 @@ export class SchoolService {
                     director: school.directorName,
                     phone: school.landline,
                     whatsapp: school.mobile,
-                    responsible: responsibleName
+                    responsible: responsibleName,
+                    athletesList: (school as any).athletesList || []
                 })
             } else {
                 // Multiple linked events: expand rows
                 linkedIds.forEach(eventId => {
-                    const event = allEvents.find(e => e.id === eventId)
+                    const event = safeEvents.find(e => e.id === eventId)
                     expanded.push({
                         ...school,
                         _uniqueKey: `${school.id}-${eventId}`,
@@ -127,7 +132,8 @@ export class SchoolService {
                         director: school.directorName,
                         phone: school.landline,
                         whatsapp: school.mobile,
-                        responsible: responsibleName
+                        responsible: responsibleName,
+                        athletesList: (school as any).athletesList || []
                     })
                 })
             }

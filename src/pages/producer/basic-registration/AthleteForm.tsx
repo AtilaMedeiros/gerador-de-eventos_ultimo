@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -18,9 +18,8 @@ import {
     FormDescription,
 } from '@/components/ui/form'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-// import { useParticipant } from '@/contexts/ParticipantContext' // We don't have this context in admin area usually, or maybe we do?
-// Admin contexts might be differents but let's reuse schema and structure.
-// The user wants it to look EQUAL.
+import { useParticipant } from '@/contexts/ParticipantContext'
+import { format } from 'date-fns'
 
 const athleteSchema = z.object({
     name: z.string().min(3, 'Nome é obrigatório'),
@@ -41,9 +40,7 @@ export default function AthleteForm() {
     const navigate = useNavigate()
     const { id } = useParams()
     const isEditing = id && id !== 'novo'
-
-    // In admin area we probably fetching data from an API or Mock since it's "AdminAthleteForm" context.
-    // For now, I will Mock the data fetching or use empty states to match the requested UI.
+    const { athletes, addAthlete, updateAthlete } = useParticipant()
 
     const form = useForm<AthleteFormValues>({
         resolver: zodResolver(athleteSchema),
@@ -59,37 +56,62 @@ export default function AthleteForm() {
         },
     })
 
+    // Load data for editing
     useEffect(() => {
         if (isEditing && id) {
-            // Mock fetching athlete data for admin
-            // In a real scenario, we would use a hook or service.
-            // For now, simulating a fetch
-            // const athlete = ...
-            // form.reset(...)
-            toast.info("Em modo de edição (simulado).")
-            form.reset({
-                name: 'Lucas Pereira',
-                sex: 'Masculino',
-                dob: '2008-05-15',
-                rg: '123456789',
-                cpf: '123.456.789-00',
-                nis: '12345678901',
-                motherName: 'Maria Pereira',
-                motherCpf: '987.654.321-00'
-            })
+            const athlete = athletes.find(a => a.id === id)
+            if (athlete) {
+                form.reset({
+                    name: athlete.name,
+                    sex: athlete.sex,
+                    dob: format(new Date(athlete.dob), 'yyyy-MM-dd'),
+                    rg: athlete.rg || '',
+                    cpf: athlete.cpf,
+                    nis: athlete.nis || '',
+                    motherName: athlete.motherName,
+                    motherCpf: athlete.motherCpf
+                })
+            } else {
+                toast.error("Atleta não encontrado.")
+                navigate('/area-do-produtor/atletas')
+            }
         }
-    }, [isEditing, id, form])
+    }, [isEditing, id, athletes, form, navigate])
 
     const onSubmit = (data: AthleteFormValues) => {
-        console.log(data)
-        toast.success(
-            isEditing ? 'Atleta atualizado com sucesso!' : 'Atleta cadastrado com sucesso!',
-        )
-        navigate('/area-do-produtor/atletas')
+        try {
+            if (isEditing && id) {
+                updateAthlete(id, {
+                    name: data.name,
+                    sex: data.sex,
+                    dob: new Date(data.dob),
+                    cpf: data.cpf,
+                    motherName: data.motherName,
+                    motherCpf: data.motherCpf,
+                    rg: data.rg,
+                    nis: data.nis
+                })
+            } else {
+                addAthlete({
+                    name: data.name,
+                    sex: data.sex,
+                    dob: new Date(data.dob),
+                    cpf: data.cpf,
+                    motherName: data.motherName,
+                    motherCpf: data.motherCpf,
+                    rg: data.rg,
+                    nis: data.nis
+                })
+            }
+            navigate('/area-do-produtor/atletas')
+        } catch (error) {
+            toast.error("Erro ao salvar atleta.")
+            console.error(error)
+        }
     }
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6 pt-6">
+        <div className="max-w-3xl mx-auto space-y-6 pt-6 animate-fade-in">
             <div className="flex items-center gap-4">
                 <Button
                     variant="ghost"
@@ -98,9 +120,14 @@ export default function AthleteForm() {
                 >
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <h2 className="text-2xl font-bold tracking-tight">
-                    {isEditing ? 'Editar Atleta' : 'Novo Atleta'}
-                </h2>
+                <div className="flex flex-col">
+                    <h2 className="text-2xl font-bold tracking-tight">
+                        {isEditing ? 'Editar Atleta' : 'Novo Atleta'}
+                    </h2>
+                    <p className="text-muted-foreground">
+                        {isEditing ? 'Atualize os dados do atleta.' : 'Preencha os dados para cadastrar um novo atleta.'}
+                    </p>
+                </div>
             </div>
 
             <Form {...form}>
@@ -134,6 +161,7 @@ export default function AthleteForm() {
                                             onValueChange={field.onChange}
                                             defaultValue={field.value}
                                             className="flex gap-4"
+                                            value={field.value}
                                         >
                                             <FormItem className="flex items-center space-x-2 space-y-0">
                                                 <FormControl>
@@ -196,7 +224,7 @@ export default function AthleteForm() {
                                 <FormItem>
                                     <FormLabel>RG</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Número do RG" {...field} />
+                                        <Input placeholder="Número do RG" {...field} value={field.value || ''} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -210,7 +238,7 @@ export default function AthleteForm() {
                                 <FormItem>
                                     <FormLabel>NIS (Opcional)</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Número NIS" {...field} />
+                                        <Input placeholder="Número NIS" {...field} value={field.value || ''} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -260,7 +288,7 @@ export default function AthleteForm() {
                         >
                             Cancelar
                         </Button>
-                        <Button type="submit">
+                        <Button type="submit" className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary">
                             <Save className="mr-2 h-4 w-4" />
                             Salvar Atleta
                         </Button>

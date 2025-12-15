@@ -360,7 +360,7 @@ export default function EventsList() {
                     <div className="flex flex-col items-start md:items-end gap-1.5 -mt-2">
                       <div className="flex flex-col gap-0.5 items-end">
                         <StatusLegendTooltip>
-                          <EventStatusBadge adminStatus={event.adminStatus} className="text-[13px]" />
+                          <EventStatusBadge adminStatus={event.adminStatus} />
                         </StatusLegendTooltip>
                       </div>
                     </div>

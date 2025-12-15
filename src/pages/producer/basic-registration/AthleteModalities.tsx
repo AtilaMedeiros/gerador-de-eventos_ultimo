@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, useState } from 'react'
+import { useRef, useCallback, useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -33,51 +33,109 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 
-// Mock Data for Selects
-const MODALITY_TYPES = ['Coletiva', 'Individual'] as const
-
-const MODALITIES = {
-    Coletiva: ['Futebol', 'Futsal', 'Vôlei', 'Basquete', 'Handebol'],
-    Individual: ['Atletismo', 'Natação', 'Xadrez', 'Tênis de Mesa', 'Judô'],
-}
-
-const PROVAS = {
-    Natação: ['Nado Livre', 'Nado Costas', 'Nado Peito', 'Borboleta'],
-    Atletismo: ['100m Rasos', 'Salto em Distância', 'Arremesso de Peso'],
-    Judô: ['Leve', 'Médio', 'Pesado'],
-}
-
-// Mock Data for List
-import { MOCK_LINKED_MODALITIES as IMPORTED_MOCK_LINKED_MODALITIES } from '@/backend/banco/modalidades'
-
-// Mock Data for List
-const MOCK_LINKED_MODALITIES = IMPORTED_MOCK_LINKED_MODALITIES
+import { useParticipant } from '@/contexts/ParticipantContext'
+import { useModality } from '@/contexts/ModalityContext'
+import { useEvent } from '@/contexts/EventContext'
 
 const formSchema = z.object({
-    type: z.enum(['Coletiva', 'Individual']),
-    modality: z.string().min(1, 'Selecione uma modalidade'),
-    prova: z.string().optional(),
+    type: z.string().min(1, 'Selecione um tipo'),
+    modalityName: z.string().min(1, 'Selecione uma modalidade'),
+    modalityId: z.string().min(1, 'Selecione a prova/categoria'),
 })
 
 export default function AthleteModalities() {
     const { id } = useParams()
     const navigate = useNavigate()
-    const [linkedModalities, setLinkedModalities] = useState(MOCK_LINKED_MODALITIES)
+
+    // Contexts
+    const { inscriptions, addInscription, deleteInscription, athletes } = useParticipant()
+    const { modalities } = useModality()
+    const { events } = useEvent() // Need event for inscription
+
+    // Get current athlete
+    const athlete = useMemo(() => athletes.find(a => a.id === id), [athletes, id])
+
+    // Filter inscriptions for this athlete
+    const athleteInscriptions = useMemo(() => {
+        if (!id) return []
+        return inscriptions.filter(i => i.athleteId === id)
+    }, [inscriptions, id])
+
+    // Derived State for Dropdowns (Dynamic from Modalities Context)
+    const uniqueTypes = useMemo(() => {
+        const types = new Set(modalities.map(m => m.type))
+        return Array.from(types).sort()
+    }, [modalities])
+
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            type: '',
+            modalityName: '',
+            modalityId: '',
+        },
+    })
+
+    const selectedType = form.watch('type')
+    const selectedModalityName = form.watch('modalityName')
+
+    // Reset fields when parent selection changes
+    const onTypeChange = (value: string) => {
+        form.setValue('type', value)
+        form.setValue('modalityName', '')
+        form.setValue('modalityId', '')
+    }
+
+    const onModalityNameChange = (value: string) => {
+        form.setValue('modalityName', value)
+        form.setValue('modalityId', '')
+    }
+
+    const availableModalityNames = useMemo(() => {
+        if (!selectedType) return []
+        const filtered = modalities.filter(m => m.type === selectedType)
+        const names = new Set(filtered.map(m => m.name))
+        return Array.from(names).sort()
+    }, [modalities, selectedType])
+
+    // Available "Provas" (Actual Modality IDs)
+    const availableProvas = useMemo(() => {
+        if (!selectedModalityName || !selectedType) return []
+        return modalities.filter(m => m.type === selectedType && m.name === selectedModalityName)
+    }, [modalities, selectedType, selectedModalityName])
+
+    // Logic to show "Prova" field
+    const showProva = availableProvas.length > 0
 
     // Sorting Logic
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
 
-    const sortedLinkedModalities = [...linkedModalities].sort((a, b) => {
-        if (!sortConfig) return 0
+    const tableData = useMemo(() => {
+        return athleteInscriptions.map(inscription => {
+            const mod = modalities.find(m => m.id === inscription.modalityId)
+            return {
+                id: inscription.id,
+                type: mod?.type || 'N/A',
+                modality: mod?.name || 'Desconhecida',
+                prova: mod?.eventCategory || '-',
+                sex: mod?.gender || '-',
+                ageRange: mod ? `${mod.minAge} a ${mod.maxAge}` : '-',
+                original: inscription
+            }
+        })
+    }, [athleteInscriptions, modalities])
 
-        const { key, direction } = sortConfig
-        const aValue = a[key as keyof typeof a]
-        const bValue = b[key as keyof typeof b]
-
-        if (aValue < bValue) return direction === 'asc' ? -1 : 1
-        if (aValue > bValue) return direction === 'asc' ? 1 : -1
-        return 0
-    })
+    const sortedLinkedModalities = useMemo(() => {
+        return [...tableData].sort((a, b) => {
+            if (!sortConfig) return 0
+            const { key, direction } = sortConfig
+            const aValue = (a as any)[key]
+            const bValue = (b as any)[key]
+            if (aValue < bValue) return direction === 'asc' ? -1 : 1
+            if (aValue > bValue) return direction === 'asc' ? 1 : -1
+            return 0
+        })
+    }, [tableData, sortConfig])
 
     const requestSort = (key: string) => {
         let direction: 'asc' | 'desc' = 'asc'
@@ -147,59 +205,46 @@ export default function AthleteModalities() {
         document.body.style.cursor = 'col-resize'
     }, [colWidths, handleMouseMove, handleMouseUp])
 
-    // Existing Form Logic...
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            modality: '',
-            prova: '',
-        },
-    })
-
-    // ... existing onTypeChange, derived values ...
-
-    const selectedType = form.watch('type')
-    const selectedModality = form.watch('modality')
-
-    // Reset fields when parent selection changes
-    const onTypeChange = (value: string) => {
-        form.setValue('type', value as any)
-        form.setValue('modality', '')
-        form.setValue('prova', '')
-    }
-
-    const availableModalities = selectedType ? MODALITIES[selectedType] : []
-    const availableProvas = selectedModality && selectedModality in PROVAS
-        ? PROVAS[selectedModality as keyof typeof PROVAS]
-        : []
-
-    // Logic to show "Prova" field: if manual HTML logic had "display: none", we simulate logic here.
-    // Usually individual sports have provas.
-    const showProva = availableProvas.length > 0
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
-        // Simulate adding
-        const newModality = {
-            id: Math.random(),
-            type: values.type,
-            modality: values.modality,
-            prova: values.prova || '-',
-            sex: 'Feminino', // Should come from athlete data
-            ageRange: '12 a 14', // Should come from athlete/category
+        if (!id) return
+
+        // Ideally we should select which EVENT to bind to. 
+        // For now, let's use the first active event or default.
+        const eventId = events.length > 0 ? events[0].id : '1'
+
+        // Check duplicates
+        const exists = inscriptions.some(
+            (i) =>
+                i.athleteId === id &&
+                i.eventId === eventId && // Assuming global event context or simple single event
+                i.modalityId === values.modalityId
+        )
+
+        if (exists) {
+            toast.error('Atleta já inscrito nesta modalidade/prova.')
+            return
         }
 
-        setLinkedModalities([...linkedModalities, newModality])
-        toast.success('Modalidade vinculada com sucesso!')
+        addInscription({
+            athleteId: id,
+            eventId: eventId,
+            modalityId: values.modalityId,
+        })
+
         form.reset({
             type: values.type,
-            modality: '',
-            prova: ''
+            modalityName: '',
+            modalityId: ''
         })
     }
 
-    const handleDelete = (id: number) => {
-        setLinkedModalities(linkedModalities.filter(m => m.id !== id))
-        toast.success('Vinculação removida com sucesso.')
+    const handleDelete = (inscriptionId: string) => {
+        deleteInscription(inscriptionId)
+    }
+
+    if (!athlete) {
+        return <div className="p-8">Atleta não encontrado.</div>
     }
 
     return (
@@ -217,7 +262,9 @@ export default function AthleteModalities() {
                 </Button>
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Vincular Modalidade</h2>
-                    <p className="text-muted-foreground text-lg">Gerencie as modalidades deste atleta.</p>
+                    <p className="text-muted-foreground text-lg">
+                        Gerencie as modalidades de <strong>{athlete.name}</strong>.
+                    </p>
                 </div>
             </div>
 
@@ -249,7 +296,7 @@ export default function AthleteModalities() {
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {MODALITY_TYPES.map(type => (
+                                                {uniqueTypes.map(type => (
                                                     <SelectItem key={type} value={type}>
                                                         {type}
                                                     </SelectItem>
@@ -263,12 +310,12 @@ export default function AthleteModalities() {
 
                             <FormField
                                 control={form.control}
-                                name="modality"
+                                name="modalityName"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Modalidade</FormLabel>
                                         <Select
-                                            onValueChange={field.onChange}
+                                            onValueChange={onModalityNameChange}
                                             defaultValue={field.value}
                                             disabled={!selectedType}
                                         >
@@ -278,9 +325,9 @@ export default function AthleteModalities() {
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {availableModalities.map(modality => (
-                                                    <SelectItem key={modality} value={modality}>
-                                                        {modality}
+                                                {availableModalityNames.map(name => (
+                                                    <SelectItem key={name} value={name}>
+                                                        {name}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -293,23 +340,25 @@ export default function AthleteModalities() {
                             {showProva && (
                                 <FormField
                                     control={form.control}
-                                    name="prova"
+                                    name="modalityId"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Prova</FormLabel>
+                                            <FormLabel>
+                                                {selectedType.toLowerCase() === 'individual' ? 'Prova' : 'Categoria'}
+                                            </FormLabel>
                                             <Select
                                                 onValueChange={field.onChange}
                                                 defaultValue={field.value}
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder="Selecione a prova" />
+                                                        <SelectValue placeholder="Selecione" />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                    {availableProvas.map(prova => (
-                                                        <SelectItem key={prova} value={prova}>
-                                                            {prova}
+                                                    {availableProvas.map(mod => (
+                                                        <SelectItem key={mod.id} value={mod.id}>
+                                                            {mod.eventCategory || `${mod.minAge}-${mod.maxAge} anos`}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
@@ -318,6 +367,13 @@ export default function AthleteModalities() {
                                         </FormItem>
                                     )}
                                 />
+                            )}
+
+                            {/* Fallback for when no Prova dropdown is shown but we have only 1 option or need to error */}
+                            {selectedModalityName && availableProvas.length === 0 && (
+                                <div className="text-sm text-destructive">
+                                    Nenhuma categoria encontrada para este atleta.
+                                </div>
                             )}
 
                             <div className="pt-2">
@@ -365,7 +421,7 @@ export default function AthleteModalities() {
                                     </TableHead>
                                     <TableHead style={{ width: colWidths.prova }} className="relative font-semibold text-primary/80 h-12 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => requestSort('prova')}>
                                         <div className="flex items-center overflow-hidden">
-                                            <span className="truncate">Prova</span> {getSortIcon('prova')}
+                                            <span className="truncate">Prova/Cat.</span> {getSortIcon('prova')}
                                         </div>
                                         <div
                                             onMouseDown={(e) => handleMouseDown(e, 'prova')}
