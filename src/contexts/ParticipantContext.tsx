@@ -22,11 +22,13 @@ export interface School {
   landline: string
   mobile: string
   email: string
+  eventIds?: string[]
 }
 
 export interface Athlete {
   id: string
   schoolId: string
+  eventId: string
   name: string
   sex: 'Feminino' | 'Masculino'
   dob: Date
@@ -63,7 +65,7 @@ interface ParticipantContextType {
   school: School | null
   updateSchool: (data: Partial<School>) => void
   athletes: Athlete[]
-  addAthlete: (data: Omit<Athlete, 'id' | 'schoolId'>) => void
+  addAthlete: (data: Omit<Athlete, 'id' | 'schoolId' | 'eventId'> & { eventId?: string }) => void
   updateAthlete: (id: string, data: Partial<Athlete>) => void
   deleteAthlete: (id: string) => void
   technicians: Technician[]
@@ -128,12 +130,18 @@ export function ParticipantProvider({
             parsed.map((a: any) => ({
               ...a,
               dob: new Date(a.dob),
+              eventId: a.eventId || '1', // Migration for legacy data
             })),
           )
         } else {
           setAthletes(MOCK_ATHLETES_SEED as unknown as Athlete[])
         }
       } else {
+        // Only load Mocks if we really want them globally, but usually mocks should be tied to a mock school.
+        // If we want a clean state for a new school, we shouldn't force mocks unless the school IS the mock school.
+        // But for development, mocks appear.
+        // Better: Filter mocks to match the current school IF we know it.
+        // For now, let's keep loading them, but ensure UI filters them.
         setAthletes(MOCK_ATHLETES_SEED as unknown as Athlete[])
       }
 
@@ -208,26 +216,41 @@ export function ParticipantProvider({
     toast.success('Dados da escola atualizados!')
   }
 
-  const addAthlete = (data: Omit<Athlete, 'id' | 'schoolId'>) => {
-    if (!school) return
+  const addAthlete = (data: Omit<Athlete, 'id' | 'schoolId' | 'eventId'> & { eventId?: string, schoolId?: string }) => {
+    // Producer mode checks
+    const targetSchoolId = data.schoolId || (school ? school.id : null)
+    if (!targetSchoolId) {
+      toast.error('Escola não identificada.')
+      return
+    }
+
     const newAthlete: Athlete = {
       ...data,
       id: crypto.randomUUID(),
-      schoolId: school.id,
+      schoolId: targetSchoolId,
+      eventId: data.eventId || selectedEventId || '1'
     }
-    setAthletes((prev) => [...prev, newAthlete])
+
+    // Optimistic Update & Immediate Save to avoid race conditions with navigation
+    const updatedAthletes = [...athletes, newAthlete]
+    setAthletes(updatedAthletes)
+    localStorage.setItem('ge_athletes', JSON.stringify(updatedAthletes))
+
     toast.success('Atleta cadastrado com sucesso!')
   }
 
   const updateAthlete = (id: string, data: Partial<Athlete>) => {
-    setAthletes((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, ...data } : a)),
-    )
+    const updatedAthletes = athletes.map((a) => (a.id === id ? { ...a, ...data } : a))
+    setAthletes(updatedAthletes)
+    localStorage.setItem('ge_athletes', JSON.stringify(updatedAthletes))
     toast.success('Atleta atualizado!')
   }
 
   const deleteAthlete = (id: string) => {
-    setAthletes((prev) => prev.filter((a) => a.id !== id))
+    const updatedAthletes = athletes.filter((a) => a.id !== id)
+    setAthletes(updatedAthletes)
+    localStorage.setItem('ge_athletes', JSON.stringify(updatedAthletes))
+
     // Also remove inscriptions
     setInscriptions((prev) => prev.filter((i) => i.athleteId !== id))
     toast.success('Atleta removido.')

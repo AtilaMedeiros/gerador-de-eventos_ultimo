@@ -183,10 +183,11 @@ export default function SchoolsList() {
                 case 'event':
                     return (school.event || '').toLowerCase().includes(value)
                 case 'isEventActive': {
-                    // If 'true' (checked), show only published events.
-                    // If 'false' (unchecked), show all events.
+                    // If 'true' (checked), show only published/draft events (Active from admin perspective).
                     if (value === 'false') return true
-                    return EventService.isEditable((school as any).adminStatus || '', (school as any).computedTimeStatus || '')
+                    // Explicit check to ensure we match 'RASCUNHO' and 'PUBLICADO'
+                    const status = ((school as any).adminStatus || '').toUpperCase()
+                    return ['RASCUNHO', 'PUBLICADO'].includes(status)
                 }
                 case 'inep':
                     return (school.inep || '').includes(value)

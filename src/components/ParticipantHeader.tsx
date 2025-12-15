@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+import { INITIAL_SCHOOLS } from '@/backend/banco/escolas'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -21,7 +23,42 @@ export function ParticipantHeader() {
   const { school, selectedEventId, selectEvent } = useParticipant()
   const { events } = useEvent()
 
-  const currentEvent = events.find(e => e.id === selectedEventId) || (events.length > 0 ? events[0] : null)
+  // Filter events where the school is registered (Logic: Match INEP across all school records)
+  const availableEvents = useMemo(() => {
+    if (!school?.inep) return []
+
+    // 1. Get global list of schools to find other registrations for the same INEP
+    let allSchools: any[] = []
+    try {
+      const stored = localStorage.getItem('ge_schools_list')
+      if (stored) allSchools = JSON.parse(stored)
+      else allSchools = INITIAL_SCHOOLS
+    } catch (e) {
+      allSchools = INITIAL_SCHOOLS
+    }
+
+    // 2. Find all records matching this INEP
+    const linkedSchools = allSchools.filter((s: any) => s.inep === school.inep)
+    // Ensure current session school is included
+    if (!linkedSchools.find((s: any) => s.id === school.id)) {
+      linkedSchools.push(school)
+    }
+
+    // 3. Collect all Event IDs linked to this INEP
+    const allowedEventIds = new Set<string>()
+    linkedSchools.forEach((s: any) => {
+      if (s.eventId) allowedEventIds.add(s.eventId)
+      if (s.eventIds && Array.isArray(s.eventIds)) {
+        s.eventIds.forEach((id: string) => allowedEventIds.add(id))
+      }
+    })
+
+    // 4. Return events that match the allowed IDs
+    return events.filter(e => allowedEventIds.has(e.id))
+  }, [events, school])
+
+  // Current event can be outside available if data is desynced, but we display it anyway if selected
+  const currentEvent = events.find(e => e.id === selectedEventId) || (availableEvents.length > 0 ? availableEvents[0] : (events.length > 0 ? events[0] : null))
 
   const handleLogout = () => {
     logout()
@@ -47,15 +84,21 @@ export function ParticipantHeader() {
                 <DropdownMenuContent align="start">
                   <DropdownMenuLabel>Trocar Evento</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {events.map(event => (
-                    <DropdownMenuItem
-                      key={event.id}
-                      onClick={() => selectEvent(event.id)}
-                      className={event.id === selectedEventId ? "bg-primary/10 text-primary font-medium" : ""}
-                    >
-                      {event.name}
-                    </DropdownMenuItem>
-                  ))}
+                  {availableEvents.length > 0 ? (
+                    availableEvents.map(event => (
+                      <DropdownMenuItem
+                        key={event.id}
+                        onClick={() => selectEvent(event.id)}
+                        className={event.id === selectedEventId ? "bg-primary/10 text-primary font-medium" : ""}
+                      >
+                        {event.name}
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <div className="p-2 text-xs text-muted-foreground text-center">
+                      Nenhum evento vinculado.
+                    </div>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
               <div>

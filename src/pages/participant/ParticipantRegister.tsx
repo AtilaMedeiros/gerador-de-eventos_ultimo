@@ -34,6 +34,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { UserService } from '@/backend/services/user.service'
 import { AuthService } from '@/backend/services/auth.service'
+import { SchoolService } from '@/backend/services/school.service'
 
 // Mock Municipality List
 const MUNICIPALITIES = [
@@ -172,6 +173,32 @@ export default function ParticipantRegister() {
     const isValid = await form.trigger(step1Fields as any)
 
     if (isValid) {
+      // --- DUPLICATION CHECK ---
+      try {
+        const inep = form.getValues().inep
+        let activeEventId = urlEventId || '1'
+
+        // Resolve Event ID identically to onSubmit logic to ensure consistency
+        const storedEvents = localStorage.getItem('ge_events')
+        if (storedEvents) {
+          try {
+            const parsedEvents = JSON.parse(storedEvents)
+            if (urlEventId) {
+              // If URL param exists, it takes precedence (assuming it's valid)
+            } else {
+              // Fallback logic
+              const bestEvent = parsedEvents.find((e: any) => e.status === 'published') || parsedEvents[0]
+              if (bestEvent) activeEventId = bestEvent.id
+            }
+          } catch (e) { }
+        }
+
+        SchoolService.validateRegistration(inep, activeEventId)
+      } catch (validationError: any) {
+        toast.error(validationError.message)
+        return // Prevent proceeding to Step 2
+      }
+
       setStep(2)
       window.scrollTo(0, 0)
     }
@@ -222,6 +249,18 @@ export default function ParticipantRegister() {
             }
           }
         } catch (e) { }
+      }
+
+      // --- DUPLICATION CHECK ---
+      // Verify if INEP is already registered for this Event
+      const dupCheckEventId = activeEventId
+      try {
+        // Using explicit service method that uses INEP as unique identifier
+        SchoolService.validateRegistration(data.inep, dupCheckEventId)
+      } catch (validationError: any) {
+        toast.error(validationError.message)
+        setIsSubmitting(false)
+        return
       }
 
       // 2. Prepare IDs upfront
@@ -275,14 +314,41 @@ export default function ParticipantRegister() {
       const storedList = localStorage.getItem('ge_schools_list')
       let currentList = storedList ? JSON.parse(storedList) : [...INITIAL_SCHOOLS]
 
-      // Avoid duplicates based on INEP
-      if (!currentList.some((s: any) => s.inep === newSchool.inep)) {
+      const existingSchoolIndex = currentList.findIndex((s: any) => s.inep === newSchool.inep)
+
+      if (existingSchoolIndex >= 0) {
+        // MERGE STRATEGY
+        const existingSchool = currentList[existingSchoolIndex]
+
+        // 1. Link new event to existing school
+        const mergedEventIds = new Set(existingSchool.eventIds || [])
+        if (existingSchool.eventId) mergedEventIds.add(existingSchool.eventId)
+        mergedEventIds.add(activeEventId)
+
+        const updatedSchool = {
+          ...existingSchool,
+          eventIds: Array.from(mergedEventIds),
+        }
+        currentList[existingSchoolIndex] = updatedSchool
+        localStorage.setItem('ge_schools_list', JSON.stringify(currentList))
+
+        // 2. Fix the user we just created to point to the OLD school ID
+        const allUsers = JSON.parse(localStorage.getItem('ge_users') || '[]')
+        const userIndex = allUsers.findIndex((u: any) => u.id === newUser.id)
+        if (userIndex >= 0) {
+          allUsers[userIndex].schoolId = existingSchool.id
+          localStorage.setItem('ge_users', JSON.stringify(allUsers))
+        }
+
+        // 3. Update Session
+        localStorage.setItem('ge_school_data', JSON.stringify(updatedSchool))
+
+      } else {
+        // NEW STRATEGY
         currentList.push(newSchool)
         localStorage.setItem('ge_schools_list', JSON.stringify(currentList))
+        localStorage.setItem('ge_school_data', JSON.stringify(newSchool))
       }
-
-      // 6. Save to Participant Session
-      localStorage.setItem('ge_school_data', JSON.stringify(newSchool))
 
       // Login
       await login(data.email, data.password)

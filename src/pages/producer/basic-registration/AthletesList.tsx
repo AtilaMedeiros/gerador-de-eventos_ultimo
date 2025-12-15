@@ -76,16 +76,16 @@ export default function AthletesList() {
     ])
 
     // Derived state merging athletes with real events (Simulated Association for Display)
+    // Derived state merging athletes with real events
     const enrichedAthletes = useMemo(() => {
-        if (!events || events.length === 0) return athletes.map(a => ({ ...a, event: 'N/A', adminStatus: 'DESATIVADO' }))
-
-        return athletes.map((athlete, index) => {
-            const assignedEvent = events[index % events.length]
+        return athletes.map((athlete) => {
+            const assignedEvent = events.find(e => e.id === athlete.eventId)
             return {
                 ...athlete,
-                event: assignedEvent.name,
-                adminStatus: assignedEvent.adminStatus,
-                computedTimeStatus: assignedEvent.computedTimeStatus
+                event: assignedEvent ? assignedEvent.name : 'N/A',
+                adminStatus: assignedEvent ? assignedEvent.adminStatus : 'DESATIVADO',
+                // computedTimeStatus is optional on Event? It's usually present in our mocks.
+                computedTimeStatus: assignedEvent ? (assignedEvent as any).computedTimeStatus : 'ENCERRADO'
             }
         })
     }, [athletes, events])

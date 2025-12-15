@@ -13,6 +13,7 @@ export const MOCK_SCHOOL = {
     landline: '(85) 3222-2222',
     mobile: '(85) 99999-9999',
     email: 'escola@exemplo.com',
+    eventIds: ['1', '2'], // Mock linked events for testing dropdown filtering
 }
 
 export const MOCK_PREVIEW_SCHOOL = {

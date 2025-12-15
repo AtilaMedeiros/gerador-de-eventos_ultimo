@@ -50,7 +50,7 @@ const filterFields: FilterFieldConfig[] = [
 
 export default function AthletesList() {
   const navigate = useNavigate()
-  const { athletes, deleteAthlete, selectedEventId } = useParticipant()
+  const { athletes, deleteAthlete, selectedEventId, school } = useParticipant()
   const { events } = useEvent()
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<Filter[]>([])
@@ -58,6 +58,16 @@ export default function AthletesList() {
   // Apply Filters
   const filteredAthletes = useMemo(() => {
     return athletes.filter(athlete => {
+      // 0. Filter by School
+      if (school && athlete.schoolId !== school.id) {
+        return false
+      }
+
+      // 1. Filter by Selected Event
+      if (selectedEventId && athlete.eventId !== selectedEventId) {
+        return false
+      }
+
       // Global Search
       const searchLower = searchTerm.toLowerCase()
       const matchesSearch =

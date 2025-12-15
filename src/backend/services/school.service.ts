@@ -61,6 +61,30 @@ export class SchoolService {
     }
 
     /**
+     * Checks if a school (identified by INEP) is already registered for a specific event.
+     * Throws an error if a duplicate registration is detected.
+     */
+    static validateRegistration(inep: string, eventId: string): void {
+        const storedList = localStorage.getItem('ge_schools_list')
+        const list: School[] = storedList ? JSON.parse(storedList) : [...INITIAL_SCHOOLS]
+
+        const duplicate = list.find(s => {
+            if (s.inep !== inep) return false
+
+            // Check linking
+            const ids = Array.isArray(s.eventIds) ? [...s.eventIds] : []
+            if (s.eventId) ids.push(s.eventId)
+
+            return ids.includes(eventId)
+        })
+
+        if (duplicate) {
+            throw new Error(`A escola com INEP ${inep} já está cadastrada neste evento.`)
+        }
+    }
+
+
+    /**
      * Links a school to a set of events.
      */
     static linkEvents(schoolId: string, eventIds: string[]): School {
